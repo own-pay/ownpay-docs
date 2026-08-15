@@ -318,10 +318,6 @@
         "label": "ownpay.org"
       },
       {
-        "type": "github",
-        "href": "https://github.com/own-pay/OwnPay"
-      },
-      {
         "type": "link",
         "label": "Raise Issue",
         "href": "https://github.com/own-pay/OwnPay/issues/new"

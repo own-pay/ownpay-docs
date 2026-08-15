@@ -3,8 +3,8 @@ title: "Install OwnPay on Shared Hosting, VPS, or Docker"
 description: "Install OwnPay on shared hosting (cPanel, Plesk, DirectAdmin), a VPS, or Docker using the built-in web installer and setup wizard. Step-by-step guide."
 keywords: "install payment gateway, cPanel payment processing, self-hosted payments setup, Docker payment platform, PHP payment gateway install, VPS payment gateway"
 sidebarTitle: "Installation"
+icon: "feather"
 ---
-<Snippet file="llms-directive.mdx" />
 
 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '-0.75rem', marginBottom: '1.5rem' }}>
   <span style={{ fontSize: '13px', padding: '3px 8px', borderRadius: '4px', background: '#e5e7eb', color: '#374151', fontWeight: '500' }} className="dark:bg-slate-800 dark:text-slate-300">
@@ -12,10 +12,12 @@ sidebarTitle: "Installation"
   </span>
 </div>
 
+/
+
 OwnPay features a **built-in web installer** that checks server configurations, sets up the database schema, and bootstraps your master administrator account. Visit your domain once files are uploaded to complete the setup - no command-line experience required.
 
 <Info>
-Choose your environment below. **Shared Hosting** is for users with a cPanel or Plesk plan. **VPS** is for users comfortable with the Linux command line. **Docker** is for developers who prefer containerized deployment.
+  Choose your environment below. **Shared Hosting** is for users with a cPanel or Plesk plan. **VPS** is for users comfortable with the Linux command line. **Docker** is for developers who prefer containerized deployment.
 </Info>
 
 ---
@@ -28,9 +30,11 @@ Choose your target environment to begin the deployment guide:
   <Card title="Shared Hosting" icon="server" href="#shared-hosting">
     Standard hosting plans running control panels like cPanel, Plesk, or DirectAdmin.
   </Card>
+
   <Card title="VPS / Cloud Server" icon="terminal" href="#vps-cloud-server">
     Dedicated virtual private server running Ubuntu or Debian with full root access.
   </Card>
+
   <Card title="Docker Container" icon="docker" href="#docker">
     Containerized stack using Docker Compose for local environments or cloud scaling.
   </Card>
@@ -40,15 +44,15 @@ Choose your target environment to begin the deployment guide:
   Ensure your hosting node satisfies the following specifications before installing:
 
   | Component | Minimum Specification | Recommended Specification |
-  | :--- | :--- | :--- |
-  | **PHP Runtime** | 8.3 | 8.3+ |
-  | **MySQL Database** | 5.7 | 8.0+ (or MariaDB 10.4+) |
-  | **System Memory** | 512MB RAM | 2GB+ RAM |
-  | **Disk Storage** | 1GB Free Space | 10GB+ Solid-State Storage |
+  | :-- | :-- | :-- |
+  | **PHP Runtime** | 8.3 | 8.3\+ |
+  | **MySQL Database** | 5.7 | 8.0\+ (or MariaDB 10.4\+) |
+  | **System Memory** | 512MB RAM | 2GB\+ RAM |
+  | **Disk Storage** | 1GB Free Space | 10GB\+ Solid-State Storage |
 
   ### Required PHP Extensions
-  OwnPay requires the following extensions to be active:
-  `mbstring`, `pdo_mysql`, `gd`, `curl`, `zip`, `json`, `openssl`, `bcmath`, `intl`
+
+  OwnPay requires the following extensions to be active: `mbstring`, `pdo_mysql`, `gd`, `curl`, `zip`, `json`, `openssl`, `bcmath`, `intl`
 </Accordion>
 
 ---
@@ -60,23 +64,24 @@ Shared hosting is the most common deployment method. Hosts like Hostinger, Namec
 <Steps>
   <Step title="Download the Release Package">
     Download the latest stable release package directly:
-    
+
     <div style={{ marginTop: '1rem', marginBottom: '1.5rem' }}>
-      <a href="https://github.com/own-pay/OwnPay/releases/latest" data-latest-download="true" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: '500', textDecoration: 'none' }}>
-        <Icon icon="download" size={16} />
-        Download OwnPay <span data-latest-version="true">0.2.0</span>
-      </a>
-    </div>
+  <a href="https://github.com/own-pay/OwnPay/releases/latest" data-latest-download="true" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: '500', textDecoration: 'none' }}>
+    <Icon icon="download" size={16} />
+
+    Download OwnPay <span data-latest-version="true">0.2.0</span>
+  </a>
+</div>
 
     Alternatively, you can manually select a version:
+
     1. Visit the official [OwnPay GitHub Releases](https://github.com/own-pay/OwnPay/releases) page.
     2. Identify the top **Latest Release** tag (e.g. `v0.2.0`).
     3. Under the **Assets** section, download the `.zip` archive (e.g. `ownpay-0.2.0.zip`).
   </Step>
-
   <Step title="Upload files to your server">
     Upload the downloaded zip archive to your domain's root folder (usually `public_html` or a custom subfolder).
-    
+
     <Tabs>
       <Tab title="cPanel File Manager">
         1. Access your cPanel account dashboard.
@@ -88,7 +93,7 @@ Shared hosting is the most common deployment method. Hosts like Hostinger, Namec
         1. Log in to the Plesk control panel.
         2. Select **Files** in the sidebar navigation.
         3. Go into the website root directory (usually `httpdocs`).
-        4. Click the **+** button, select **Upload File**, and select the `.zip` file.
+        4. Click the **\+** button, select **Upload File**, and select the `.zip` file.
       </Tab>
       <Tab title="DirectAdmin Manager">
         1. Access the DirectAdmin console.
@@ -103,7 +108,6 @@ Shared hosting is the most common deployment method. Hosts like Hostinger, Namec
       </Tab>
     </Tabs>
   </Step>
-
   <Step title="Extract the Archive">
     Unpack the uploaded file on the server. Ensure files are extracted directly into the domain's root folder.
 
@@ -125,10 +129,8 @@ Shared hosting is the most common deployment method. Hosts like Hostinger, Namec
       </Tab>
     </Tabs>
 
-    > [!WARNING]
-    > Verify the extraction did not create a double-nested folder layout like `public_html/ownpay-vX.Y.Z/`. If it did, enter that directory, select all contents, move them up one level directly into `public_html/`, and delete the empty folder.
+    > \[!WARNING\] Verify the extraction did not create a double-nested folder layout like `public_html/ownpay-vX.Y.Z/`. If it did, enter that directory, select all contents, move them up one level directly into `public_html/`, and delete the empty folder.
   </Step>
-
   <Step title="Create a MySQL Database">
     Create an empty database and database user. Record the credentials.
 
@@ -152,14 +154,13 @@ Shared hosting is the most common deployment method. Hosts like Hostinger, Namec
       </Tab>
     </Tabs>
 
-    > [!TIP]
-    > Write down your credentials. The installer wizard will prompt you for:
+    > \[!TIP\] Write down your credentials. The installer wizard will prompt you for:
+    >
     > - **Database Name**
     > - **Database User**
     > - **Database Password**
     > - **Database Host** (typically `localhost` or `127.0.0.1`)
   </Step>
-
   <Step title="Select PHP 8.3">
     Make sure your domain is configured to use PHP version 8.3.
 
@@ -181,17 +182,19 @@ Shared hosting is the most common deployment method. Hosts like Hostinger, Namec
       </Tab>
     </Tabs>
   </Step>
-
   <Step title="Launch the Web Installer">
     Open your web browser and visit:
+
     ```text
     https://yourdomain.com/install
     ```
+
     The setup wizard will guide you through the remaining steps:
-    * **Environment Verification:** Checks folder permissions (`storage/` and `public/assets/uploads/` must be writable) and PHP extensions.
-    * **Database Configuration:** Provide the database credentials from Step 4.
-    * **System Initialization:** Automatically runs database migrations, creates the ledger, and sets up settings tables.
-    * **Administrator Onboarding:** Register your master administrator credentials and first brand name.
+
+    - **Environment Verification:** Checks folder permissions (`storage/` and `public/assets/uploads/` must be writable) and PHP extensions.
+    - **Database Configuration:** Provide the database credentials from Step 4.
+    - **System Initialization:** Automatically runs database migrations, creates the ledger, and sets up settings tables.
+    - **Administrator Onboarding:** Register your master administrator credentials and first brand name.
   </Step>
 </Steps>
 
@@ -204,68 +207,70 @@ For dedicated cloud servers (Ubuntu or Debian), you can perform a custom command
 <Steps>
   <Step title="Install System Dependencies">
     Update packages and install Nginx, MySQL, PHP 8.3 with required extensions, Composer, and Node.js.
+
     ```bash
     sudo apt update && sudo apt upgrade -y
     sudo apt install -y php8.3 php8.3-fpm php8.3-mysql php8.3-mbstring php8.3-xml php8.3-curl php8.3-zip php8.3-gd php8.3-bcmath php8.3-intl mysql-server nginx composer nodejs npm
     ```
   </Step>
-
   <Step title="Clone the Codebase">
     Clone the repository directly into your web server's directory.
+
     ```bash
     cd /var/www
     sudo git clone {{github}}.git ownpay
     cd ownpay
     ```
   </Step>
-
   <Step title="Install Library Dependencies">
     Run composer and npm installs to pull library dependencies and compile UI assets.
+
     ```bash
     composer install --no-dev --optimize-autoloader
     npm install && npm run build
     ```
   </Step>
-
   <Step title="Initialize Environment Configuration">
     Copy the sample environment template and generate your app secret key.
+
     ```bash
     cp .env.example .env
     php bin/key:generate
     ```
+
     Open `.env` using your editor (e.g., `nano .env`) to input your database credentials, system URL, and email transport configs.
   </Step>
-
   <Step title="Set Folder Permissions">
     Grant Nginx access to modify files within the storage and assets directories.
+
     ```bash
     sudo chmod -R 755 storage
     sudo chmod -R 755 public/assets/uploads
     sudo chown -R www-data:www-data storage public/assets/uploads
     ```
   </Step>
-
   <Step title="Build Database Schema">
     Initialize the database structures and seed mandatory platform roles, base currencies, and records.
+
     ```bash
     php bin/migrate
     php bin/seed
     ```
   </Step>
-
   <Step title="Configure Nginx Virtual Host">
     Create a server block config pointing to `/var/www/ownpay/public`.
+
     ```nginx
     server {
         listen 80;
         server_name yourdomain.com;
         root /var/www/ownpay/public;
         index index.php;
-
+    
         location / {
             try_files $uri $uri/ /index.php?$query_string;
         }
-
+    
         location ~ \.php$ {
             fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
             fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
@@ -274,7 +279,6 @@ For dedicated cloud servers (Ubuntu or Debian), you can perform a custom command
     }
     ```
   </Step>
-
   <Step title="Complete Administrative Setup">
     Navigate to `https://yourdomain.com/install` in your browser to run the web onboarding and create your administrative account.
   </Step>
@@ -293,30 +297,30 @@ Deploy OwnPay using Docker Compose.
     cd OwnPay
     ```
   </Step>
-
   <Step title="Prepare Environment">
     Create your environment config file:
+
     ```bash
     cp .env.example .env
     ```
+
     Open `.env` and fill in custom database variables, secret keys, and passwords.
   </Step>
-
   <Step title="Start Containers">
     Launch the containers in detached (background) mode.
+
     ```bash
     docker-compose up -d
     ```
   </Step>
-
   <Step title="Bootstrap Database Schema">
     Build database tables and seed required setup records.
+
     ```bash
     docker-compose exec app php bin/migrate
     docker-compose exec app php bin/seed
     ```
   </Step>
-
   <Step title="Run Setup Wizard">
     Access `http://localhost:8080/install` in your browser to configure your dashboard.
   </Step>
@@ -328,7 +332,7 @@ Deploy OwnPay using Docker Compose.
 
 Once your installation completes, perform these two configuration steps to ensure platform reliability:
 
-1. **SMTP Configuration:** Go to **System > Settings > Mail Settings** and configure your email gateway so invoice notifications, receipts, and OTP messages dispatch successfully.
+1. **SMTP Configuration:** Go to **System \> Settings \> Mail Settings** and configure your email gateway so invoice notifications, receipts, and OTP messages dispatch successfully.
 2. **Setup System Cron:** Map a cron job to trigger every minute targeting the command scheduler:
    ```bash
    * * * * * cd /path-to-ownpay && php bin/schedule:run >> /dev/null 2>&1
@@ -342,28 +346,32 @@ Once your installation completes, perform these two configuration steps to ensur
 <AccordionGroup>
   <Accordion title="500 Internal Server Error" icon="triangle-exclamation">
     A 500 error typically indicates a script runtime crash.
-    * **Fix:** Check `APP_DEBUG=true` in `.env` to output error messages directly to the browser.
-    * **Check Logs:** Review file entries under `storage/logs/` on your server for stack traces.
-    * **File Permissions:** Ensure Nginx or Apache has permission to read and write to `storage/` and `public/assets/uploads/`.
+
+    - **Fix:** Check `APP_DEBUG=true` in `.env` to output error messages directly to the browser.
+    - **Check Logs:** Review file entries under `storage/logs/` on your server for stack traces.
+    - **File Permissions:** Ensure Nginx or Apache has permission to read and write to `storage/` and `public/assets/uploads/`.
   </Accordion>
 
   <Accordion title="Blank Page / White Screen" icon="window-restore">
     A completely blank page with no HTTP response details typically indicates a fatal compilation or startup error before the logger boots.
-    * **Fix:** Verify all mandatory PHP extensions are active by executing `php -m` in terminal or checking the PHP Info page in cPanel.
-    * **Memory Limit:** Confirm your PHP runtime has at least `512M` memory allocated (`memory_limit` directive in `php.ini`).
+
+    - **Fix:** Verify all mandatory PHP extensions are active by executing `php -m` in terminal or checking the PHP Info page in cPanel.
+    - **Memory Limit:** Confirm your PHP runtime has at least `512M` memory allocated (`memory_limit` directive in `php.ini`).
   </Accordion>
 
   <Accordion title="Database Connection Failed" icon="database">
     This error indicates OwnPay cannot establish a link to the MySQL instance.
-    * **Fix:** Double-check host parameters inside `.env`. If database and application are on the same machine, use `127.0.0.1` instead of `localhost`.
-    * **User Rights:** Verify the user has been granted `ALL PRIVILEGES` on the database schema.
-    * **Port Check:** Check that MySQL is active and listening on port `3306`.
+
+    - **Fix:** Double-check host parameters inside `.env`. If database and application are on the same machine, use `127.0.0.1` instead of `localhost`.
+    - **User Rights:** Verify the user has been granted `ALL PRIVILEGES` on the database schema.
+    - **Port Check:** Check that MySQL is active and listening on port `3306`.
   </Accordion>
 
   <Accordion title="Permission Denied / Writable Errors" icon="lock">
     Folder permission issues block OwnPay from writing log tracks or storing session cache files.
-    * **Fix:** On shared hosting, use File Manager to change permissions of the `storage/` directory and its children to `755` or `775`.
-    * **Server Owner:** On a VPS, ensure directories are owned by the web worker user: `sudo chown -R www-data:www-data storage/`.
+
+    - **Fix:** On shared hosting, use File Manager to change permissions of the `storage/` directory and its children to `755` or `775`.
+    - **Server Owner:** On a VPS, ensure directories are owned by the web worker user: `sudo chown -R www-data:www-data storage/`.
   </Accordion>
 </AccordionGroup>
 
@@ -373,12 +381,15 @@ Once your installation completes, perform these two configuration steps to ensur
   <Card title="Quickstart guide" icon="rocket" href="/quickstart">
     Follow the 5-minute quickstart to configure your first gateway and accept a test payment.
   </Card>
+
   <Card title="Create a brand" icon="store" href="/user-guide/people/brands">
     Set up your first brand with a custom domain, logo, and payment gateways.
   </Card>
+
   <Card title="Developer integration" icon="code" href="/developer/quickstart">
     Integrate OwnPay into your application using the REST API or SDKs.
   </Card>
+
   <Card title="Production hardening" icon="shield" href="/advanced-topics/security-compliance">
     Secure your deployment with SSL, Redis caching, and firewall rules.
   </Card>
