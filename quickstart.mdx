@@ -4,25 +4,28 @@ description: "Get your self-hosted payment gateway running in 5 minutes. Install
 keywords: "quickstart, payment gateway setup, install OwnPay, first payment, self-hosted payments, payment gateway tutorial"
 sidebarTitle: "Quickstart"
 ---
-<Snippet file="llms-directive.mdx" />
+
+import LlmsDirective from "/snippets/llms-directive.mdx";
+
+<LlmsDirective />
 
 Get your self-hosted payment gateway running in 5 minutes. This guide covers the fastest path from zero to processing payments with OwnPay.
 
 <Info>
-This guide assumes basic familiarity with web hosting. Developers looking to integrate the API should see the [Developer Quickstart](/developer/quickstart).
+  This guide assumes basic familiarity with web hosting. Developers looking to integrate the API should see the [Developer Quickstart](/developer/quickstart).
 </Info>
 
 ## Prerequisites
 
 Before you begin, make sure you have:
 
-- **PHP 8.3+** with required extensions
-- **MySQL 5.7+** or MariaDB 10.3+
+- **PHP 8.3\+** with required extensions
+- **MySQL 5.7\+** or MariaDB 10.3\+
 - **Web server** (Apache or Nginx)
 - **SSL certificate** (required for production)
 
 <Tip>
-Don't have a server? Skip to [Shared Hosting](#shared-hosting) for cPanel/DirectAdmin installation, or [VPS](#vps-cloud-server) for Ubuntu/Debian.
+  Don't have a server? Skip to [Shared Hosting](#shared-hosting) for cPanel/DirectAdmin installation, or [VPS](#vps-cloud-server) for Ubuntu/Debian.
 </Tip>
 
 ## Installation
@@ -35,37 +38,33 @@ Don't have a server? Skip to [Shared Hosting](#shared-hosting) for cPanel/Direct
       <Step title="Download OwnPay">
         Go to the [GitHub Releases page](https://github.com/own-pay/OwnPay/releases/) and download the latest `.zip` file.
       </Step>
-
       <Step title="Upload to hosting">
         Upload the `.zip` file to your web root (`public_html/`) using File Manager or FTP.
       </Step>
-
       <Step title="Extract and set PHP">
         Extract the ZIP file. Set PHP version to **8.3** in your hosting control panel.
       </Step>
-
       <Step title="Create MySQL database">
         Create a new database and user with **All Privileges**. Note the database name, username, and password.
       </Step>
-
       <Step title="Run the installer">
         Visit `https://yourdomain.com/install` and follow the 4-step wizard:
+
         - Requirements check
         - Database configuration
         - Admin account creation
         - Application settings
       </Step>
-
       <Step title="Set up cron job">
         Add a cron job to run every minute:
+
         ```bash
         * * * * * php /home/your_username/public_html/public/index.php cron
         ```
       </Step>
     </Steps>
   </Tab>
-
-  <Tab title="VPS / Cloud Server" id="vps-cloud-server" icon="server">
+  <Tab title="VPS / Cloud Server" icon="server" id="vps-cloud-server">
     For production use. Gives you full control, Redis caching support, and server-level configuration.
 
     <Steps>
@@ -74,7 +73,6 @@ Don't have a server? Skip to [Shared Hosting](#shared-hosting) for cPanel/Direct
         ssh root@YOUR_SERVER_IP
         ```
       </Step>
-
       <Step title="Update and install software">
         ```bash
         sudo apt update && sudo apt upgrade -y
@@ -84,12 +82,12 @@ Don't have a server? Skip to [Shared Hosting](#shared-hosting) for cPanel/Direct
           php8.3-intl unzip curl
         ```
       </Step>
-
       <Step title="Set up MySQL database">
         ```bash
         sudo mysql_secure_installation
         sudo mysql -u root -p
         ```
+
         ```sql
         CREATE DATABASE ownpay CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
         CREATE USER 'ownpay'@'localhost' IDENTIFIED BY 'STRONG_PASSWORD';
@@ -97,7 +95,6 @@ Don't have a server? Skip to [Shared Hosting](#shared-hosting) for cPanel/Direct
         FLUSH PRIVILEGES;
         ```
       </Step>
-
       <Step title="Download and configure OwnPay">
         ```bash
         cd /var/www
@@ -107,34 +104,33 @@ Don't have a server? Skip to [Shared Hosting](#shared-hosting) for cPanel/Direct
         sudo chmod -R 775 /var/www/ownpay/storage
         ```
       </Step>
-
       <Step title="Configure Nginx">
         Create `/etc/nginx/sites-available/ownpay` with the PHP-FPM configuration, then:
+
         ```bash
         sudo ln -s /etc/nginx/sites-available/ownpay /etc/nginx/sites-enabled/
         sudo nginx -t && sudo systemctl reload nginx
         ```
       </Step>
-
       <Step title="Install SSL">
         ```bash
         sudo apt install -y certbot python3-certbot-nginx
         sudo certbot --nginx -d yourdomain.com
         ```
       </Step>
-
       <Step title="Run installer and set up cron">
         Visit `https://yourdomain.com/install` to complete setup, then add the cron job:
+
         ```bash
         sudo crontab -u www-data -e
         ```
+
         ```bash
         * * * * * /usr/bin/php /var/www/ownpay/public/index.php cron >> /var/log/ownpay-cron.log 2>&1
         ```
       </Step>
     </Steps>
   </Tab>
-
   <Tab title="Docker" icon="box">
     Run OwnPay in containers for deployment and scaling.
 
@@ -145,20 +141,17 @@ Don't have a server? Skip to [Shared Hosting](#shared-hosting) for cPanel/Direct
         cd ownpay
         ```
       </Step>
-
       <Step title="Configure environment">
         ```bash
         cp .env.example .env
         # Edit .env with your database credentials
         ```
       </Step>
-
       <Step title="Start containers">
         ```bash
         docker-compose up -d
         ```
       </Step>
-
       <Step title="Run migrations">
         ```bash
         docker-compose exec app php public/index.php migrate
@@ -173,28 +166,26 @@ Don't have a server? Skip to [Shared Hosting](#shared-hosting) for cPanel/Direct
 Navigate to `https://yourdomain.com/login` and log in with the admin credentials you created during installation.
 
 <Warning>
-Change your default password immediately after first login. Enable Two-Factor Authentication under your profile for security.
+  Change your default password immediately after first login. Enable Two-Factor Authentication under your profile for security.
 </Warning>
 
 ## Create your first brand
 
 <Steps>
   <Step title="Navigate to Brands">
-    Go to **People > Brands** in the admin sidebar.
+    Go to **People \> Brands** in the admin sidebar.
   </Step>
-
   <Step title="Create a brand">
     Click **Add Brand** and fill in:
+
     - Brand name and slug
     - Default currency
     - Timezone
     - Contact email
   </Step>
-
   <Step title="Configure a gateway">
     Go to **Gateways** and activate a payment gateway. Enter your provider's API credentials.
   </Step>
-
   <Step title="Test a payment">
     Create a payment link and complete a test transaction to verify everything works.
   </Step>
@@ -208,6 +199,7 @@ Change your default password immediately after first login. Enable Two-Factor Au
   <Card title="Multi-brand setup" icon="store" href="/concepts/brands">
     Configure multiple brands with isolated data and custom domains.
   </Card>
+
   <Card title="Production deployment" icon="server" href="/resources/local-setup">
     Optimize OwnPay for production with Redis, SSL, and monitoring.
   </Card>
@@ -219,11 +211,12 @@ Change your default password immediately after first login. Enable Two-Factor Au
   <Card title="API integration" icon="code" href="/developer/quickstart">
     Integrate OwnPay with your applications via REST API.
   </Card>
+
   <Card title="Gateway plugins" icon="plug" href="/developer/plugin-types/gateway-development">
     Build custom payment gateway plugins.
   </Card>
 </CardGroup>
 
 <Tip>
-Need help? Check our [Troubleshooting guide](/advanced-topics/troubleshooting) or open an issue on [GitHub](https://github.com/own-pay/OwnPay/issues).
+  Need help? Check our [Troubleshooting guide](/advanced-topics/troubleshooting) or open an issue on [GitHub](https://github.com/own-pay/OwnPay/issues).
 </Tip>
