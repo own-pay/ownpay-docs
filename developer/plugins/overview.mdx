@@ -1,124 +1,125 @@
 ---
-title: "Plugin System: Build Gateway, Theme, and Addon Plugins"
-description: "Overview of OwnPay's plugin architecture, plugin types (gateway, theme, addon), packaging, installation, and how to build custom plugins."
-keywords: "plugin system, plugin architecture, gateway plugins, theme plugins, addon plugins, custom plugins"
+title: "Plugin System"
+description: "Overview of OwnPay's plugin architecture covering four plugin types, the sandbox, capabilities, and the hook system for extending core behavior."
+keywords: "plugin system, plugin architecture, gateway plugins, addon plugins, theme plugins, integration plugins, plugin sandbox"
 sidebarTitle: "Overview"
 ---
 
-Plugins extend OwnPay functionality without modifying core code. Instead of forking OwnPay, write a plugin to add payment gateways, create custom features, design custom themes, or integrate external services.
+Plugins extend OwnPay without modifying core code. Write a plugin to add payment gateways, build custom features, redesign the checkout, or integrate with external platforms.
 
-## Plugin types
+## Four plugin types
 
-### 1. Gateway plugins
+<Columns>
+<Column>
 
-Add new payment methods (Stripe, PayPal, bKash, bank transfer, crypto). Provides payment processing, settlement management, webhook handling, and refund logic.
+### Gateway plugins
 
-### 2. Addon plugins
+Add new payment methods: Stripe, PayPal, bKash, bank transfer, crypto. Implement the `GatewayInterface` to handle payment processing, verification, refunds, and webhooks.
 
-Add features like advanced reporting, subscription management, inventory sync, CRM integration, or email customization. Provides admin pages, API endpoints, scheduled jobs, and UI components.
+[Build a gateway](/developer/plugin-types/gateway)
 
-### 3. Theme plugins
+</Column>
+<Column>
 
-Customize the checkout experience with custom templates, CSS, JavaScript, and branding. Provides Twig templates, stylesheets, and asset management.
+### Addon plugins
 
-## Plugin lifecycle
+Extend functionality without payment processing: reporting dashboards, subscription management, CRM sync, email customization, scheduled jobs.
 
-```text
-1. Discovery
-   v Plugin loader scans plugins/ directory
-   
-2. Registration
-   v Plugin class loaded and registered
-   
-3. Configuration
-   v Config files read and validated
-   
-4. Activation
-   v Plugin hooks registered
-   
-5. Runtime
-   v Plugin executes and responds to events
-   
-6. Deactivation
-   v Plugin hooks unregistered
-```
+[Build an addon](/developer/plugin-types/addon)
 
-## Plugin structure
+</Column>
+<Column>
 
-```text
-plugins/
-+-- gateway-stripe/
-    +-- config.json          # Plugin metadata
-    +-- composer.json        # PHP dependencies
-    +-- src/
-    |   +-- StripeGateway.php
-    |   +-- Hooks.php
-    |   +-- Events.php
-    +-- resources/
-    |   +-- views/
-    |       +-- settings.twig
-    +-- migrations/
-    |   +-- create_stripe_table.php
-    +-- README.md
-```
+### Theme plugins
 
-## Hooks system
+Customize the checkout experience: Twig templates, CSS, JavaScript, branding overrides.
 
-**Pre-execution hooks** (modify behavior):
+[Build a theme](/developer/plugin-types/theme)
+
+</Column>
+<Column>
+
+### Integration plugins
+
+Connect external platforms: QuickBooks sync, HubSpot push, Slack notifications, ERP integration.
+
+[Build an integration](/developer/plugin-types/integration)
+
+</Column>
+</Columns>
+
+## Plugin sandbox
+
+Every plugin runs inside a sandbox that enforces security constraints:
+
+- No direct filesystem access outside the plugin directory
+- No `eval()`, `exec()`, or `system()` calls
+- Database queries through the provided query builder only
+- Outbound HTTP via the plugin HTTP client with configurable allow-lists
+
+<Info>
+The sandbox is enforced at the PHP level. A plugin that attempts a restricted operation receives a `PluginSandboxException`.
+</Info>
+
+## Capabilities
+
+Plugins declare capabilities in their `manifest.json`. Capabilities are permission gates that determine what system resources a plugin can access:
+
+| Capability | What it enables |
+---|---|
+| `payment_process` | Process payments and refunds |
+| `webhook_receive` | Register webhook endpoints |
+| `admin_page` | Add pages to the admin panel |
+| `api_routes` | Register custom API endpoints |
+| `database` | Create and run migrations |
+| `assets` | Serve CSS and JavaScript files |
+
+See the full [Capabilities](/developer/plugins/capabilities) reference.
+
+## Hook system
+
+Plugins interact with OwnPay core through a WordPress-style action and filter hook system powered by `EventManager`:
+
+- **Actions** — fire-and-forget callbacks (react to events)
+- **Filters** — pipeline callbacks that transform data
 
 ```php
-$amount = Hook::apply('payment.amount', $amount, $payment);
+// React to a payment completion (action)
+$events->addAction('payment.transaction.completed', function (array $txn): void {
+    sendNotification($txn);
+});
+
+// Add a surcharge (filter)
+$events->addFilter('payment.fee.calculate', function (string $fee, array $ctx): string {
+    return bcadd($fee, '1.00', 2);
+});
 ```
 
-**Post-execution hooks** (react to events):
+See the full [Hooks](/developer/plugins/hooks) catalog with 60+ hook points.
 
-```php
-Hook::do('payment.completed', $payment);
-```
+## Documentation tree
 
-Over 60 hooks available across OwnPay.
+<Tree>
+- [Plugin System Overview](/developer/plugins/overview) (this page)
+- [Directory Structure](/developer/plugins/directory-structure)
+- [Manifest Reference](/developer/plugins/manifest)
+- [Hooks Reference](/developer/plugins/hooks)
+- [Events Reference](/developer/plugins/events)
+- [Capabilities Reference](/developer/plugins/capabilities)
+- [Plugin Lifecycle](/developer/plugins/lifecycle)
+- Gateway Development
+  - [Gateway Plugin](/developer/plugin-types/gateway)
+- Addon Development
+  - [Addon Plugin](/developer/plugin-types/addon)
+- Theme Development
+  - [Theme Plugin](/developer/plugin-types/theme)
+- Integration Development
+  - [Integration Plugin](/developer/plugin-types/integration)
+</Tree>
 
-## Plugin API
+## Related pages
 
-```php
-// Access services
-$paymentService = Plugin::service('payment');
-$config = Plugin::config('stripe');
-Plugin::log('Something happened', 'info');
-$user = Plugin::user();
-
-// Access database
-$payments = Database::query("SELECT * FROM payments");
-
-// Register routes
-Route::post('my-plugin/action', 'MyController@action');
-
-// Add admin pages
-Menu::add('Dashboard', 'my-plugin', '/admin/my-plugin');
-```
-
-## Managing plugins
-
-### Via admin panel
-
-Go to **System > Plugins** to view, enable, or disable plugins.
-
-### Via CLI
-
-```bash
-php public/index.php plugin:list
-php public/index.php plugin:enable my-plugin
-php public/index.php plugin:disable my-plugin
-php public/index.php plugin:test my-plugin
-```
-
-## Best practices
-
-- Follow OwnPay coding standards
-- Include tests and documentation
-- Validate all input and escape output
-- Use parameterized queries
-- Respect the permission system
-- Store secrets in config, never hardcoded
-- Log important events
-- Queue heavy tasks
+- [Directory structure](/developer/plugins/directory-structure)
+- [Manifest reference](/developer/plugins/manifest)
+- [Hooks reference](/developer/plugins/hooks)
+- [Plugin lifecycle](/developer/plugins/lifecycle)

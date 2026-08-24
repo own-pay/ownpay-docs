@@ -1,0 +1,121 @@
+---
+title: "Plugin Lifecycle"
+description: "Stages of the OwnPay plugin lifecycle from upload through activation to uninstall, with a Mermaid state diagram and brand-level scoping."
+keywords: "plugin lifecycle, plugin activation, plugin deactivation, plugin uninstall, plugin stages, plugin upload"
+sidebarTitle: "Lifecycle"
+---
+
+A plugin moves through distinct stages from the moment you upload it to the moment you remove it. Understanding this lifecycle helps you place code in the right place.
+
+## State diagram
+
+<Mermaid
+chart={`
+stateDiagram-v2
+    [*] --> Uploaded: Upload ZIP
+    Uploaded --> Installed: Manifest valid, migrations run
+    Installed --> Activated: Activate for brand
+    Activated --> Running: boot() called, hooks registered
+    Running --> Deactivated: Deactivate
+    Deactivated --> Activated: Reactivate
+    Deactivated --> Uninstalled: Uninstall
+    Uninstalled --> [*]
+`}
+/>
+
+## Stage details
+
+### Upload
+
+You upload a ZIP file through the admin panel at **System → Plugins → Upload**. The `PluginSandbox` scans the archive:
+
+- Checks for a valid `manifest.json`
+- Validates the plugin type and slug format
+- Scans PHP files for blocked functions (`eval`, `exec`, etc.)
+- Rejects the upload if any check fails
+
+### Install
+
+If the upload passes validation:
+
+1. The ZIP is extracted to `plugins/{slug}/`
+2. `manifest.json` is parsed and stored in the `op_plugins` database table
+3. Database migrations in `migrations/` run in order inside a transaction
+4. The plugin enters the `installed` state
+
+<Note>
+Install is platform-level — it happens once regardless of how many brands you have.
+</Note>
+
+### Activate
+
+Activation is **per-brand**. When you activate a plugin for a brand:
+
+1. The plugin class is instantiated
+2. `register()` is called — hooks and filters are registered
+3. `boot()` is called — the plugin can access services and the container
+4. Routes from `routes/api.php` and `routes/web.php` are loaded
+5. The plugin enters the `running` state for that brand
+
+```php
+public function register(EventManager $events, Container $container): void
+{
+ // Called once per brand activation
+ $events->addAction('payment.transaction.completed', $this->onPayment(...));
+}
+
+public function boot(): void
+{
+ // Called after register, all services are available
+ $this->service = $this->container->get(MyService::class);
+}
+```
+
+### Deactivate
+
+Deactivation is also per-brand:
+
+- All hooks registered by this plugin for the brand are removed (`removeByOwner`)
+- Routes are unloaded
+- **Data is preserved** — database tables, settings, and files remain
+
+### Uninstall
+
+Uninstall is **irreversible** and platform-level:
+
+1. All migrations are reversed (`down()` methods) inside a transaction
+2. The `op_plugins` row is deleted
+3. All plugin files are removed from disk
+4. Settings stored in the database are deleted
+
+<Warning>
+Uninstall is permanent. You cannot recover plugin data after uninstall — upload the ZIP again to start fresh.
+</Warning>
+
+### Reinstall
+
+To reinstall a plugin, upload the ZIP again. If the manifest version is higher, OwnPay runs any new migrations incrementally (it tracks which migrations have run).
+
+## Brand-level vs platform-level
+
+| Operation | Scope | Example |
+---|---|---|
+| Upload | Platform | Upload ZIP once |
+| Install | Platform | Migrations run once |
+| Activate | Per brand | Enable Stripe for Brand A but not Brand B |
+| Deactivate | Per brand | Disable without removing |
+| Uninstall | Platform | Remove all traces |
+
+## Update flow
+
+1. Upload a new ZIP with a higher `version` in `manifest.json`
+2. OwnPay detects the version bump and runs any new migrations
+3. Existing data is preserved
+4. If the plugin is active for a brand, it is automatically re-booted
+
+## Related pages
+
+- [Directory structure](/developer/plugins/directory-structure)
+- [Manifest reference](/developer/plugins/manifest)
+- [Hooks reference](/developer/plugins/hooks)
+- [Capabilities reference](/developer/plugins/capabilities)

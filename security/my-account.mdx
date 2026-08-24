@@ -1,0 +1,60 @@
+---
+title: "My Account"
+description: "Manage your personal admin profile — change your name, email, password, preferred language, 2FA settings, and active sessions."
+keywords: "my account, profile settings, change password, admin language, active sessions, 2FA management"
+sidebarTitle: "My Account"
+---
+
+The My Account page lets you manage your personal admin profile and security settings. Click your **avatar** in the top-right corner of the dashboard and select **My Account**.
+
+## Profile information
+
+| Field | Description |
+|-------|-------------|
+| **Name** | Your display name in the admin panel and audit log |
+| **Email** | Your login email and the address used for password resets |
+| **Profile Picture** | An optional avatar displayed in the top-right corner |
+
+Changes to your name or email are logged in the [audit log](/reports/audit-log).
+
+## Change password
+
+You can change your password at any time without using the reset flow:
+
+1. Scroll to the **Security** section
+2. Enter your **current password**
+3. Enter and confirm your **new password**
+4. Click **Update Password**
+
+The new password must meet the [password requirements](/security/password-reset#password-requirements).
+
+## Preferred language
+
+Set your personal admin panel language from the **Language** dropdown. This overrides the system default for your account only. See [Languages](/system/languages) for the full language management guide.
+
+## Two-factor authentication
+
+The Security section shows your current 2FA status:
+
+- **Not enabled** — A button to start setup (see [Two-Factor Authentication](/security/two-factor))
+- **Enabled** — Displays when 2FA was activated and offers a button to manage backup codes
+
+## Active sessions
+
+View all devices currently logged into your account. Each session shows:
+
+- **Device / Browser** — User agent information
+- **IP Address** — The source IP
+- **Last Active** — Timestamp of the most recent request
+
+Click **Terminate** on any session to log out that device immediately. This is useful if you left yourself logged in on a shared or public computer.
+
+<Warning>
+Terminating your current session logs you out immediately. Make sure you have saved any work before terminating.
+</Warning>
+
+## Related Pages
+
+- [Two-Factor Authentication](/security/two-factor) — Set up and manage 2FA
+- [Password Reset](/security/password-reset) — Recovery flow if you are locked out
+- [Languages](/system/languages) — Manage system-wide language packs

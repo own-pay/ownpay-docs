@@ -1,0 +1,110 @@
+---
+title: "Debug Mode"
+description: "Learn how to enable and use OwnPay's debug mode for detailed error output, SQL query logging, and troubleshooting development issues."
+keywords: "debug mode, troubleshooting, APP_DEBUG, stack traces, SQL logging, development"
+sidebarTitle: "Debug Mode"
+---
+
+Debug mode gives you detailed error information that is invaluable during development and troubleshooting. It reveals stack traces, SQL queries, and the full middleware pipeline for every request.
+
+<Warning>
+  **Never enable debug mode in production.** It exposes sensitive information including database credentials, encryption keys, and internal file paths in error pages and logs.
+</Warning>
+
+---
+
+## Enabling debug mode
+
+Set the environment variable in your `.env` file:
+
+```ini
+APP_DEBUG=true
+```
+
+No server restart is needed - the change takes effect on the next request.
+
+---
+
+## What debug mode reveals
+
+When `APP_DEBUG=true`, OwnPay provides additional information in several areas:
+
+| Area | What you see | Production behavior |
+|:---|:---|:---|
+| Error pages | Full stack trace, file paths, line numbers, and code context | Generic "Something went wrong" page |
+| SQL queries | Every query logged with parameters and execution time | Only errors logged |
+| Middleware | The complete middleware pipeline for the current route | Not displayed |
+| Twig errors | Template name, line number, and rendered context | Generic error |
+| Exception details | Exception class, message, previous exceptions | Logged but not displayed |
+
+---
+
+## Debug logging
+
+Regardless of `APP_DEBUG`, OwnPay writes logs to `storage/logs/`. Log levels follow PSR-3:
+
+| Level | When used |
+|:---|:---|
+| `DEBUG` | Verbose information (only written when `APP_DEBUG=true`) |
+| `INFO` | General operational information (cron runs, migrations) |
+| `WARNING` | Degraded but functional (webhook retry, slow query) |
+| `ERROR` | Failure that needs attention (payment failed, queue job crashed) |
+
+<Info>
+  The `LogSanitizer` automatically strips passwords, API keys, encryption keys, and card numbers from all log output. Even in debug mode, these values appear as `[REDACTED]`.
+</Info>
+
+---
+
+## Common debugging scenarios
+
+### Payment failing silently
+
+1. Enable debug mode and attempt the payment again
+2. Check `storage/logs/` for the most recent entries
+3. Look for gateway-specific errors (timeout, auth failure, invalid response)
+4. Verify the gateway credentials are correct in **Gateways > Payment Gateways**
+
+### Webhook not arriving
+
+1. Check **Developer > Webhook Delivery Logs** for the delivery status and response code
+2. If status is `failed`, review the error message
+3. Test endpoint reachability: `curl -X POST -d '{}' https://your-endpoint.com/webhooks/ownpay`
+4. If using Cloudflare or a WAF, check that it is not blocking the request
+
+### Plugin not loading
+
+1. Check **Plugins** in the admin panel for the plugin's status
+2. If status is `scan_failed`, the sandbox rejected the code - check the error for the prohibited function
+3. If status is `inactive`, click **Activate** and check for migration errors
+4. Look at `storage/logs/` for plugin boot errors
+
+### Blank checkout page
+
+1. Enable debug mode - a Twig compilation error will now show the template name and line
+2. Check that the brand has at least one active gateway
+3. Verify the brand's theme CSS does not contain syntax errors
+4. Check the browser console for CSP violations (indicates a blocked script or style)
+
+---
+
+## Disabling debug mode
+
+When you have finished troubleshooting, disable debug mode:
+
+```ini
+APP_DEBUG=false
+```
+
+Clear the application cache to ensure no debug information lingers in compiled templates:
+
+1. Go to **Settings > Cache** in the admin panel
+2. Click **Clear All Caches**
+
+---
+
+## Related Pages
+
+- [Common Errors](/resources/common-errors) - Specific error symptoms and fixes
+- [FAQ](/resources/faq) - Answers to common questions
+- [Performance and Scaling](/resources/performance-scaling) - Resolving performance issues

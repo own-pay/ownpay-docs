@@ -1,190 +1,149 @@
 ---
-title: "PHP Integration - Guzzle API Calls and Webhook Verification"
-description: "Integrate OwnPay into PHP 8.3+ applications with Guzzle-based API calls, webhook signature verification, and Laravel-friendly examples."
-keywords: "PHP payment integration, Guzzle API, webhook verification, Laravel payments, PHP SDK"
-sidebarTitle: "PHP"
+title: "PHP SDK"
+description: "Official OwnPay PHP SDK for creating payments, verifying statuses, and handling webhooks with type-safe responses."
+keywords: "PHP SDK, OwnPay PHP, composer, payment SDK, webhook helper, PHP payment integration"
+sidebarTitle: "PHP SDK"
 ---
 
-This guide shows how to integrate OwnPay into a PHP 8.3+ application using the native HTTP client (`file_get_contents` + stream contexts) or cURL. No Composer package is required.
+The official OwnPay PHP SDK provides a typed client for the Merchant API, a webhook verification helper, and automatic error handling.
 
-## Prerequisites
+## Installation
 
-- PHP 8.3 or higher
-- `allow_url_fopen = On` in `php.ini` (for stream-based requests), **or** the `curl` extension enabled
-- An OwnPay API key from Admin > Developer Hub
-
-## Basic API client
-
-```php
-<?php
-
-declare(strict_types=1);
-
-class OwnPayClient
-{
-    private string $baseUrl;
-    private string $apiKey;
-
-    public function __construct(string $baseUrl, string $apiKey)
-    {
-        $this->baseUrl = rtrim($baseUrl, '/') . '/api/v1';
-        $this->apiKey  = $apiKey;
-    }
-
-    public function post(string $endpoint, array $body): array
-    {
-        return $this->request('POST', $endpoint, $body);
-    }
-
-    public function get(string $endpoint): array
-    {
-        return $this->request('GET', $endpoint);
-    }
-
-    private function request(string $method, string $endpoint, ?array $body = null): array
-    {
-        $url     = $this->baseUrl . '/' . ltrim($endpoint, '/');
-        $payload = $body !== null ? json_encode($body, JSON_THROW_ON_ERROR) : null;
-
-        $context = stream_context_create([
-            'http' => [
-                'method'        => $method,
-                'header'        => implode("\r\n", [
-                    'Content-Type: application/json',
-                    'Accept: application/json',
-                    'Authorization: Bearer ' . $this->apiKey,
-                ]),
-                'content'       => $payload,
-                'ignore_errors' => true,
-                'timeout'       => 15,
-            ],
-        ]);
-
-        $raw = file_get_contents($url, false, $context);
-
-        if ($raw === false) {
-            throw new RuntimeException("Request to {$url} failed");
-        }
-
-        $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
-
-        if (!($decoded['success'] ?? false)) {
-            $msg = $decoded['message'] ?? 'Unknown API error';
-            throw new RuntimeException("OwnPay API error: {$msg}");
-        }
-
-        return $decoded;
-    }
-}
+```bash
+composer require ownpay/php-sdk
 ```
 
-## Creating a payment intent
+Requires PHP 8.3+ (matching OwnPay's runtime).
+
+## Creating a payment
 
 ```php
-$client = new OwnPayClient(
-    baseUrl: 'https://pay.your-domain.com',
-    apiKey:  getenv('OWNPAY_API_KEY') ?: throw new RuntimeException('Missing OWNPAY_API_KEY'),
+use OwnPay\SDK\Client;
+
+$client = new Client(
+    apiKey:  $_ENV['OWNPAY_API_KEY'],
+    baseUrl: $_ENV['OWNPAY_BASE_URL'],
 );
 
-$response = $client->post('payment-intents', [
-    'amount'      => 1500,
-    'currency'    => 'BDT',
-    'description' => 'Order #1042',
-    'customer'    => [
-        'name'  => 'Rahim Uddin',
-        'email' => 'rahim@example.com',
-        'phone' => '+8801712345678',
-    ],
-    'metadata'    => [
-        'order_id' => '1042',
-    ],
-    'redirect_url' => 'https://your-store.com/payment/callback',
-    'cancel_url'   => 'https://your-store.com/payment/cancel',
+$payment = $client->payments()->create([
+    'amount'         => '50.00',
+    'currency'       => 'USD',
+    'customer_email' => 'customer@example.com',
+    'customer_name'  => 'Jane Doe',
+    'description'    => 'Order #1042',
+    'metadata'       => ['order_id' => '1042'],
+    'redirect_url'   => 'https://your-store.com/callback',
+    'cancel_url'     => 'https://your-store.com/cancel',
 ]);
 
-$checkoutUrl = $response['data']['checkout_url'];
-header('Location: ' . $checkoutUrl, true, 302);
+// $payment['data']['checkout_url'] — redirect customer here
+// $payment['data']['id']           — store for later verification
+header('Location: ' . $payment['data']['checkout_url']);
 exit;
 ```
 
-### Request fields
+## Verifying a payment
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `amount` | integer | Yes | Amount in minor currency units |
-| `currency` | string | Yes | ISO 4217 currency code |
-| `description` | string | No | Human-readable description |
-| `customer.name` | string | No | Customer's full name |
-| `customer.email` | string | No | Customer's email address |
-| `customer.phone` | string | No | Customer's phone number |
-| `metadata` | object | No | Arbitrary key/value pairs |
-| `redirect_url` | string | Yes | URL to redirect after successful payment |
-| `cancel_url` | string | No | URL to redirect if customer cancels |
-
-## Retrieving a payment intent
+After the customer returns from checkout, verify the payment status before fulfilling the order:
 
 ```php
-$intent = $client->get('payment-intents/' . $intentId);
-$status = $intent['data']['status'];
+$payment = $client->payments()->get('pay_abc123');
 
-if ($status === 'paid') {
-    fulfillOrder($intent['data']['metadata']['order_id']);
+if ($payment['data']['status'] === 'completed') {
+    fulfillOrder($payment['data']['metadata']['order_id']);
+} else {
+    echo 'Payment not completed. Status: ' . $payment['data']['status'];
 }
-```
-
-## Generating a payment link
-
-```php
-$response = $client->post('payment-links', [
-    'amount'      => 5000,
-    'currency'    => 'BDT',
-    'description' => 'Monthly subscription',
-    'expires_at'  => date('Y-m-d\TH:i:s\Z', strtotime('+7 days')),
-]);
-
-$link = $response['data']['url'];
-echo "Share this link: {$link}";
 ```
 
 ## Listing transactions
 
 ```php
-$response = $client->get('transactions?page=1&per_page=20&status=paid');
+$transactions = $client->transactions()->list([
+    'status'  => 'completed',
+    'page'    => 1,
+    'per_page' => 20,
+]);
 
-foreach ($response['data']['data'] as $tx) {
-    printf("%-36s  %-8s  %s %s\n", $tx['id'], $tx['status'], $tx['amount'], $tx['currency']);
+foreach ($transactions['data']['data'] as $txn) {
+    printf("%s  %s %s\n", $txn['id'], $txn['amount'], $txn['currency']);
 }
+```
+
+## Webhook handling with SDK helper
+
+The SDK includes a `Webhook` class that handles signature verification and event parsing. See [Webhooks](/api/webhooks) for the canonical verification reference.
+
+```php
+use OwnPay\SDK\Webhook;
+
+$rawBody   = file_get_contents('php://input');
+$signature = $_SERVER['HTTP_X_OWNPAY_SIGNATURE'] ?? '';
+$timestamp = (int) ($_SERVER['HTTP_X_OWNPAY_TIMESTAMP'] ?? 0);
+
+$webhook = new Webhook($_ENV['OWNPAY_WEBHOOK_SECRET']);
+
+try {
+    $event = $webhook->verify($rawBody, $signature, $timestamp);
+} catch (\OwnPay\SDK\Exceptions\InvalidSignatureException $e) {
+    http_response_code(401);
+    exit('Invalid signature');
+} catch (\OwnPay\SDK\Exceptions\StaleEventException $e) {
+    http_response_code(403);
+    exit('Timestamp too old');
+}
+
+// Route by event type
+if ($event->type === 'payment.completed') {
+    fulfillOrder($event->data['metadata']['order_id'] ?? '');
+}
+
+http_response_code(200);
 ```
 
 ## Error handling
 
+The SDK throws typed exceptions for every error category:
+
 ```php
+use OwnPay\SDK\Exceptions\{
+    AuthenticationException,
+    ValidationException,
+    NotFoundException,
+    RateLimitException,
+    OwnPayException,
+};
+
 try {
-    $response = $client->post('payment-intents', $payload);
-} catch (RuntimeException $e) {
+    $payment = $client->payments()->create($payload);
+} catch (AuthenticationException $e) {
+    // 401 — check your API key
+} catch (ValidationException $e) {
+    // 422 — $e->getFields() returns the field-level errors array
+    foreach ($e->getFields() as $fieldError) {
+        echo $fieldError['field'] . ': ' . $fieldError['message'];
+    }
+} catch (RateLimitException $e) {
+    // 429 — retry after $e->getRetryAfter() seconds
+    sleep($e->getRetryAfter());
+} catch (OwnPayException $e) {
+    // Any other OwnPay error
     error_log($e->getMessage());
-    http_response_code(502);
-    echo json_encode(['error' => 'Payment service temporarily unavailable']);
-    exit;
 }
 ```
 
 ## Environment configuration
 
-```php
-// .env (never commit this file)
-OWNPAY_BASE_URL=https://pay.your-domain.com
-OWNPAY_API_KEY=op_live_xxxxxxxxxxxxxxxxxxxxxxxx
+```env
+# .env
+OWNPAY_BASE_URL=https://your-domain.com
+OWNPAY_API_KEY=op_live_abc123...
+OWNPAY_WEBHOOK_SECRET=whsec_abc123...
 ```
 
-```php
-$client = new OwnPayClient(
-    baseUrl: $_ENV['OWNPAY_BASE_URL'],
-    apiKey:  $_ENV['OWNPAY_API_KEY'],
-);
-```
+## Related pages
 
-## Next steps
-
-- [Webhook verification](/api/webhooks) - Receive and verify payment events server-side
-- [API Reference](https://docs.ownpay.org) - Full endpoint list with schemas
+- [API overview](/api/overview)
+- [Authentication](/api/authentication)
+- [Webhooks](/api/webhooks)
+- [Laravel integration](/developer/integration/laravel)

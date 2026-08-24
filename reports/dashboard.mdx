@@ -1,0 +1,89 @@
+---
+title: "Dashboard"
+description: "View key business metrics at a glance — total revenue, transaction count, success rate, and active brands — with filterable charts and quick navigation to detailed reports."
+keywords: "dashboard, metrics, revenue, transaction count, success rate, KPI, analytics"
+sidebarTitle: "Dashboard"
+---
+
+The Dashboard is the first page you see after logging in. It provides a real-time overview of your payment operations across all brands, with filterable date ranges and visual charts.
+
+## Key metrics
+
+Four summary cards appear at the top of the page:
+
+<CardGroup>
+<Card title="Total Revenue" icon="dollar">
+
+The sum of all successfully completed payments in the selected period. Amounts use `bcmath` precision and display in each brand's configured currency.
+
+</Card>
+<Card title="Transaction Count" icon="hash">
+
+The total number of payment attempts, broken down by completed and failed.
+
+</Card>
+<Card title="Success Rate" icon="check">
+
+The percentage of payments that completed successfully versus total attempts.
+
+</Card>
+<Card title="Active Brands" icon="building">
+
+The number of brands that processed at least one transaction in the selected period.
+
+</Card>
+</CardGroup>
+
+## Date range filters
+
+Use the date picker at the top of the page to set a custom reporting window. Preset options include:
+
+- **Today**
+- **Last 7 days**
+- **Last 30 days**
+- **This month**
+- **This year**
+
+<Tip>
+All metrics and charts update instantly when you change the date range. No page reload is needed.
+</Tip>
+
+## Charts and visualizations
+
+Below the summary cards, the dashboard displays:
+
+- **Revenue over time** — A line or bar chart showing daily revenue within the selected period
+- **Gateway distribution** — A pie chart showing which gateways processed the most volume
+- **Recent transactions** — A quick-view table of the last 10 transactions with status badges
+
+## Quick links
+
+The bottom of the dashboard provides shortcut cards to commonly used sections:
+
+<CardGroup>
+<Card title="Transactions" href="/payments/transactions">
+
+View and search all payment records.
+
+</Card>
+<Card title="Audit Log" href="/reports/audit-log">
+
+Review staff actions for compliance.
+
+</Card>
+<Card title="Balance Verification" href="/reports/balance-verification">
+
+Reconcile ledger balances.
+
+</Card>
+</CardGroup>
+
+<Note>
+Dashboard data is cached in Redis for 60 seconds. If you need absolutely real-time figures, navigate to the specific report page instead.
+</Note>
+
+## Related Pages
+
+- [Audit Log](/reports/audit-log) — Detailed action-by-action audit trail
+- [Balance Verification](/reports/balance-verification) — Reconcile system and calculated balances
+- [Transactions](/payments/transactions) — Full transaction search and management

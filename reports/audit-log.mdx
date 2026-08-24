@@ -1,0 +1,57 @@
+---
+title: "Audit Log"
+description: "Review a chronological log of all staff actions for compliance, accountability, and security investigation."
+keywords: "audit log, compliance, action log, staff activity, security audit, export audit"
+sidebarTitle: "Audit Log"
+---
+
+The Audit Log records every significant action performed by staff members in the admin panel. It is your primary tool for compliance reporting, security investigations, and accountability tracking.
+
+## What is logged
+
+OwnPay logs the following action categories:
+
+- **Authentication** — Logins, logouts, failed attempts, 2FA events
+- **Financial** — Payment creations, manual refunds, ledger adjustments
+- **Configuration** — Settings changes, gateway modifications, brand updates
+- **Data** — Customer creation, invoice generation, export actions
+- **System** — Plugin installs, addon activations, system updates
+
+## Log entry fields
+
+Each audit log entry contains:
+
+| Field | Description |
+|-------|-------------|
+| **Timestamp** | Exact date and time (in your configured timezone) |
+| **User** | Staff member who performed the action |
+| **Action** | The type of action (e.g., `payment.refund.create`) |
+| **Entity** | The affected resource (e.g., transaction ID, brand ID) |
+| **Changes** | JSON diff of before and after values for update actions |
+| **IP Address** | The IP address of the requester |
+
+## Search and filter
+
+Use the search bar to find entries by **user name**, **action type**, or **entity ID**. Combine with the date range picker and action category dropdown to narrow results.
+
+<Info>
+Audit log queries use a full-text index on the changes field, so searching for specific values within change diffs is fast even with millions of entries.
+</Info>
+
+## Export
+
+Click **Export CSV** to download the currently filtered log entries. Exports include all fields and are useful for external compliance reviews or archiving.
+
+<Warning>
+Exported CSV files contain sensitive data including IP addresses and change diffs. Store exports securely and do not commit them to version control.
+</Warning>
+
+## Retention policy
+
+Audit logs are retained indefinitely by default. If your compliance requirements mandate a specific retention period, you can configure automatic pruning in **Settings > Advanced > Audit Log Retention (days)**. Set to `0` to disable automatic pruning.
+
+## Related Pages
+
+- [Dashboard](/reports/dashboard) — High-level metrics and quick links
+- [Balance Verification](/reports/balance-verification) — Reconcile your double-entry ledger
+- [Disputes](/reports/disputes) — Track chargebacks and dispute outcomes

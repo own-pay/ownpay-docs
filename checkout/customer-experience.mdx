@@ -1,0 +1,93 @@
+---
+title: "Customer Experience"
+description: "Understand what your customers see during checkout — URL structure, payment method selection, success and failure pages, branding, and mobile responsiveness."
+keywords: "checkout, customer experience, payment page, success page, failure page, white-label, mobile checkout"
+sidebarTitle: "Customer Experience"
+---
+
+The checkout experience is what your customers interact with when making a payment. It is fully white-label — your brand's logo, colors, and theme are applied, and OwnPay's name never appears to the end customer.
+
+<Info>
+For the technical flow behind the scenes, see [Payment Flow](/fundamentals/payment-flow).
+</Info>
+
+## Checkout URL structure
+
+When you create a payment link or invoice, OwnPay generates a URL on your brand's custom domain:
+
+```
+https://pay.yourbrand.com/checkout/{transaction_id}
+```
+
+The `{transaction_id}` is a unique, non-sequential identifier. Customers can bookmark this URL to return to the payment page later.
+
+## What the customer sees
+
+The checkout page presents three stages:
+
+<Columns>
+<Column>
+
+### Payment method selection
+
+The customer sees a list of available payment methods based on the currency and gateways configured for the brand. Methods are displayed as cards or buttons with gateway logos.
+
+</Column>
+<Column>
+
+### Payment form
+
+After selecting a method, the customer enters required details. For bank redirects, they are sent to the bank's page. For manual methods, they see instructions (e.g., bank account number, mobile number).
+
+</Column>
+<Column>
+
+### Result page
+
+After payment, the customer lands on a **success** or **failure** page with a clear status message, transaction reference, and any next steps.
+
+</Column>
+</Columns>
+
+## Success and failure pages
+
+<Badge color="green">Success page</Badge> — Shows the transaction ID, amount paid, and a confirmation message. You can customize the success message per brand. A "Return to merchant" button redirects the customer to a URL you specify when creating the payment.
+
+<Badge color="red">Failure page</Badge> — Shows a generic error message (configurable) and a "Try again" button that returns the customer to the payment method selection. Sensitive error details are never exposed to the customer.
+
+## Redirect behavior
+
+After the payment is completed or fails, OwnPay can automatically redirect the customer back to your website. Set the `return_url` and `cancel_url` parameters when creating the payment. Redirects use a `POST` request with the transaction details in the body.
+
+<Tip>
+Always verify payment status server-side using the [API](/api/overview) or [webhooks](/notifications/webhooks) rather than trusting redirect parameters alone.
+</Tip>
+
+## Branding on checkout
+
+The checkout page inherits branding from your brand configuration:
+
+- **Logo** — Displayed at the top of the page (see [Branding](/appearance/branding))
+- **Colors** — Primary and accent colors applied to buttons and highlights
+- **Theme** — The active theme controls layout, fonts, and spacing (see [Themes](/appearance/themes))
+- **Favicon** — Your brand's favicon in the browser tab
+
+## Mobile responsiveness
+
+The checkout page is fully responsive. On mobile devices:
+
+- Payment method cards stack vertically for easy thumb-tapping
+- The payment form uses large, touch-friendly input fields
+- Buttons are full-width to prevent mis-taps
+- No horizontal scrolling at any screen width
+
+## White-label experience
+
+OwnPay is designed to be invisible to your customers. No OwnPay branding, logos, or links appear on the checkout page. The HTML title, favicon, and all visual elements are controlled by your brand configuration.
+
+## Related Pages
+
+- [Branding](/appearance/branding) — Configure logo, colors, and favicon
+- [Themes](/appearance/themes) — Customize layout and visual design
+- [Payment Flow](/fundamentals/payment-flow) — Technical flow behind the checkout
+- [Payment Links](/payments/payment-links) — Create shareable checkout URLs

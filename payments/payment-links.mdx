@@ -1,0 +1,58 @@
+---
+title: "Create payment links"
+description: "How to create, configure, and share payment links that let customers pay you directly through a checkout URL."
+keywords: "payment links, shareable URL, checkout link, variable amount, payment link options"
+sidebarTitle: "Payment Links"
+---
+
+Payment links are shareable checkout URLs you create from the admin dashboard. Customers open the link, choose a payment method, and complete the payment — no invoice or API integration required.
+
+## Create a payment link
+
+1. Go to **Payments** → **Payment Links**.
+2. Click **+ Create Link**.
+3. Fill in the details (see options below).
+4. Click **Create Link**.
+5. Copy the shareable URL from the link list and send it to your customer.
+
+## Link options
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| **Title** | Text | Yes | Name shown to the customer at checkout (e.g. "Consultation fee") |
+| **Description** | Text area | No | Additional instructions or details displayed on the checkout page |
+| **Amount** | Number | No | Fixed price. Leave blank to let the customer enter their own amount |
+| **Currency** | Select | Yes | Billing currency (must match a gateway that supports it) |
+| **Custom fields** | JSON schema | No | Extra input fields the customer must fill out (e.g. "Order ID") |
+| **Max uses** | Number | No | Maximum number of times the link can be paid. `0` means unlimited |
+| **Expires at** | Date/time | No | Link automatically deactivates after this date |
+| **Redirect URL** | URL | No | Where to send the customer after successful payment |
+| **Webhook URL** | URL | No | Custom webhook endpoint for this link only |
+
+## Fixed vs. variable amount
+
+- **Fixed amount** — enter a value in the Amount field. The customer sees the price locked and cannot change it.
+- **Variable amount** — leave the Amount field blank. The checkout page shows an input where the customer types their own value. Use this for donations, tips, or flexible service fees.
+
+## Expiry and usage limits
+
+Set **Max uses** to `1` for single-use links (e.g. a specific invoice payment). Set an **Expires at** date to prevent stale links from being used weeks later. When a link expires or reaches its use limit, customers see a "Link expired" message.
+
+## Redirect URLs
+
+When a customer completes payment, they are redirected to the **Redirect URL** you configured. OwnPay appends `trx_id` and `status` as query parameters so you can confirm the result on your side.
+
+## Embedding payment links
+
+You can embed a payment link in an `<iframe>` on your own website. Use the checkout URL as the `src` attribute. Make sure your website allows the OwnPay domain in your Content Security Policy headers.
+
+<Warning>
+At least one payment gateway must be active for the link’s currency before you share it. Otherwise customers see an error at checkout with no available payment methods.
+</Warning>
+
+## Related Pages
+
+- [Developer quickstart](/developer/quickstart) — create payment links via the API
+- [Transactions](/payments/transactions) — view payments made through payment links
+- [Gateways](/gateways/configuration) — configure the payment methods available at checkout
+- [Checkout experience](/checkout/customer-experience) — what customers see when they open a link

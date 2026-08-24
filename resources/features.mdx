@@ -1,6 +1,7 @@
 ---
 title: "Features and Capabilities"
 description: "Complete reference of every OwnPay capability including brands, gateways, ledger, SMS verification, custom domains, plugins, RBAC, and reporting."
+keywords: "OwnPay features, payment capabilities, multi-brand, gateways, ledger, SMS verification, plugins"
 sidebarTitle: "Features"
 ---
 
@@ -8,7 +9,7 @@ Complete reference of every capability built into OwnPay. For architectural deep
 
 ---
 
-## 🏆 Flagship - Sovereign White-Label Architecture
+## \u{1F3C6} Flagship - Sovereign White-Label Architecture
 
 > **OwnPay is the first self-hosted payment platform to implement a full white-label, multi-brand, custom-domain checkout architecture on a single installation.**
 >
@@ -66,7 +67,7 @@ Here is exactly what it means:
 | Support email | Per-brand customer-facing support address on checkout pages |
 | Footer text | Custom footer text on all public-facing brand pages |
 | Theme plugins | Install visual theme plugins to replace the default checkout skin per brand |
-| Hierarchical fallback | Brand value → merchant value → system default |
+| Hierarchical fallback | Brand value \u2192 merchant value \u2192 system default |
 
 ---
 
@@ -90,7 +91,7 @@ Here is exactly what it means:
 | Feature | Description |
 |:---|:---|
 | Payment intents | Atomic payment requests with a unique token, amount, currency, expiry, and metadata |
-| Intent lifecycle | `pending → processing → completed / failed / cancelled / expired` |
+| Intent lifecycle | `pending \u2192 processing \u2192 completed / failed / cancelled / expired` |
 | Token-based checkout | Checkout URL contains only a secure token; amount and gateway details never exposed in URL |
 | Intent expiry | Cron auto-marks stale intents as expired and fires hooks |
 | Multi-currency checkout | Customer can pay in any enabled currency |
@@ -120,7 +121,7 @@ Here is exactly what it means:
 |:---|:---|
 | Partial refunds | Issue any amount up to the original transaction value |
 | Full refunds | One-click full refund routed to the original gateway |
-| Refund lifecycle | `pending → completed / failed` |
+| Refund lifecycle | `pending \u2192 completed / failed` |
 | Gateway routing | Refund sent to the same gateway that processed the original payment |
 | Refund reconciliation | `RefundReconciliationJob` cron syncs refund status from gateway APIs |
 | Audit trail | Reason, actor, and timestamps stored per refund |
@@ -135,7 +136,7 @@ Here is exactly what it means:
 | Numbered invoices | Line-item invoices (description, quantity, unit price) with auto-calculated subtotal, tax, discount, and total |
 | Customer linking | Optional customer reference on each invoice |
 | Invoice checkout | Customer pays via public URL at `/invoice/{token}` |
-| Status tracking | `draft → sent → paid / overdue / cancelled` |
+| Status tracking | `draft \u2192 sent \u2192 paid / overdue / cancelled` |
 | Due date & notes | Configurable due date, internal notes, and unique invoice number per merchant |
 
 ---
@@ -227,7 +228,7 @@ Here is exactly what it means:
 
 | Feature | Description |
 |:---|:---|
-| Dispute lifecycle | `open → under_review → won / lost → closed` |
+| Dispute lifecycle | `open \u2192 under_review \u2192 won / lost \u2192 closed` |
 | Evidence upload | Attach documents and screenshots as dispute evidence |
 | Resolution tracking | Who resolved it, when, and the outcome |
 | Transaction link | Every dispute tied to the originating transaction |
@@ -491,3 +492,10 @@ Full API schema and request/response examples: **[docs.ownpay.org](https://docs.
 ---
 
 *For contribution guidelines, see [CONTRIBUTING.md](/resources/contributing). For security reporting, see [SECURITY.md](https://github.com/own-pay/OwnPay/blob/main/SECURITY.md). For architecture details, see [ARCHITECTURE.md](/resources/architecture).*
+
+## Related Pages
+
+- [Architecture](/resources/architecture) - Developer-oriented tour of the codebase
+- [Roadmap](/resources/roadmap) - Upcoming releases and feature milestones
+- [Ecosystem](/resources/ecosystem) - SDKs, plugins, companion app, and community resources
+- [Code Examples](/resources/code-examples) - Multi-language payment integration samples

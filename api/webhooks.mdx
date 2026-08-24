@@ -1,75 +1,34 @@
 ---
-title: "Webhooks - Handle Signed Payment Event Callbacks"
-description: "Configure webhook endpoints and handle signed HTTP callbacks for payment.succeeded, refund, and dispute events with retries and signature verification."
-keywords: "webhooks, payment webhooks, HTTP callbacks, webhook signature, payment events"
+title: "Webhooks"
+description: "Canonical reference for OwnPay webhook payload format, event types, HMAC-SHA256 signature verification with code examples, replay attack prevention, and retry schedules."
+keywords: "webhooks, webhook verification, HMAC-SHA256, webhook signature, payment events, webhook retry, idempotency"
 sidebarTitle: "Webhooks"
 ---
 
-OwnPay sends HTTP POST requests to your server when payment events occur. Webhooks let you react to events in real time without polling the API.
+OwnPay sends HTTP POST requests to your server when payment events occur. This page is the canonical reference for webhook verification — every other page that mentions webhooks links here.
 
-## How webhooks work
+## Webhook payload format
 
-```text
-Customer pays -> OwnPay processes -> POST to your endpoint
-                                       |
-                               Verify signature
-                                       |
-                               Handle event
-                                       |
-                               Return 200 OK
-```
-
-OwnPay considers delivery successful when your endpoint returns **HTTP 2xx** within **10 seconds**. On failure, it retries with exponential backoff.
-
-## Configuring an endpoint
-
-1. Go to **Developers > Webhooks**
-2. Click **Add Endpoint**
-3. Enter your URL: `https://your-store.com/webhooks/ownpay`
-4. Select events to receive
-5. Copy the **Webhook Secret**
-
-<Note>
-OwnPay only sends webhooks to HTTPS endpoints. Use [ngrok](https://ngrok.com/) for local development.
-</Note>
-
-## Event types
-
-| Event | Description |
-|-------|-------------|
-| `payment.pending` | Intent created, customer hasn't paid |
-| `payment.processing` | Gateway confirmed, settlement in progress |
-| `payment.paid` | Payment fully confirmed and settled |
-| `payment.failed` | Payment attempt failed |
-| `payment.cancelled` | Payment cancelled |
-| `payment.refunded` | Full refund issued |
-| `payment.partial_refunded` | Partial refund issued |
-| `link.visited` | Payment link opened by customer |
-| `link.paid` | Payment via link completed |
-
-## Request format
-
-**Headers:**
+OwnPay sends webhooks as JSON POST requests with three custom headers:
 
 ```http
 Content-Type: application/json
-X-OwnPay-Signature: sha256=<hmac_hex>
+X-OwnPay-Signature: sha256=abc123...
 X-OwnPay-Timestamp: 1718000000
-X-OwnPay-Event: payment.paid
+X-OwnPay-Event: payment.completed
 ```
 
-**Body:**
+The request body contains the event name, a timestamp, and the event data:
 
 ```json
 {
-  "event": "payment.paid",
+  "event": "payment.completed",
   "created_at": "2024-06-15T10:30:00Z",
   "data": {
-    "id": "pi_01j0x8kz7m3wd4b9qfhec5rtg6",
-    "status": "paid",
-    "amount": 1500,
-    "currency": "BDT",
-    "description": "Order #1042",
+    "id": "pay_abc123",
+    "amount": "1500",
+    "currency": "USD",
+    "status": "completed",
     "customer": {
       "name": "Rahim Uddin",
       "email": "rahim@example.com"
@@ -81,27 +40,48 @@ X-OwnPay-Event: payment.paid
 }
 ```
 
+## Event types
+
+| Event | Description |
+|---|---|
+| `payment.completed` | Payment fully confirmed and settled |
+| `payment.failed` | Payment attempt declined or errored |
+| `payment.expired` | Customer did not pay within the timeout window |
+| `refund.issued` | Refund initiated to the customer |
+| `refund.completed` | Refund settled at the gateway |
+| `refund.failed` | Refund was rejected by the gateway |
+| `customer.created` | A new customer record was created |
+| `webhook.test` | Test event sent from the Developer Hub |
+
 ## Signature verification
 
 <Warning>
-Always verify webhook signatures before processing any event.
+Always verify the webhook signature before processing any event. Skipping verification lets attackers forge events.
 </Warning>
 
-The signature is computed as:
+### How verification works
+
+OwnPay computes an HMAC-SHA256 hash of the raw request body using your webhook secret. The signature header contains `sha256=` followed by the hex-encoded HMAC.
 
 ```text
-HMAC-SHA256(secret, timestamp + "." + raw_request_body)
+HMAC-SHA256(webhook_secret, raw_request_body) → hex digest
 ```
 
 ### PHP verification
 
 ```php
 $signature = $_SERVER['HTTP_X_OWNPAY_SIGNATURE'] ?? '';
-$timestamp = $_SERVER['HTTP_X_OWNPAY_TIMESTAMP'] ?? '';
+$timestamp = (int) ($_SERVER['HTTP_X_OWNPAY_TIMESTAMP'] ?? 0);
 $rawBody = file_get_contents('php://input');
-
 $secret = getenv('OWNPAY_WEBHOOK_SECRET');
-$expected = 'sha256=' . hash_hmac('sha256', $timestamp . '.' . $rawBody, $secret);
+
+// Prevent replay attacks (reject events older than 5 minutes)
+if (abs(time() - $timestamp) > 300) {
+    http_response_code(403);
+    exit('Timestamp outside tolerance');
+}
+
+$expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
 
 if (!hash_equals($expected, $signature)) {
     http_response_code(401);
@@ -109,6 +89,8 @@ if (!hash_equals($expected, $signature)) {
 }
 
 $event = json_decode($rawBody, true);
+// Process $event...
+http_response_code(200);
 ```
 
 ### Node.js verification
@@ -116,61 +98,95 @@ $event = json_decode($rawBody, true);
 ```javascript
 import crypto from 'crypto';
 
-const signature = req.headers['x-ownpay-signature'];
-const timestamp = req.headers['x-ownpay-timestamp'];
-const rawBody = req.rawBody.toString();
+function verifyWebhook(req, secret) {
+  const signature = req.headers['x-ownpay-signature'];
+  const timestamp = parseInt(req.headers['x-ownpay-timestamp'], 10);
+  const rawBody = req.rawBody.toString('utf8');
 
-const secret = process.env.OWNPAY_WEBHOOK_SECRET;
-const hmac = crypto
-  .createHmac('sha256', secret)
-  .update(`${timestamp}.${rawBody}`)
-  .digest('hex');
+  // Reject timestamps older than 5 minutes
+  if (Math.abs(Date.now() / 1000 - timestamp) > 300) {
+    return false;
+  }
 
-if (!crypto.timingSafeEqual(
-  Buffer.from(`sha256=${hmac}`),
-  Buffer.from(signature)
-)) {
-  return res.status(401).send('Invalid signature');
+  const hmac = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex');
+
+  const expected = `sha256=${hmac}`;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
 ```
+
+### Python verification
+
+```python
+import hmac
+import hashlib
+import time
+import json
+
+def verify_webhook(signature: str, timestamp: int, raw_body: bytes, secret: str) -> bool:
+    # Reject timestamps older than 5 minutes
+    if abs(int(time.time()) - timestamp) > 300:
+        return False
+
+    expected = 'sha256=' + hmac.new(
+        secret.encode('utf-8'), raw_body, hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(expected, signature)
+```
+
+## Timestamp and replay attack prevention
+
+Every webhook includes the `X-OwnPay-Timestamp` header. Your receiver should:
+
+1. Compare the timestamp against your server's clock
+2. Reject any event with a timestamp more than **5 minutes** old
+3. Optionally store processed event IDs to catch duplicate deliveries within the tolerance window
 
 ## Idempotency
 
-Webhook delivery is at-least-once. Your handler may receive the same event more than once. Make all handlers idempotent:
+Webhook delivery is **at-least-once**. Your handler may receive the same event more than once. Always make handlers idempotent:
 
 ```php
-function handlePaymentPaid(array $data): void
+function handlePaymentCompleted(array $data): void
 {
-    $orderId = $data['metadata']['order_id'];
-    $order = Order::find($orderId);
-    
-    if ($order->status === 'fulfilled') {
+    $orderId = $data['metadata']['order_id'] ?? '';
+    $order = Order::where('id', $orderId)->first();
+
+    if ($order?->status === 'paid') {
         return; // Already processed
     }
-    
-    $order->fulfill();
+
+    $order?->update(['status' => 'paid']);
 }
 ```
 
+## Expected response
+
+OwnPay considers delivery successful when your endpoint returns any **HTTP 2xx** status within **10 seconds**. Anything else triggers a retry.
+
 ## Retry schedule
 
-| Attempt | Delay |
-|---------|-------|
-| 1 | 5 minutes |
-| 2 | 15 minutes |
-| 3 | 1 hour |
-| 4 | 6 hours |
-| 5 | 12 hours |
-| 6 | 24 hours |
-| 7+ | Dead-lettered |
+| Attempt | Delay after failure |
+|---|---|
+| 1 | Immediate |
+| 2 | 1 minute |
+| 3 | 5 minutes |
+| 4 | 30 minutes |
+| 5 | 2 hours |
+| 6 | 6 hours |
+| 7+ | Dead-lettered (logged, no more retries) |
 
-## Testing locally
+<Note>
+You can inspect and replay failed deliveries from **Developers → Webhooks → Delivery Log**.
+</Note>
 
-Use ngrok to expose a local port:
+## Related pages
 
-```bash
-ngrok http 8080
-# Use the ngrok URL in OwnPay webhook settings
-```
-
-You can also replay recent events from **Developers > Webhooks > Delivery Log**.
+- [API overview](/api/overview)
+- [Webhook integration tutorial](/developer/webhook-integration)
+- [Error codes](/api/errors)
+- [Developer Hub](/security/developer-hub)

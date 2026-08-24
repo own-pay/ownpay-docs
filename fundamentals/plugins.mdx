@@ -1,0 +1,113 @@
+---
+title: "Plugin System — Extensible Architecture"
+description: "OwnPay's plugin architecture supports four types — gateway, addon, theme, and integration — using a manifest-based discovery system with hooks, filters, and a capabilities model."
+keywords: "plugin system, plugin architecture, gateway plugins, theme plugins, addon plugins, integration plugins, hooks, filters, capabilities"
+sidebarTitle: "Plugins"
+icon: "puzzle"
+---
+
+import LlmsDirective from "/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay's core handles routing, the ledger, brands, and the checkout framework. Everything else — payment providers, custom themes, extra features, and third-party integrations — is delivered through **plugins**. This means you can extend OwnPay without modifying a single line of core code.
+
+## Four plugin types
+
+<CardGroup cols={2}>
+  <Card title="Gateway" icon="wallet">
+    Add a new payment provider. Each gateway plugin implements the payment adapter contract: process payments, handle callbacks, manage refunds, and declare supported currencies. Examples: Stripe, bKash, Razorpay.
+  </Card>
+  <Card title="Addon" icon="plus-circle">
+    Add features to the admin panel or checkout. Addons can register admin pages, API endpoints, scheduled jobs, and UI components. Examples: subscription management, CRM sync, advanced reporting.
+  </Card>
+  <Card title="Theme" icon="palette">
+    Customize the checkout experience. Theme plugins provide Twig templates, CSS, JavaScript, and asset files that override the default checkout appearance per brand.
+  </Card>
+  <Card title="Integration" icon="plug">
+    Connect OwnPay to external platforms. Integration plugins handle OAuth flows, data syncing, and webhook translation for WooCommerce, WHMCS, Laravel, and other frameworks.
+  </Card>
+</CardGroup>
+
+## Manifest-based discovery
+
+Every plugin lives in the `modules/` directory and declares itself through a `manifest.json` file. OwnPay's plugin loader scans this directory at boot time, reads each manifest, validates the structure, and registers the plugin with the PSR-4 autoloader.
+
+```json
+{
+  "slug": "stripe",
+  "name": "Stripe Payment Gateway",
+  "version": "1.0.0",
+  "type": "gateway",
+  "entrypoint": "src/StripeGateway.php",
+  "namespace": "OwnPay\\Gateways\\Stripe"
+}
+```
+
+<Tree>
+  modules/
+  ├── gateways/
+  │   └── stripe/
+  │       ├── manifest.json
+  │       ├── src/
+  │       │   ├── StripeGateway.php
+   │       │   └── Hooks.php
+  │       └── resources/
+  │           └── views/
+  ├── addons/
+  │   └── subscriptions/
+  │       ├── manifest.json
+  │       └── src/
+  ├── themes/
+  │   └── modern-checkout/
+  │       ├── manifest.json
+  │       └── resources/
+  └── integrations/
+      └── woocommerce/
+          ├── manifest.json
+          └── src/
+</Tree>
+
+## Hook system
+
+Plugins interact with OwnPay and with each other through two mechanisms:
+
+**Filters** modify data before an action runs:
+
+```php
+// A plugin adjusts the payment amount
+$amount = Hook::apply('payment.amount', $amount, $payment);
+```
+
+**Actions** react to events after they occur:
+
+```php
+// A plugin sends a Slack notification after payment completes
+Hook::do('payment.completed', $payment);
+```
+
+OwnPay exposes over 60 hooks across categories like `payment.*`, `customer.*`, `gateway.*`, `webhook.*`, and `system.*`.
+
+## Capabilities system
+
+Plugins declare what they need through a **capabilities** array in their manifest. OwnPay checks these capabilities before loading the plugin. This lets the system warn administrators about missing dependencies before activation.
+
+Common capabilities: `payment_processing`, `admin_ui`, `cron_jobs`, `webhook_handler`, `api_endpoints`.
+
+## Plugin sandbox
+
+OwnPay restricts plugin upload to the platform owner (master administrator). A **footgun scanner** runs on upload and blocks dangerous functions like `eval()` and direct OS command execution. Standard PHP operations — reflection, callbacks, file I/O — are permitted.
+
+<Note>
+  The security boundary is **owner-only upload**, not in-process isolation. Plugins run with full application trust, similar to the WordPress plugin model. Only install plugins from sources you trust.
+</Note>
+
+## Related pages
+
+- [Plugin overview (developer)](/developer/plugins/overview) — build and register your first plugin
+- [Hooks reference](/developer/plugins/hooks) — complete list of available filters and actions
+- [Events reference](/developer/plugins/events) — event categories and listener registration
+- [Capabilities](/developer/plugins/capabilities) — declare and check plugin capabilities
+- [Build a gateway plugin](/developer/plugin-types/gateway) — step-by-step gateway development guide

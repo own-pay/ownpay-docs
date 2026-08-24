@@ -1,0 +1,156 @@
+---
+title: "AI Tools"
+description: "Use AI agents to build OwnPay integrations and plugins. Connect the MCP server for live docs, install AI Skills, and use prompt templates for gateway, addon, theme, and integration development."
+keywords: "AI tools, MCP server, AI skills, AI agent, Claude, Cursor, AI plugin development, AI prompt templates"
+sidebarTitle: "AI Tools"
+---
+
+OwnPay is built for the AI agent era. Connect your AI assistant to live documentation, install pre-built skills, and use prompt templates to generate production-ready plugins and integrations.
+
+## Two tools, one setup
+
+<Steps>
+
+### Connect the MCP server
+
+The [MCP server](/developer/ai/mcp) gives your AI tool live access to all OwnPay documentation. Every question reads real docs — not outdated training data.
+
+### Install the OwnPay Skill
+
+The [AI Skill](/developer/ai/skills) teaches your AI the OwnPay architecture, conventions, and plugin system before you ask anything.
+
+### Ask your AI anything
+
+Build a gateway plugin. Create a checkout theme. Write an API integration. Your AI writes production-ready code.
+
+</Steps>
+
+<Tip>
+Use both MCP and Skills together for the best results. Skills teach the AI what OwnPay is. MCP lets it look up exact details on demand.
+</Tip>
+
+## AI prompt templates
+
+These collapsible prompts are pre-built instructions you can paste into Claude, ChatGPT, or Cursor to generate complete, working plugins.
+
+<Accordion title="Gateway plugin prompt">
+
+Copy and paste this into your AI assistant:
+
+```text
+You are an expert PHP developer. Build a complete OwnPay gateway plugin.
+
+Requirements:
+- Implement both OwnPay\Plugin\PluginInterface and OwnPay\Gateway\GatewayAdapterInterface
+- Include manifest.json with type "gateway" and capabilities ["gateway", "webhook_receive", "settings", "database"]
+- Implement initiate(), verify(), verifyWebhook(), refund() methods
+- Use hash_equals() for all HMAC comparisons in verifyWebhook()
+- Reject webhook timestamps older than 5 minutes
+- All monetary amounts are BCMath strings (e.g. "150.00")
+- Include fields() method returning credential configuration fields
+- Include supportedCurrencies() method
+- Follow PSR-12 coding style
+- No eval(), exec(), or shell_exec()
+
+Gateway name: [YOUR GATEWAY NAME]
+Gateway API base URL: [YOUR GATEWAY API URL]
+
+Read the OwnPay gateway plugin documentation via MCP for the exact interface signatures and return shapes.
+```
+
+</Accordion>
+
+<Accordion title="Addon plugin prompt">
+
+Copy and paste this into your AI assistant:
+
+```text
+You are an expert PHP developer. Build a complete OwnPay addon plugin.
+
+Requirements:
+- Implement OwnPay\Plugin\PluginInterface
+- Include manifest.json with type "addon" and capabilities ["addon", "hooks", "http_outbound", "settings"]
+- Register at least one action hook in the register() method using EventManager
+- Include a fields() method for admin settings
+- Access core services from the Container in the boot() method
+- All monetary amounts use BCMath strings
+- Follow PSR-12 coding style
+- No eval(), exec(), or shell_exec()
+
+Addon purpose: [DESCRIBE WHAT YOUR ADDON DOES]
+
+Read the OwnPay addon plugin documentation via MCP for the exact PluginInterface methods and hook registration patterns.
+```
+
+</Accordion>
+
+<Accordion title="Theme plugin prompt">
+
+Copy and paste this into your AI assistant:
+
+```text
+You are an expert PHP and Twig developer. Build a complete OwnPay checkout theme plugin.
+
+Requirements:
+- Implement OwnPay\Plugin\PluginInterface
+- Include manifest.json with type "theme" and capabilities ["theme", "assets"]
+- Use addFilter on checkout.template to point to your Twig templates
+- Use addAction on checkout.head to inject CSS (include CSP nonce)
+- Use addAction on checkout.footer to inject JS (include CSP nonce)
+- Provide Twig templates for checkout page and status/result page
+- Use {{ variable|e }} for escaping user data in Twig
+- Include a fields() method for theme customization settings (primary color, etc.)
+- Follow PSR-12 coding style
+
+Read the OwnPay theme plugin documentation via MCP for the exact Twig variables available and hook signatures.
+```
+
+</Accordion>
+
+<Accordion title="Integration plugin prompt">
+
+Copy and paste this into your AI assistant:
+
+```text
+You are an expert PHP developer. Build a complete OwnPay integration plugin.
+
+Requirements:
+- Implement OwnPay\Plugin\PluginInterface
+- Include manifest.json with type "integration" and capabilities ["addon", "hooks", "http_outbound", "settings"]
+- Register action hooks for payment.transaction.completed and refund.issued
+- Make outbound HTTP calls (curl) with a 5-second timeout
+- Read configuration from SettingsRepository in the Container
+- Include a fields() method for external API key/URL configuration
+- Never throw from hook callbacks — log errors instead
+- All monetary amounts are BCMath strings
+- Follow PSR-12 coding style
+
+Integration target: [e.g., Slack, HubSpot, QuickBooks]
+
+Read the OwnPay integration plugin documentation via MCP for the exact hook names and Container service access patterns.
+```
+
+</Accordion>
+
+## Supported AI tools
+
+<CardGroup cols={2}>
+<Card title="Cursor" icon="code">
+Add the MCP server in Settings → Features → MCP. Agent mode calls it automatically.
+</Card>
+<Card title="Claude Desktop & Claude Code" icon="message">
+Add to claude_desktop_config.json or run claude mcp add.
+</Card>
+<Card title="VS Code (Cline / Roo Code)" icon="brackets-curly">
+Add the MCP server URL in your extension MCP settings.
+</Card>
+<Card title="Windsurf" icon="wind">
+Add to ~/.codeium/windsurf/mcp_config.json.
+</Card>
+</CardGroup>
+
+## Related pages
+
+- [MCP server](/developer/ai/mcp)
+- [AI Skills](/developer/ai/skills)
+- [Developer quickstart](/developer/quickstart)

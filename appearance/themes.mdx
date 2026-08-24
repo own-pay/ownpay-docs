@@ -1,0 +1,65 @@
+---
+title: "Checkout themes"
+description: "How to select, customize, and manage checkout page themes including built-in themes, theme plugins, and CSS overrides in OwnPay."
+keywords: "themes, checkout theme, custom theme, CSS customization, theme plugin"
+sidebarTitle: "Themes"
+---
+
+Themes control the layout and visual style of the checkout page your customers see. Each brand can use a different theme, so you can tailor the checkout experience per storefront.
+
+## Select a theme
+
+1. Go to **Appearance** → **Themes**.
+2. Browse the list of installed themes.
+3. Find the theme you want and click **Activate**.
+4. The change takes effect immediately for all new checkout sessions.
+
+## Built-in themes
+
+OwnPay ships with a default theme that works for most use cases. It is responsive, supports light and dark modes, and renders correctly on all modern browsers.
+
+<Note>
+Always keep the default theme installed as a fallback. If a custom theme has an error, you can switch back to the default instantly.
+</Note>
+
+## Custom themes via plugins
+
+You can install additional themes through the plugin system. Custom themes are packaged as `.zip` files with a `manifest.json` and template files.
+
+1. Click **+ Install Theme**.
+2. Upload the theme `.zip` file.
+3. The theme appears in your list.
+4. Click **Activate** to use it.
+
+For details on building your own theme, see [Theme development](/developer/plugin-types/theme).
+
+## Per-brand theme assignment
+
+Themes are assigned at the brand level:
+
+1. Go to **People** → **Brands** and edit a brand.
+2. In the **Theme** section, select which theme this brand uses.
+3. Click **Save**.
+
+This lets you use a professional theme for one brand and a casual theme for another.
+
+## CSS customization
+
+If you need small visual tweaks without creating a full theme plugin, you can add custom CSS:
+
+1. Go to **People** → **Brands** and edit the brand.
+2. In the **Custom CSS** text area, enter your CSS rules.
+3. These rules are injected into the checkout page after the theme stylesheet loads.
+
+Use this for minor adjustments like changing font sizes, button border radius, or spacing. For major layout changes, create a proper theme plugin instead.
+
+<Warning>
+Do not upload theme `.zip` files from untrusted sources. Theme files can contain PHP or JavaScript that runs on your server or in your customers' browsers.
+</Warning>
+
+## Related Pages
+
+- [Branding](/appearance/branding) — logos, colors, and favicons
+- [Landing page](/appearance/landing-page) — public page configuration
+- [Theme development](/developer/plugin-types/theme) — build custom theme plugins
+- [Plugins overview](/developer/plugins/overview) — how the plugin system works

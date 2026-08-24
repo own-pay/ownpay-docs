@@ -1,0 +1,68 @@
+---
+title: "Create and manage brands"
+description: "How to create, configure, and assign gateways and staff to brands in OwnPay for multi-tenant payment operations."
+keywords: "brands, multi-tenant, brand configuration, gateway assignment, staff assignment"
+sidebarTitle: "Brands"
+---
+
+Brands are the core organizational unit in OwnPay. Each brand operates as an independent payment storefront with its own currency, gateways, checkout appearance, and staff assignments. If you are new to the brand concept, read the [explanation in /fundamentals/brands](/fundamentals/brands) first.
+
+## Create a brand
+
+1. Log in to the admin dashboard as a super admin.
+2. Go to **People** → **Brands** in the sidebar.
+3. Click **+ Add Brand**.
+4. Fill in the brand details (see the table below).
+5. Click **Create** to save.
+
+## Configure brand settings
+
+After creating a brand, click **Edit** on the brand row to adjust its configuration.
+
+| Setting | Type | Required | Description |
+|---|---|---|---|
+| **Business name** | Text | Yes | Public-facing name shown on checkout and invoices |
+| **Slug** | Text | Yes | URL-safe identifier (lowercase, hyphens only) |
+| **Default currency** | Select | Yes | Base currency for the ledger and checkout (e.g. USD, BDT, EUR) |
+| **Timezone** | Select | Yes | Timezone for reports, invoice due dates, and transaction timestamps |
+| **Contact email** | Email | No | General support email displayed to customers |
+| **Phone** | Text | No | Public contact phone number |
+| **Status** | Select | Yes | `Active` (live), `Suspended` (blocks checkout), or `Pending` |
+| **Custom domain** | Text | No | Fully qualified domain for white-label checkout (e.g. `pay.example.com`) |
+| **Logo** | File upload | No | Brand logo on checkout. Recommended: 200×60 px PNG |
+| **Primary color** | Color picker | No | Accent color for checkout buttons and links |
+| **Support email** | Email | No | Where customer support queries route from checkout |
+
+## Assign gateways to a brand
+
+1. Open the brand editor by clicking **Edit**.
+2. Navigate to the **Gateways** section.
+3. Toggle the payment gateways you want to enable for this brand.
+4. Only gateways that support the brand’s default currency will appear as options.
+5. Click **Save**.
+
+<Note>
+A gateway must be configured globally under **Gateways & Currencies** before you can assign it to a brand. Brand assignment controls which gateways appear at checkout for that brand.
+</Note>
+
+## Assign staff members
+
+1. Go to **People** → **Staff**.
+2. Click **Edit** on the staff member’s row.
+3. In the brand assignment section, select the brands this staff member can access.
+4. Choose the role level for each brand.
+5. Click **Save**.
+
+Staff members only see data for the brands they are assigned to. A staff member with no brand assignments cannot access any payment data.
+
+<Warning>
+Do not change the default currency of a brand after transactions have been processed. This causes inconsistencies in your ledger and reporting.
+</Warning>
+
+## Related Pages
+
+- [Brands concept](/fundamentals/brands) — explanation of how brands work in OwnPay
+- [Staff](/people/staff) — invite and manage team members
+- [Roles](/people/roles) — built-in roles and permission matrix
+- [Payment gateways](/gateways/configuration) — configure gateway credentials
+- [Domains](/system/domains) — verify DNS for custom brand domains

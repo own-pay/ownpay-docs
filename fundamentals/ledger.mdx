@@ -1,0 +1,108 @@
+---
+title: "Ledger — Double-Entry Bookkeeping for Payments"
+description: "OwnPay records every payment, fee, and transfer as balanced debit-credit pairs using double-entry bookkeeping with bcmath precision and brand isolation."
+keywords: "double-entry ledger, payment accounting, bookkeeping, journal entries, financial reconciliation, bcmath, T-account"
+sidebarTitle: "Ledger"
+icon: "book-open"
+---
+
+import LlmsDirective from "/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+Every time money moves in OwnPay — a customer pays, a gateway deducts fees, a refund is issued — the system records it as a pair of balanced journal entries. This is **double-entry bookkeeping**, the same method used by accounting software and banks. It means you can always trace where money came from and where it went, and the total debits always equal the total credits.
+
+## How double-entry works in OwnPay
+
+When a $100 payment completes through Stripe (with a $2.90 gateway fee), OwnPay creates four ledger entries across three accounts:
+
+<Mermaid
+  chart={`
+    graph LR
+      subgraph "Cash Account (Asset)"
+        C1[Debit $97.10]
+      end
+      subgraph "Gateway Fee Expense"
+        G1[Debit $2.90]
+      end
+      subgraph "Customer Receivable (Asset)"
+        R1[Credit $100.00]
+      end
+      R1 -->|"payment completed"| C1
+      R1 -->|"payment completed"| G1
+      style C1 fill:#e8f5e9,stroke:#2e7d32
+      style G1 fill:#fce4ec,stroke:#c62828
+      style R1 fill:#e3f2fd,stroke:#1565c0
+  `}
+/>
+
+The net effect: **$100.00 credit = $97.10 debit + $2.90 debit**. The books balance to zero.
+
+## Account types
+
+OwnPay uses standard GAAP account categories:
+
+| Account type | Examples | Debit effect | Credit effect |
+| :-- | :-- | :-- | :-- |
+| **Asset** | Cash, Customer Receivable | Increases balance | Decreases balance |
+| **Expense** | Gateway Fee Revenue, Platform Fee | Increases balance | Decreases balance |
+| **Liability** | Refund Payable | Decreases balance | Increases balance |
+| **Equity** | Retained Earnings | Decreases balance | Increases balance |
+
+## Balance calculation
+
+All monetary math uses PHP's `bcmath` extension — never floating-point arithmetic. Balances are validated at **4-decimal precision** using `bccomp()`.
+
+```php
+// Internal balance validation (simplified)
+$debits  = bcadd($entry1->debit, $entry2->debit, 4);  // "100.0000"
+$credits = bcadd($entry1->credit, $entry2->credit, 4); // "100.0000"
+
+if (bccomp($debits, $credits, 4) !== 0) {
+    throw new InvalidArgumentException('Journal entries must balance');
+}
+```
+
+<Warning>
+  Never manually update the `op_ledger_accounts.balance` column. Always use `LedgerService` — direct SQL edits will cause reconciliation mismatches.
+</Warning>
+
+## Double-post prevention
+
+OwnPay guards against recording the same payment twice. Before inserting ledger entries, the system acquires a row lock:
+
+```sql
+SELECT * FROM op_ledger_transactions
+WHERE merchant_id = ? AND reference_type = ? AND reference_id = ?
+FOR UPDATE
+```
+
+If a matching row exists, the operation is skipped. This runs inside a database transaction, so concurrent requests are serialized safely.
+
+## Brand isolation
+
+Ledger accounts are scoped to a `merchant_id` (brand). Brand A's cash balance is completely independent of Brand B's. The repository enforces this at the query level:
+
+```php
+$account = $ledgerRepo->findOrCreateAccount($name, $type, $currency, $merchantId);
+```
+
+## Reconciliation
+
+You can verify your ledger balances against gateway settlements at any time. OwnPay includes a CLI reconciliation command:
+
+```bash
+php public/index.php admin/reconcile --merchant=YOUR_MERCHANT_ID
+```
+
+This compares OwnPay's recorded transactions against the gateway's reported totals and flags any discrepancies. For the GUI-based version, see the [Balance Verification](/reports/balance-verification) page in the admin dashboard.
+
+## Related pages
+
+- [Payments — Ledger](/payments/ledger) — view ledger entries and journal details in the UI
+- [Balance verification](/reports/balance-verification) — run reconciliation audits from the dashboard
+- [Brands](/fundamentals/brands) — understand brand-level ledger isolation
+- [Transaction statuses](/fundamentals/payment-flow) — which states trigger ledger entries
+- [Common errors](/resources/common-errors) — troubleshooting reconciliation mismatches

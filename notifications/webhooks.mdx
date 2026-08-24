@@ -1,0 +1,87 @@
+---
+title: "Webhooks"
+description: "Configure outbound webhooks with HMAC-SHA256 signatures to receive real-time event notifications when payments, refunds, and other actions occur."
+keywords: "webhooks, outbound webhooks, HMAC-SHA256, event notifications, webhook signatures, dead letter queue"
+sidebarTitle: "Webhooks"
+---
+
+Webhooks let your external systems receive real-time notifications when events happen in OwnPay. Every webhook payload is signed with HMAC-SHA256 so you can verify authenticity. Webhook management lives in the [Developer Hub](/security/developer-hub).
+
+## Create a webhook endpoint
+
+<Steps>
+<Step>
+
+Open **Developer Hub** from the left sidebar, then click the **Webhooks** tab.
+
+</Step>
+<Step>
+
+Click **Add Endpoint**. Enter your HTTPS URL — for example, `https://your-app.com/api/ownpay/webhook`.
+
+</Step>
+<Step>
+
+Select the events you want to receive from the checkbox list. You can choose all events or pick specific ones.
+
+</Step>
+<Step>
+
+Click **Save**. OwnPay generates a unique **signing secret**. Copy this secret immediately — it will not be shown again.
+
+</Step>
+</Steps>
+
+<Warning>
+Webhook endpoint URLs must use HTTPS. OwnPay refuses to deliver payloads to plain HTTP addresses.
+</Warning>
+
+## Available events
+
+| Event | Triggered when |
+|-------|---------------|
+| `payment.completed` | A payment finishes successfully |
+| `payment.failed` | A payment attempt fails at the gateway |
+| `payment.expired` | A payment link or invoice expires unpaid |
+| `refund.issued` | A refund is created and processed |
+| `refund.failed` | A refund attempt fails at the gateway |
+| `customer.created` | A new customer record is added |
+| `customer.updated` | A customer's details are modified |
+| `dispute.opened` | A chargeback or dispute is received |
+| `dispute.resolved` | A dispute reaches a final outcome |
+
+## Signature verification
+
+Each webhook request includes an `X-OwnPay-Signature` header containing the HMAC-SHA256 hash of the raw payload body using your signing secret.
+
+<Tip>
+For the full verification algorithm, code examples, and library recommendations, see the [webhook API reference](/api/webhooks).
+</Tip>
+
+## Delivery and retries
+
+OwnPay tracks every delivery attempt. When an endpoint returns a non-2xx status code or times out after 10 seconds, the system retries on an escalating schedule:
+
+| Attempt | Delay |
+|---------|-------|
+| 1st retry | 1 minute |
+| 2nd retry | 5 minutes |
+| 3rd retry | 30 minutes |
+| 4th retry | 2 hours |
+| 5th retry | 6 hours |
+
+If all retries are exhausted, the event enters the **dead letter queue**. You can inspect and manually replay dead-lettered events from the Developer Hub.
+
+<Info>
+Successful deliveries (2xx response) are logged with the response status code and response body for auditing.
+</Info>
+
+## Test a webhook
+
+Click the **Test Webhook** button next to any endpoint to send a sample `payment.completed` payload. This is useful during development to verify your signature verification logic and endpoint routing before going live.
+
+## Related Pages
+
+- [Developer Hub](/security/developer-hub) — Overview of the developer tools section
+- [API Keys](/security/api-keys) — Manage credentials for API access
+- [Webhook API Reference](/api/webhooks) — Signature verification algorithm and payload schemas

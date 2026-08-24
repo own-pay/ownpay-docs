@@ -1,0 +1,69 @@
+---
+title: "Login"
+description: "Sign in to the OwnPay admin panel with your email and password. Learn about session management, rate limiting, and login troubleshooting."
+keywords: "admin login, dashboard login, staff login, session management, rate limiting, brute force protection"
+sidebarTitle: "Login"
+---
+
+The Login page is the primary security gate of the OwnPay platform. Only pre-registered staff members and the super-administrator can sign in. Brute-force protection and secure session management protect your financial data.
+
+## Access the login page
+
+Open your browser and navigate to your OwnPay domain followed by the login slug:
+
+```
+https://your-domain.com/login
+```
+
+<Note>
+The default slug is `login`, but you can customize it in [branding settings](/appearance/branding) for additional security through obscurity.
+</Note>
+
+## Login process
+
+1. Enter your registered **email address or username**
+2. Enter your **password** (case-sensitive)
+3. Optionally check **Remember me** to extend your session duration
+4. Click **Sign In**
+5. If 2FA is enabled, enter the code from your authenticator app (see [Two-Factor Authentication](/security/two-factor))
+
+## Rate limiting
+
+OwnPay enforces a login rate limit of **10 failed attempts per 5 minutes** per IP address. After exceeding this threshold:
+
+- Further login attempts from that IP are blocked for 5 minutes
+- A warning message displays the remaining cooldown time
+- The attempt is logged in the [audit log](/reports/audit-log)
+
+<Warning>
+Repeated lockouts from the same IP may indicate a brute-force attack. Review the audit log and consider blocking the IP at your server level.
+</Warning>
+
+## Session management
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Session timeout** | 2 hours | Idle time before the session expires |
+| **Remember me duration** | 30 days | Extended session when "Remember me" is checked |
+| **Concurrent sessions** | Allowed | Multiple devices can be logged in simultaneously |
+
+Sessions are stored server-side in Redis. The session cookie is `HttpOnly` and `SameSite=Strict` to prevent cross-site attacks.
+
+## Concurrent sessions
+
+By default, staff can be logged in from multiple browsers and devices simultaneously. You can view and terminate active sessions from [My Account](/security/my-account).
+
+## Login troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `Invalid credentials` | Wrong email or password | Verify your credentials. Passwords are case-sensitive |
+| `Account temporarily locked` | Too many failed attempts | Wait 5 minutes for the lockout to expire |
+| `404 Not Found` on `/login` | Custom login slug configured | Use the correct slug from your branding settings |
+| Session expires immediately | Server clock mismatch | Verify your server's NTP synchronization |
+
+## Related Pages
+
+- [Two-Factor Authentication](/security/two-factor) — Secure your account with TOTP
+- [Password Reset](/security/password-reset) — Recover access to your account
+- [My Account](/security/my-account) — Manage sessions and personal settings

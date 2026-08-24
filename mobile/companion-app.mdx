@@ -1,0 +1,77 @@
+---
+title: "Companion App"
+description: "Install and pair the Android companion app to forward incoming SMS, send heartbeats, and receive push commands from your OwnPay instance."
+keywords: "companion app, Android app, SMS forwarding, heartbeat, device pairing, mobile app"
+sidebarTitle: "Companion App"
+---
+
+The OwnPay Companion App is an Android application that bridges your Android phone with your self-hosted OwnPay instance. Its primary role is receiving SMS messages (such as bank verification codes) and forwarding them to OwnPay for automatic payment verification.
+
+<Info>
+The companion app is not available on Google Play. Download the APK directly from the [OwnPay GitHub releases]({{github}}) page.
+</Info>
+
+## What the app does
+
+- **Receives SMS** — Listens for incoming text messages on the device
+- **Forwards to OwnPay** — Sends raw SMS content to your instance via the Mobile API
+- **Sends heartbeats** — Periodic pings so OwnPay knows the device is online
+- **Receives push commands** — Accepts remote instructions from the admin panel
+
+## Install and pair
+
+<Steps>
+<Step>
+
+Download the latest `ownpay-companion-v{{version}}.apk` from the GitHub releases page and install it on your Android device. You may need to enable **Install from unknown sources** in your device settings.
+
+</Step>
+<Step>
+
+Open the app and enter your OwnPay instance URL (e.g., `https://pay.yourdomain.com`) and the **Mobile API key** generated from [Devices](/mobile/devices).
+
+</Step>
+<Step>
+
+Tap **Pair Device**. The app sends a registration request and displays a confirmation screen with the assigned device name.
+
+</Step>
+<Step>
+
+Back in the OwnPay admin panel, go to **Mobile > Devices** and confirm the device appears with an **Online** status.
+
+</Step>
+</Steps>
+
+## Permission requirements
+
+The companion app requires the following Android permissions:
+
+| Permission | Purpose |
+|------------|---------|
+| **Read SMS** (`RECEIVE_SMS`, `READ_SMS`) | Intercept incoming verification SMS for forwarding |
+| **Foreground Service** (`FOREGROUND_SERVICE`) | Maintain a persistent connection for heartbeats and push commands |
+| **Battery optimization exemption** | Prevent the OS from killing the background service |
+
+<Warning>
+Without the battery optimization exemption, Android may aggressively terminate the companion app's background service, causing missed SMS and heartbeat timeouts. Always whitelist the app in your device's battery settings.
+</Warning>
+
+## Heartbeat mechanism
+
+The app sends a heartbeat to your OwnPay instance every **60 seconds**. If OwnPay does not receive a heartbeat within **10 minutes**, the device status changes to **Offline** in the admin panel. See [Devices](/mobile/devices) for health monitoring details.
+
+## Troubleshooting pairing
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `Connection refused` error | Instance URL is incorrect or unreachable | Verify the URL includes `https://` and the server is accessible from the device's network |
+| `Invalid API key` | Wrong or expired mobile API key | Regenerate the key from the Devices page and re-enter it in the app |
+| Device shows Offline | Battery optimization killing the service | Go to Android Settings > Apps > OwnPay > Battery > Unrestricted |
+| SMS not forwarding | SMS permission not granted | Open Android Settings > Apps > OwnPay > Permissions > SMS > Allow |
+
+## Related Pages
+
+- [Devices](/mobile/devices) — Manage paired devices and monitor health
+- [SMS Templates](/mobile/sms-templates) — Configure regex patterns for SMS verification
+- [SMS Center](/notifications/sms-center) — View all incoming and outgoing SMS logs

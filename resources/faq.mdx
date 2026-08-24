@@ -1,0 +1,127 @@
+---
+title: "Frequently Asked Questions"
+description: "Answers to common questions about OwnPay covering general, technical, security, payments, and development topics."
+keywords: "FAQ, frequently asked questions, OwnPay help, self-hosted payments, open source payment gateway"
+sidebarTitle: "FAQ"
+---
+
+Common questions about OwnPay, organized by topic.
+
+---
+
+## General
+
+<AccordionGroup>
+  <Accordion title="What is OwnPay?">
+    OwnPay is a self-hosted, open-source payment orchestrator. It lets a single platform owner run multiple white-labeled payment brands (stores) from one installation, with 123+ payment gateways, a double-entry ledger, and full data isolation between brands.
+  </Accordion>
+
+  <Accordion title="Is OwnPay really free?">
+    Yes. OwnPay is released under the AGPL-3.0 license. You can download, install, and use it without paying any license fees. You only pay the transaction fees charged by your chosen payment gateways (Stripe, bKash, etc.), not to OwnPay.
+  </Accordion>
+
+  <Accordion title="What license does OwnPay use?">
+    AGPL-3.0 (GNU Affero General Public License). This means you can use, modify, and distribute OwnPay freely, but any modifications you serve over a network must also be made available under the same license. See the [Contributing Guide](/resources/contributing) for details on licensing of contributions.
+  </Accordion>
+
+  <Accordion title="How many gateways does OwnPay support?">
+    OwnPay ships with 123 built-in gateway adapters covering global card processors (Stripe, Adyen, Square), digital wallets (PayPal, Apple Pay, Google Pay), mobile financial services (bKash, Nagad, M-Pesa, GCash), buy-now-pay-later (Klarna), crypto (Coinbase Commerce), and regional platforms (Razorpay, Flutterwave, Paystack, Xendit, and many more).
+  </Accordion>
+
+  <Accordion title="Is OwnPay a SaaS platform?">
+    No. OwnPay is infrastructure you deploy and own on your own server. No third party has access to your transactions, customer data, or configuration.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Technical
+
+<AccordionGroup>
+  <Accordion title="What PHP version do I need?">
+    PHP 8.3 or higher. OwnPay uses `declare(strict_types=1)` throughout and relies on PHP 8.3 features like readonly properties and typed class constants.
+  </Accordion>
+
+  <Accordion title="What database does OwnPay use?">
+    MySQL 8.0 or MariaDB 10.4+. OwnPay uses InnoDB for all tables and relies on Stored Generated Columns for JSON field indexing.
+  </Accordion>
+
+  <Accordion title="Is Redis required?">
+    No, but it is strongly recommended. OwnPay works with file-based cache and sessions by default, but Redis provides significantly better performance for rate limiting, sessions, and the job queue. Switch to Redis when you expect more than 1,000 payments per day.
+  </Accordion>
+
+  <Accordion title="Can I run OwnPay with Docker?">
+    Yes. While there is no official Docker image yet, the community maintains Docker Compose configurations. OwnPay's single-entry-point architecture (`public/index.php`) makes it straightforward to containerize with any PHP 8.3 base image.
+  </Accordion>
+
+  <Accordion title="Does OwnPay work on shared hosting?">
+    Yes. OwnPay includes a web-based installer that requires no CLI access. The `vendor/` directory is bundled in release archives, so you do not need Composer on the server. You need PHP 8.3 support and a MySQL database.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Security
+
+<AccordionGroup>
+  <Accordion title="Is OwnPay PCI DSS compliant?">
+    OwnPay uses a gateway delegation model - credit card data is collected and processed directly by upstream gateways (Stripe, Adyen, etc.) and never touches your server. This typically places OwnPay under SAQ-A, the simplest PCI self-assessment level. Consult a QSA for your specific deployment.
+  </Accordion>
+
+  <Accordion title="How is my data encrypted?">
+    Customer PII (names, emails, phone numbers) and gateway API credentials are encrypted at rest using AES-256-GCM with a per-installation key. Webhook payloads are signed with HMAC-SHA256. All traffic uses HTTPS with HSTS enforced.
+  </Accordion>
+
+  <Accordion title="Is OwnPay GDPR compliant?">
+    OwnPay provides the technical tools for GDPR compliance: data minimization, encrypted storage, hash-based lookups, data export (CSV), and data deletion with ledger anonymization. As a self-hosted platform, you are the data controller and are responsible for your own GDPR processes and policies.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Payments
+
+<AccordionGroup>
+  <Accordion title="Which payment gateways are supported?">
+    See the full list on the [Features](/resources/features) page under "Payment Gateway System." The list includes 123 adapters across cards, wallets, MFS, crypto, and regional platforms.
+  </Accordion>
+
+  <Accordion title="Can I accept manual payments (bank transfer, cash)?">
+    Yes. OwnPay supports manual gateways where you configure custom fields (bank account number, reference number) and verify payments manually or via the SMS auto-verification system with the companion app.
+  </Accordion>
+
+  <Accordion title="How does SMS verification work?">
+    The OwnPay Android companion app forwards incoming SMS from payment providers to your server. The server parses the SMS using regex and heuristic patterns, extracts the transaction amount and ID, and automatically matches it to a pending payment intent. See the [Features](/resources/features) page for details.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Development
+
+<AccordionGroup>
+  <Accordion title="How does the plugin system work?">
+    Plugins are self-contained packages under `modules/` with a `manifest.json` that declares metadata, capabilities, and hook registrations. Three types exist: Gateway, Theme, and Addon. All plugins are scanned by a static code sandbox before loading. See the [Plugin Development Overview](/developer/plugins/overview).
+  </Accordion>
+
+  <Accordion title="What are the API rate limits?">
+    Merchant API: 60 requests/minute per API key. Login attempts: 10 per 5 minutes per IP. Global: 120 requests/minute per IP. See the [Rate Limiting](/resources/rate-limiting) page for the full reference.
+  </Accordion>
+
+  <Accordion title="How do webhooks work?">
+    You register a webhook URL per brand in the admin panel. OwnPay sends signed HTTP POST requests (HMAC-SHA256) when payment events occur. Failed deliveries are retried with exponential backoff. See the [Code Examples](/resources/code-examples) page for verification code.
+  </Accordion>
+
+  <Accordion title="Are there official SDKs?">
+    Yes. OwnPay provides official SDKs for PHP, Laravel, and Node.js. Community-maintained SDKs exist for Python, Go, and Java. See the [Ecosystem](/resources/ecosystem) page for links and installation instructions.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Related Pages
+
+- [Common Errors](/resources/common-errors) - Troubleshooting specific issues
+- [Debug Mode](/resources/debug-mode) - Enabling detailed error output for diagnosis
+- [Contributing](/resources/contributing) - How to contribute to OwnPay
+- [Code Examples](/resources/code-examples) - Integration code in multiple languages

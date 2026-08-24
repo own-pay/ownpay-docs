@@ -1,0 +1,88 @@
+---
+title: "SMS Templates"
+description: "Create and manage regex-based SMS templates that match incoming verification codes from banks and gateways for automatic payment completion."
+keywords: "SMS templates, regex patterns, verification templates, SMS matching, field mappings, SMS logs"
+sidebarTitle: "SMS Templates"
+---
+
+SMS templates define how OwnPay matches incoming SMS messages from the [companion app](/mobile/companion-app) to pending transactions. Each template binds a **gateway** to a **regex pattern** that extracts the verification code from the SMS text.
+
+<Info>
+For the full end-to-end auto-verification flow, see [SMS Verification](/gateways/sms-verification).
+</Info>
+
+## Template structure
+
+Each SMS template has these fields:
+
+| Field | Description |
+|-------|-------------|
+| **Gateway Slug** | The payment gateway this template applies to (e.g., `bkash`, `nagad`, `citybank`) |
+| **Regex Pattern** | A PCRE-compatible regular expression that captures the verification code |
+| **Code Field Mapping** | Which capture group contains the code (default: group 1) |
+| **Label** | Human-readable name for the template |
+| **Status** | Active or Disabled |
+
+## Creating a template
+
+<Steps>
+<Step>
+
+Navigate to **Mobile > SMS Templates** and click **Add Template**.
+
+</Step>
+<Step>
+
+Select the **Gateway** from the dropdown. This ensures the template only matches SMS for transactions on that gateway.
+
+</Step>
+<Step>
+
+Enter a **Regex Pattern** that captures the verification code. For example, if a bank sends:
+
+```
+Your verification code is 482901. Do not share this code.
+```
+
+You would use: `verification code is (\d{6})`
+
+</Step>
+<Step>
+
+Set the **Code Field Mapping** to the capture group index that contains the code (usually `1`).
+
+</Step>
+<Step>
+
+Click **Save** to activate the template.
+
+</Step>
+</Steps>
+
+## Testing regex patterns
+
+Use the built-in **Regex Tester** at the bottom of the template form. Paste a sample SMS message into the test input, and the tester highlights which capture groups match in real time.
+
+<Tip>
+Always test your regex against multiple real SMS samples before going live. Banks occasionally change their message format, which can break existing templates.
+</Tip>
+
+## SMS logs
+
+The lower section of the SMS Templates page displays recent incoming SMS logs. Use this to:
+
+- **Search** by phone number or transaction ID
+- **Filter** by gateway or match status (matched, unmatched, ignored)
+- **View raw SMS** by clicking any log row to see the full message text
+
+Unmatched SMS appear with a red indicator. Review these regularly to identify new message formats that need a template update.
+
+## Editing and disabling templates
+
+Click a template's row to edit it. If a gateway changes its SMS format, update the regex pattern and use the tester to confirm it still works. You can **disable** a template without deleting it — this is useful for temporarily pausing verification for a specific gateway.
+
+## Related Pages
+
+- [SMS Verification](/gateways/sms-verification) — Complete auto-verification flow documentation
+- [Companion App](/mobile/companion-app) — Android app that forwards incoming SMS
+- [SMS Center](/notifications/sms-center) — Centralized SMS monitoring and queue status

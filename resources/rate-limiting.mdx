@@ -1,0 +1,126 @@
+---
+title: "Rate Limiting"
+description: "Canonical reference for OwnPay's sliding window rate limiting including tiers, response headers, 429 error format, configuration, and IP whitelisting."
+keywords: "rate limiting, 429, throttle, X-RateLimit, API throttle, sliding window"
+sidebarTitle: "Rate Limiting"
+---
+
+OwnPay uses a **sliding window** rate limiter to protect against brute-force attacks, abuse, and accidental API floods. Limits are enforced per IP address for unauthenticated endpoints and per API key for authenticated endpoints.
+
+---
+
+## Rate limit tiers
+
+| Endpoint type | Limit | Auth method | Notes |
+|:---|:---|:---|:---|
+| Merchant API (`/api/v1/*`) | 60 requests/minute | Bearer API key | Per key, not per IP |
+| Admin API (`/api/admin/v1/*`) | 60 requests/minute | Bearer API key (admin scope) | Per key |
+| Login attempts | 10 attempts/5 minutes | Web form (email/password) | Per IP, strict bucket |
+| Password reset | 5 requests/minute | Web form | Per IP |
+| OTP device pairing | 5 requests/minute | JWT | Per IP |
+| Global requests | 120 requests/minute | Any | Per IP, catch-all for all routes |
+| Webhook deliveries | No limit (outbound) | N/A | Outbound only; inbound callbacks are not rate-limited |
+
+<Note>
+  Login, password reset, and device pairing endpoints use a **strict bucket** with a smaller limit than the global tier. Failed attempts deplete the bucket faster to deter credential stuffing.
+</Note>
+
+---
+
+## Rate limit headers
+
+Every API response includes headers that tell you your current limit status:
+
+| Header | Description |
+|:---|:---|
+| `X-RateLimit-Limit` | Maximum requests allowed in the current window |
+| `X-RateLimit-Remaining` | Requests remaining in the current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window resets |
+
+Example response headers when you have 12 requests remaining:
+
+```text
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 12
+X-RateLimit-Reset: 1704067200
+```
+
+---
+
+## 429 response format
+
+When you exceed the rate limit, OwnPay returns an HTTP 429 status with a structured error body:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests. Try again in 42 seconds.",
+    "retry_after": 42
+  }
+}
+```
+
+The `Retry-After` header is also set on the HTTP response:
+
+```text
+HTTP/1.1 429 Too Many Requests
+Retry-After: 42
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1704067200
+```
+
+Build your integration to handle 429 responses gracefully. Wait for the `retry_after` duration before retrying.
+
+<Tip>
+  Use exponential backoff with jitter when retrying. Start with the `retry_after` value, then double the wait on each subsequent 429. Add a small random jitter (0-2 seconds) to prevent thundering herd effects.
+</Tip>
+
+---
+
+## Configuration
+
+Rate limits are configured in `config/app.php` and can be overridden with environment variables:
+
+```ini
+# .env
+RATE_LIMIT_PER_MINUTE=60
+RATE_LIMIT_LOGIN_PER_5MIN=10
+RATE_LIMIT_GLOBAL_PER_MINUTE=120
+RATE_LIMIT_BURST=20
+```
+
+| Variable | Default | Description |
+|:---|:---|:---|
+| `RATE_LIMIT_PER_MINUTE` | 60 | API requests per minute per key |
+| `RATE_LIMIT_LOGIN_PER_5MIN` | 10 | Login attempts per 5 minutes per IP |
+| `RATE_LIMIT_GLOBAL_PER_MINUTE` | 120 | Global requests per minute per IP |
+| `RATE_LIMIT_BURST` | 20 | Burst allowance above the per-minute limit |
+
+---
+
+## IP whitelisting and trusted proxies
+
+If your OwnPay installation sits behind a reverse proxy or load balancer, configure the trusted proxies so the rate limiter sees the real client IP instead of the proxy IP.
+
+```ini
+# .env
+TRUSTED_PROXIES=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+```
+
+OwnPay reads the `X-Forwarded-For` header from trusted proxies only. Untrusted proxy headers are ignored to prevent IP spoofing.
+
+<Warning>
+  Never set `TRUSTED_PROXIES` to `*` in production. This allows any client to spoof their IP address and bypass rate limits entirely.
+</Warning>
+
+---
+
+## Related Pages
+
+- [API Overview](/api/overview) - Authentication and endpoint reference
+- [API Errors](/api/errors) - Full error code reference
+- [Developer Hub](/security/developer-hub) - API key management and testing
+- [Security and Compliance](/resources/security-compliance) - Broader security architecture

@@ -1,0 +1,97 @@
+---
+title: "Gateways — Payment Provider Integrations"
+description: "OwnPay connects to 123+ payment gateways as plugins. Understand gateway types, credential encryption, per-brand assignment, and health checks."
+keywords: "payment gateways, gateway plugins, payment integration, gateway routing, offline payments, gateway encryption"
+sidebarTitle: "Gateways"
+icon: "wallet"
+---
+
+import LlmsDirective from "/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+A **gateway** in OwnPay is a plugin that knows how to talk to a specific payment provider — it sends the customer's payment details, receives the authorization result, and handles callbacks and refunds. OwnPay ships with 123+ gateway plugins covering international card processors, regional mobile wallets, and bank-level integrations.
+
+## Gateway types
+
+<Columns>
+  <Column>
+    **Online gateways**
+
+    Real-time payment processing. The customer enters payment details on the checkout page, and the gateway authorizes the transaction instantly.
+
+    Examples: Stripe, PayPal, bKash, Nagad, Razorpay, SSLCommerz, Square.
+  </Column>
+  <Column>
+    **Manual gateways**
+
+    Offline payment methods that require manual confirmation. The customer is shown instructions (bank account number, QR code), and a staff member marks the payment as complete after verifying the transfer.
+
+    Examples: bank transfer, cash on delivery, manual invoice.
+  </Column>
+</Columns>
+
+## How gateway routing works
+
+When a customer reaches the checkout page, OwnPay looks at the brand's active gateways and presents them as payment options. The routing logic is straightforward:
+
+1. Load all gateways marked **active** for the brand.
+2. Filter by the payment's currency (each gateway declares its supported currencies via `supportedCurrencies()`).
+3. Present the matching gateways on the checkout page.
+4. The customer selects one and submits payment.
+
+<Note>
+  OwnPay does not currently perform automatic gateway failover or load balancing. The customer chooses the gateway. If you want redundancy, activate multiple gateways so the customer has alternatives.
+</Note>
+
+## Credential encryption
+
+Gateway API keys, secrets, and merchant IDs are **never stored in plaintext**. When you save gateway credentials, OwnPay encrypts them using **AES-256-GCM** with a key derived from your application's `APP_KEY`. The encrypted blob is stored in the database; only the running application can decrypt it.
+
+```php
+// Internally, credentials go through this flow:
+$plaintext = 'sk_live_abc123...';
+$encrypted = openssl_encrypt($plaintext, 'aes-256-gcm', $key, 0, $iv, $tag);
+// $encrypted and $tag are stored in the database
+```
+
+<Warning>
+  If you lose your `APP_KEY`, all encrypted gateway credentials become unrecoverable. Back up your `.env` file and store `APP_KEY` in a secure secrets manager.
+</Warning>
+
+## Per-brand gateway assignment
+
+Each brand independently selects which gateways to activate. Brand A might use Stripe and PayPal, while Brand B uses bKash and SSLCommerz. Credentials, fees, and enabled/disabled state are all scoped to the brand's `merchant_id`.
+
+## Gateway health checks
+
+OwnPay periodically pings active gateways to verify they are reachable. If a gateway consistently fails health checks, it is flagged in the admin dashboard so you can investigate. Check gateway status under **Gateways** in the sidebar.
+
+## Popular supported gateways
+
+| Gateway | Type | Regions |
+| :-- | :-- | :-- |
+| Stripe | Online (cards, wallets) | Global |
+| PayPal | Online (cards, accounts) | Global |
+| bKash | Online (mobile money) | Bangladesh |
+| Nagad | Online (mobile payment) | Bangladesh |
+| SSLCommerz | Online (cards, bank) | South Asia |
+| Razorpay | Online (cards, UPI, wallets) | India |
+| Square | Online (cards, Apple Pay) | US, CA, UK, AU, IE, FR, ES |
+| GCash | Online (mobile wallet) | Philippines |
+| Aamarpay | Online (cards, bank) | Bangladesh |
+| Bank Transfer | Manual (offline) | Any |
+
+<Info>
+  This table shows a subset. OwnPay supports 123+ gateways. See the full list in the admin panel under **Gateways** or visit [GitHub]({{github}}).
+</Info>
+
+## Related pages
+
+- [Gateway configuration](/gateways/configuration) — step-by-step setup for each provider
+- [Currencies](/gateways/currencies) — manage currencies and exchange rates
+- [Payment flow](/fundamentals/payment-flow) — transaction statuses and lifecycle
+- [Plugin system](/fundamentals/plugins) — how gateways are built as plugins
+- [Build a gateway plugin](/developer/plugin-types/gateway) — developer guide for custom gateways

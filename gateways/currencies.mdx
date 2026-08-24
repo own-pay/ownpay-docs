@@ -1,0 +1,73 @@
+---
+title: "Manage currencies and exchange rates"
+description: "How to add currencies, set base currency per brand, configure exchange rates, and handle multi-currency checkouts in OwnPay."
+keywords: "currencies, exchange rates, base currency, multi-currency checkout, currency formatting"
+sidebarTitle: "Currencies"
+---
+
+OwnPay supports multiple currencies so your customers can pay in their preferred currency while your ledger records in your brand’s base currency.
+
+## Add and edit currencies
+
+1. Go to **Gateways & Currencies** → **Currencies & Rates**.
+2. The page shows all supported currencies with their current exchange rates.
+3. Click **Add Currency** to enable a new currency for your brands.
+4. Set the exchange rate relative to your base currency.
+5. Click **Save**.
+
+<Note>
+Currencies available at checkout depend on two things: the currency being enabled here, and at least one gateway supporting that currency being active for the brand.
+</Note>
+
+## Set base currency per brand
+
+Each brand has one **base currency**. This is the currency used for:
+
+- Ledger entries and balance calculations.
+- Reports and financial summaries.
+- Default invoice and payment link pricing.
+
+To change the base currency, go to **People** → **Brands**, edit the brand, and select a new default currency. All new transactions use the new currency. Existing ledger entries remain in their original currency.
+
+<Warning>
+Do not change the base currency of a brand after processing transactions. Historical data will not be retroactively converted, which causes inconsistencies in reports.
+</Warning>
+
+## Exchange rate configuration
+
+You can set exchange rates in two ways:
+
+### Manual rates
+
+1. In the Currencies & Rates page, set the mode to **Manual**.
+2. Enter the conversion factor for each currency (e.g. 1 USD = 110 BDT).
+3. Click **Save**.
+
+Manual rates do not change unless you update them yourself.
+
+### Automatic rates
+
+1. Set the mode to **Automatic**.
+2. OwnPay fetches rates from a public exchange rate API on a scheduled basis.
+3. Ensure your server’s cron job is running so the rates update periodically.
+
+If the external API is unreachable, the last cached rates are used.
+
+## Currency formatting
+
+Each currency has a predefined format that controls:
+
+- **Symbol** — `$`, `৳`, `€`, `£`, `₹`, etc.
+- **Position** — symbol before or after the amount.
+- **Decimal places** — 2 for most currencies, 0 for currencies like JPY.
+
+## Multi-currency checkout
+
+When a brand has multiple currencies enabled, customers see a currency selector at checkout. The payment amount is converted using the configured exchange rate. The ledger always records the equivalent amount in the brand’s base currency.
+
+## Related Pages
+
+- [Configure payment gateways](/gateways/configuration) — gateways must support the currency
+- [Brands](/people/brands) — set base currency per brand
+- [Payment links](/payments/payment-links) — create links in specific currencies
+- [Invoices](/payments/invoices) — set invoice currency

@@ -1,0 +1,79 @@
+---
+title: "Telegram Notifications"
+description: "Receive real-time push notifications for payment events directly in a Telegram chat using the telegram-bot addon."
+keywords: "telegram, telegram bot, push notifications, telegram notifications, bot token, chat ID"
+sidebarTitle: "Telegram"
+---
+
+The **telegram-bot** addon sends instant push notifications to a Telegram chat whenever key payment events occur. This is faster than email and ideal for operators who want real-time alerts on their phone.
+
+<Note>
+You need a Telegram Bot API token and a target chat ID before configuring this addon. Both are free to obtain.
+</Note>
+
+## Prerequisites
+
+1. Open Telegram and message **@BotFather**
+2. Send `/newbot` and follow the prompts to create your bot
+3. Copy the **Bot API Token** BotFather gives you
+4. Add your bot to a group or channel, or start a direct chat with it
+5. Send a message in that chat, then visit `https://api.telegram.org/bot<TOKEN>/getUpdates` to find your **chat ID**
+
+## Install and configure
+
+<Steps>
+<Step>
+
+Install the **telegram-bot** addon. See [Addons](/system/addons) for installation instructions.
+
+</Step>
+<Step>
+
+Go to **System > Addons**, find **Telegram Bot**, and click **Settings**.
+
+</Step>
+<Step>
+
+Enter your **Bot API Token** and **Chat ID** in the fields provided.
+
+</Step>
+<Step>
+
+Toggle **Active** and select which brands should send Telegram notifications.
+
+</Step>
+<Step>
+
+Click **Save**. A test message is sent to confirm the connection.
+
+</Step>
+</Steps>
+
+## Supported events
+
+The Telegram bot sends notifications for these events:
+
+- `payment.completed` — Payment received successfully
+- `payment.failed` — Payment attempt failed
+- `refund.issued` — Refund processed
+
+Each notification includes the transaction amount, currency, gateway name, customer email (partial), and a link to the transaction in the admin panel.
+
+<Warning>
+Transaction amounts and partial customer identifiers are visible in Telegram messages. Only add the bot to private chats or trusted team groups. Avoid public channels.
+</Warning>
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|-------------|-----|
+| Bot does not receive updates | Privacy mode is blocking group messages | Send `/setprivacy` to @BotFather and select **Disable** for your bot |
+| `401 Unauthorized` error | Invalid or revoked bot token | Regenerate the token via @BotFather and update the addon settings |
+| No messages delivered | Wrong chat ID | Re-fetch your chat ID using `getUpdates` and verify the bot is a member of the target chat |
+| Messages arrive but lack details | Addon not activated for the brand | Go to addon settings and ensure the correct brand is toggled active |
+
+## Related Pages
+
+- [Addons](/system/addons) — Install and manage addons including telegram-bot
+- [Email Notifications](/notifications/email) — Alternative notification channel via SMTP
+- [Companion App](/mobile/companion-app) — Android app for SMS-based verification and notifications

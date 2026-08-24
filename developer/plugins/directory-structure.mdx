@@ -1,0 +1,95 @@
+---
+title: "Plugin Directory Structure"
+description: "Standard directory layout for OwnPay plugins showing every file and folder with explanations of each component."
+keywords: "plugin structure, plugin files, plugin directory, Plugin.php, manifest.json, plugin migrations, plugin views"
+sidebarTitle: "Directory structure"
+---
+
+Every OwnPay plugin follows this standard directory layout. The plugin loader expects this structure when scanning the `plugins/` directory.
+
+<Tree>
+my-plugin/
+├── manifest.json              # Plugin metadata and capabilities
+├── Plugin.php                 # Entry point — implements PluginInterface
+├── composer.json              # PHP dependencies (optional)
+├── config/
+│   └── settings.php           # Default configuration values
+├── src/
+│   ├── MyService.php          # Plugin business logic
+│   └── MyController.php       # Optional custom controllers
+├── resources/
+│   ├── views/
+│   │   ├── settings.twig      # Admin settings page template
+│   │   └── dashboard.twig     # Custom admin pages
+│   └── lang/
+│       └── en.json             # Language strings (optional)
+├── assets/
+│   ├── css/
+│   │   └── plugin.css          # Stylesheets
+│   └── js/
+│       └── plugin.js           # JavaScript files
+├── migrations/
+│   ├── 001_create_my_table.php
+│   └── 002_add_index.php
+└── routes/
+    ├── api.php                 # Custom API route definitions
+    └── web.php                 # Web route definitions
+</Tree>
+
+## Core files
+
+### `manifest.json`
+
+Required. Contains the plugin name, slug, version, type, capabilities, and other metadata. The plugin loader reads this first. See the full [Manifest reference](/developer/plugins/manifest).
+
+### `Plugin.php`
+
+Required. The entry point. Must implement `OwnPay\Plugin\PluginInterface` with these methods:
+
+- `register(EventManager $events, Container $container)` — register hooks and filters
+- `boot()` — called after all plugins are registered
+
+The class name must match the directory name in PascalCase: `my-plugin` → `MyPlugin`.
+
+## Optional directories
+
+### `config/`
+
+Default configuration values. The plugin manager reads these and stores overrides in the database. Access via `Plugin::config('my-plugin')`.
+
+### `src/`
+
+Your plugin's PHP classes. The plugin loader adds this directory to the autoloader. Organize by responsibility: services, controllers, models.
+
+### `resources/views/`
+
+Twig templates used by your plugin. Admin settings pages, custom dashboards, and report views live here.
+
+### `resources/lang/`
+
+Language files for plugin UI strings. Each file is keyed by language code (`en.json`, `bn.json`). See [Translations](/developer/translations).
+
+### `assets/`
+
+CSS and JavaScript files. Enqueue them through the `checkout.head` and `checkout.footer` action hooks:
+
+```php
+$events->addAction('checkout.head', function (): void {
+    echo '<link rel="stylesheet" href="' . Plugin::asset('css/plugin.css') . '">';
+});
+```
+
+### `migrations/`
+
+Database migration files. Each file defines an `up()` and `down()` method. Migrations run automatically on activation and reverse on uninstall. They execute within a transaction.
+
+### `routes/`
+
+Custom API and web route definitions. Requires the `api_routes` capability. Routes are scoped to the plugin's slug to avoid conflicts.
+
+## Related pages
+
+- [Manifest reference](/developer/plugins/manifest)
+- [Plugin lifecycle](/developer/plugins/lifecycle)
+- [Hooks reference](/developer/plugins/hooks)
+- [Capabilities reference](/developer/plugins/capabilities)

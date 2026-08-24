@@ -183,7 +183,7 @@ OwnPay treats all external input as adversarial. Highlights a contributor must r
 Three independent API layers, each with its own middleware group and auth:
 
 | Layer | Prefix | Auth | Defined in |
-|-------|--------|------|-----------|
+|-------|--------|------|------------|
 | Merchant REST | `/api/v1/*` | Bearer API key (read/write scopes) | `config/routes/api.php` |
 | Mobile companion | `/api/mobile/v1/*` | JWT (after device pairing) | same |
 | Admin API | `/api/admin/v1/*` | Bearer API key with `admin` scope (per-merchant) | same |
@@ -209,3 +209,10 @@ Formal API schema: **[docs.ownpay.org](https://docs.ownpay.org)**. Integration e
 ---
 
 ❤️ Built by the **Community**, for the **Community**.
+
+## Related Pages
+
+- [Features](/resources/features) - Complete list of OwnPay capabilities
+- [Roadmap](/resources/roadmap) - Upcoming releases and milestones
+- [Security and Compliance](/resources/security-compliance) - Encryption, PCI, and hardening guide
+- [Contributing](/resources/contributing) - How to contribute code and plugins

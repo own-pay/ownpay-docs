@@ -1,0 +1,108 @@
+---
+title: "Brands — Multi-Tenant Merchant Isolation"
+description: "A brand in OwnPay is an isolated merchant tenant. Each brand has its own gateways, domain, branding, staff, API keys, customers, and double-entry ledger."
+keywords: "brands, multi-tenant, merchant isolation, white-label, tenant scoping, payment merchants"
+sidebarTitle: "Brands"
+icon: "store"
+---
+
+import LlmsDirective from "/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+A **brand** is OwnPay's unit of multi-tenant isolation. When you create a brand, you get a fully independent merchant entity — its own payment gateways, checkout domain, visual branding, staff team, API keys, customer database, and double-entry ledger — all walled off from every other brand on the same OwnPay instance.
+
+## Brand isolation model
+
+<Mermaid
+  chart={`
+    graph TD
+      subgraph "OwnPay Instance"
+        subgraph "Brand A — Acme Corp"
+          A1[Customers]
+          A2[Transactions]
+          A3[Gateways]
+          A4[Staff]
+          A5[Ledger]
+          A6[API Keys]
+          A7[Custom Domain]
+        end
+        subgraph "Brand B — TechCorp"
+          B1[Customers]
+          B2[Transactions]
+          B3[Gateways]
+          B4[Staff]
+          B5[Ledger]
+          B6[API Keys]
+          B7[Custom Domain]
+        end
+      end
+
+      A1 -.->|no access| B2
+      B3 -.->|no access| A5
+      style A1 fill:#e8f5e9,stroke:#2e7d32
+      style B3 fill:#e3f2fd,stroke:#1565c0
+  `}
+/>
+
+Every database query is scoped to the active brand's `merchant_id`. Staff in Brand A cannot see Brand B's transactions, customers, or settings. There is no cross-brand data leakage.
+
+## Brand vs platform
+
+<Columns>
+  <Column>
+    **Platform (OwnPay instance)**
+    - Master administrator account
+    - System-wide settings and plugins
+    - DNS and SSL management
+    - Database server and Redis
+    - The single codebase running everything
+  </Column>
+  <Column>
+    **Brand (merchant tenant)**
+    - Isolated customers and transactions
+    - Independent gateway credentials
+    - Separate API keys and webhooks
+    - Custom domain and branding
+    - Its own ledger and balance reports
+  </Column>
+</Columns>
+
+The platform is the infrastructure. Brands are the merchants running on that infrastructure.
+
+## Per-brand configuration
+
+Each brand independently controls:
+
+| Setting | Description |
+| :-- | :-- |
+| **Gateways** | Which payment providers are active and their credentials |
+| **Domain** | Custom checkout domain (e.g., `pay.acme.com`) |
+| **Branding** | Logo, favicon, color scheme, checkout templates |
+| **Currency & timezone** | Default currency and timezone for reports |
+| **Staff** | Team members with role-based permissions scoped to this brand |
+| **API keys** | Separate Merchant and Mobile API keypairs |
+| **Webhooks** | Independent webhook URLs and event subscriptions |
+| **Email** | SMTP settings, sender name, and email templates |
+
+<Info>
+  Ledger accounts are also strictly scoped to a brand. A balance in Brand A's cash account never appears in Brand B's reports.
+</Info>
+
+## Common use cases
+
+| Scenario | How brands work |
+| :-- | :-- |
+| **SaaS platform operator** | Each customer company is a brand with its own checkout experience and ledger. |
+| **Payment agency** | Each client gets a brand with a white-labeled domain and isolated financial data. |
+| **Multi-entity business** | Different divisions or subsidiaries operate as separate brands for accounting clarity. |
+
+## Related pages
+
+- [People — Brands](/people/brands) — create and manage brands in the admin panel
+- [Custom domains](/fundamentals/domains) — assign a domain to each brand
+- [Gateway configuration](/gateways/configuration) — activate gateways per brand
+- [People — Staff](/people/staff) — assign team members to brands
+- [Appearance — Branding](/appearance/branding) — customize logos, colors, and checkout design

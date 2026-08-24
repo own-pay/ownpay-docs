@@ -1,0 +1,110 @@
+---
+title: "System Update"
+description: "Keep your OwnPay instance up to date with one-click updates, automatic backups, and a rollback procedure if anything goes wrong."
+keywords: "system update, upgrade, rollback, backup, auto-update, one-click update, CLI update"
+sidebarTitle: "System Update"
+---
+
+OwnPay provides a one-click update system that keeps your instance current with the latest features, security patches, and bug fixes.
+
+## Check for updates
+
+Navigate to **System > System Update**. The page shows your current version and whether a newer release is available. If an update is found, the new version number and a summary of changes are displayed.
+
+<Info>
+You can also check the [OwnPay GitHub releases]({{github}}) page for the full changelog.
+</Info>
+
+## Update process
+
+<Steps>
+<Step>
+
+Click **Check for Updates** to query the update server.
+
+</Step>
+<Step>
+
+If an update is available, review the changelog and click **Update Now**.
+
+</Step>
+<Step>
+
+OwnPay automatically creates a full backup of your current installation (files and database) before applying the update.
+
+</Step>
+<Step>
+
+The update downloads and extracts the new version, runs database migrations, and clears caches.
+
+</Step>
+<Step>
+
+You are redirected to the login page once the update completes.
+
+</Step>
+</Steps>
+
+## Post-update steps
+
+After every update, perform these checks:
+
+1. **Log in** and verify the dashboard loads correctly
+2. **Check the Environment Info** panel in [Settings](/system/settings) to confirm the new version
+3. **Test a checkout** on at least one brand to ensure payment flows work
+4. **Review plugin compatibility** — some plugins may need updates after a major OwnPay release
+
+<Tip>
+OwnPay automatically clears the Redis cache after an update. If you see stale data, manually refresh the page.
+</Tip>
+
+## Rollback procedure
+
+If something goes wrong after an update, you can roll back to the previous version:
+
+<Steps>
+<Step>
+
+Navigate to **System > System Update**.
+
+</Step>
+<Step>
+
+If a rollback is available, click **Rollback to v{{version}}**.
+
+</Step>
+<Step>
+
+OwnPay restores the backup created before the update.
+
+</Step>
+<Step>
+
+Verify the rollback by checking the version in Settings > Environment Info.
+
+</Step>
+</Steps>
+
+<Warning>
+Rollback restores files and database to the pre-update state. Any transactions processed between the update and the rollback are preserved in the database — they are not reverted.
+</Warning>
+
+## Update via CLI
+
+For advanced users or automated deployment pipelines, you can update OwnPay from the command line:
+
+```bash
+php /path/to/ownpay/artisan update:run
+```
+
+This command performs the same backup-and-update flow as the web UI. Use `--no-backup` to skip the automatic backup if you have your own backup strategy.
+
+<Callout type="info">
+For migration guidance between major versions, see the [Migration Guide](/resources/migration-guide).
+</Callout>
+
+## Related Pages
+
+- [Settings](/system/settings) — Verify version and environment after updating
+- [Backup & Export](/resources/backup-export) — Manual backup procedures
+- [Migration Guide](/resources/migration-guide) — Major version upgrade instructions

@@ -1,151 +1,101 @@
 ---
-title: "OwnPay API Overview - REST API for Multi-Brand Payments"
-description: "Introduction to OwnPay REST APIs covering base URLs per brand and master domain, authentication, rate limits, and available endpoint groups."
-keywords: "OwnPay REST API, payment API reference, API authentication, Bearer token, payment endpoints, webhook events, multi-brand API"
+title: "API Overview"
+description: "Canonical reference for the OwnPay REST API covering the base URL, three API layers, request and response format, error handling, idempotency, and rate limiting."
+keywords: "OwnPay API, REST API, payment API, API overview, base URL, API layers, Merchant API, Mobile API, Admin API"
 sidebarTitle: "Overview"
 ---
 
-OwnPay provides a REST API for programmatic access to payments, transactions, and webhooks. This page covers authentication, endpoints, and quick examples.
+The OwnPay API lets you create payments, manage transactions, handle refunds, and receive real-time webhooks. This page is the single canonical reference for how the API works — every other API page links back here.
 
 ## Base URL
 
+All API requests go to a single base path on your OwnPay instance:
+
 ```text
-https://yourdomain.com/api/v1
+https://your-domain.com/api/v1
 ```
+
+<Note>
+Replace `your-domain.com` with your actual OwnPay domain. All endpoints require HTTPS.
+</Note>
 
 ## Authentication
 
-All API requests require a Bearer token in the Authorization header:
+Every request must include a Bearer token in the `Authorization` header. See the full [Authentication](/api/authentication) guide for how to generate, scope, and rotate your API keys.
 
-```bash
-curl -H "Authorization: Bearer op_live_your_api_key" \
-     https://yourdomain.com/api/v1/payments
+```http
+Authorization: Bearer op_live_abc123...
 ```
 
-See [Authentication](/api/authentication) for key management and security best practices.
+## Three API layers
 
-## Create a payment
+OwnPay exposes three distinct API layers, each serving a different audience and backed by its own OpenAPI specification.
 
-<CodeGroup>
-```bash cURL
-curl -X POST https://yourdomain.com/api/v1/payments \
-  -H "Authorization: Bearer op_live_your_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 5000,
-    "currency": "USD",
-    "customer_email": "customer@example.com",
-    "description": "Order #123"
-  }'
+<Columns>
+<Column>
+
+### Merchant API
+
+Business operations for your application: create payments, list transactions, manage payment links, and handle refunds. This is the API you will use most often.
+
+[View Merchant API spec](/api/merchant_api.yaml)
+
+</Column>
+<Column>
+
+### Mobile API
+
+Used exclusively by the OwnPay Android companion app. Handles SMS verification, device pairing, and push-based transaction approvals.
+
+[View Mobile API spec](/api/mobile_api.yaml)
+
+</Column>
+<Column>
+
+### Admin API
+
+Platform management operations: manage brands, configure gateways, control users, and administer the system. Requires elevated permissions.
+
+[View Admin API spec](/api/admin_api.yaml)
+
+</Column>
+</Columns>
+
+## Request and response format
+
+All requests and responses use **JSON** with **UTF-8** encoding.
+
+### Conventions
+
+| Convention | Detail |
+|---|---|
+| Content type | `application/json` |
+| Character encoding | UTF-8 |
+| Date format | ISO 8601 (`2024-06-15T10:30:00Z`) |
+| Monetary amounts | Strings via bcmath (e.g. `"5000"`, `"99.99"`) |
+| Identifiers | Prefix-prefixed strings (`pay_...`, `txn_...`) |
+
+<Tip>
+All monetary amounts are returned as **strings** because OwnPay uses PHP's bcmath extension for precision. Never parse amounts as floats — use arbitrary-precision arithmetic in your language.
+</Tip>
+
+## Error handling
+
+Every error response follows a consistent JSON structure. See the full [Error codes](/api/errors) reference for all status codes, error codes, and troubleshooting steps.
+
+## Idempotency
+
+For write endpoints (`POST`, `PATCH`, `DELETE`), you can include an `Idempotency-Key` header to prevent duplicate processing:
+
+```http
+Idempotency-Key: ord_1042_20240615
 ```
 
-```php PHP
-$client = new \OwnPay\SDK\Client(
-    publicKey: $_ENV['OWNPAY_PUBLIC_KEY'],
-    secretKey: $_ENV['OWNPAY_SECRET_KEY'],
-    baseUrl: 'https://yourdomain.com/api/v1'
-);
-
-$payment = $client->payments()->create([
-    'amount' => 5000,
-    'currency' => 'USD',
-    'customer_email' => 'customer@example.com',
-    'description' => 'Order #123'
-]);
-```
-
-```javascript Node.js
-import OwnPay from 'ownpay';
-
-const ownpay = new OwnPay({
-  publicKey: process.env.OWNPAY_PUBLIC_KEY,
-  secretKey: process.env.OWNPAY_SECRET_KEY,
-  baseUrl: 'https://yourdomain.com/api/v1'
-});
-
-const payment = await ownpay.payments.create({
-  amount: 5000,
-  currency: 'USD',
-  customer_email: 'customer@example.com',
-  description: 'Order #123'
-});
-```
-</CodeGroup>
-
-## Response format
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": "pay_abc123...",
-    "amount": 5000,
-    "currency": "USD",
-    "status": "pending",
-    "checkout_url": "https://yourdomain.com/checkout/pay_abc123",
-    "customer_email": "customer@example.com"
-  }
-}
-```
-
-The `checkout_url` is where your customer completes the payment.
-
-## Core endpoints
-
-### Payments
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/payments` | POST | Create a payment |
-| `/payments/{id}` | GET | Get payment details |
-| `/payments/{id}` | PATCH | Update payment metadata |
-
-### Transactions
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/transactions` | GET | List transactions |
-| `/transactions/{id}` | GET | Get transaction details |
-
-### Payment Links
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/payment-links` | POST | Create a payment link |
-| `/payment-links` | GET | List payment links |
-| `/payment-links/{id}` | GET | Get payment link details |
-
-### Customers
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/customers` | GET | List customers |
-| `/customers/{id}` | GET | Get customer details |
-
-## Webhooks
-
-Receive real-time notifications when payment events occur. See [Webhooks](/api/webhooks) for setup and signature verification.
-
-```json
-{
-  "event": "payment.paid",
-  "data": {
-    "id": "pay_abc123",
-    "amount": 5000,
-    "currency": "USD",
-    "status": "paid"
-  }
-}
-```
+OwnPay stores the result of the first request and returns the same response for subsequent requests with the same key within a 24-hour window.
 
 ## Rate limiting
 
-| Tier | Requests/minute |
-|------|----------------|
-| Standard | 60 |
-| Premium | 300 |
-
-Rate limit headers:
+All API endpoints enforce rate limits. OwnPay returns standard rate-limit headers on every response:
 
 ```http
 X-RateLimit-Limit: 60
@@ -153,32 +103,27 @@ X-RateLimit-Remaining: 59
 X-RateLimit-Reset: 1718000060
 ```
 
-## Error handling
+See [Rate limiting](/resources/rate-limiting) for tier details and best practices.
 
-All errors return a consistent JSON structure:
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "invalid_amount",
-    "message": "Amount must be greater than 0"
-  }
-}
-```
-
-See [Error codes](/api/errors) for the full reference.
-
-## SDKs
+## Quick links
 
 <CardGroup cols={3}>
-  <Card title="PHP SDK" icon="code" href="/developer/integration/php">
-    `composer require ownpay/php-sdk`
-  </Card>
-  <Card title="Laravel SDK" icon="laravel" href="/developer/integration/laravel">
-    `composer require ownpay/ownpay-laravel`
-  </Card>
-  <Card title="Node.js SDK" icon="brackets" href="/developer/integration/nodejs">
-    `npm install ownpay-nodejs`
-  </Card>
+<Card title="Create a payment" icon="credit-card" href="/api/merchant_api.yaml">
+Jump to the Merchant API spec and find the POST /payments endpoint.
+</Card>
+<Card title="Verify a webhook" icon="shield-check" href="/api/webhooks">
+Canonical webhook signature verification with code examples in PHP, Node.js, and Python.
+</Card>
+<Card title="SDKs" icon="code" href="/developer/quickstart">
+Official SDKs for PHP, Laravel, and Node.js to speed up your integration.
+</Card>
 </CardGroup>
+
+## Related pages
+
+- [Authentication](/api/authentication)
+- [Error codes](/api/errors)
+- [Webhooks](/api/webhooks)
+- [Rate limiting](/resources/rate-limiting)
+- [API keys](/security/api-keys)
+- [Merchant API spec](/api/merchant_api.yaml)

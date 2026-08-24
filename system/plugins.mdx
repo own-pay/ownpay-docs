@@ -1,0 +1,110 @@
+---
+title: "Plugins"
+description: "Upload, install, activate, update, and uninstall plugins that extend OwnPay with new gateways, themes, addons, and integrations."
+keywords: "plugins, plugin manager, install plugin, upload plugin, activate plugin, plugin sandbox"
+sidebarTitle: "Plugins"
+---
+
+The Plugin Manager handles all extensions to your OwnPay instance. Plugins add payment gateways, themes, addons, and third-party integrations.
+
+<Info>
+For developer documentation on building plugins, see the [Plugin Overview](/developer/plugins/overview).
+</Info>
+
+## Plugin list
+
+Navigate to **System > Plugins**. The table shows every installed plugin:
+
+| Column | Description |
+|--------|-------------|
+| **Name** | Plugin display name |
+| **Version** | Currently installed version |
+| **Type** | Gateway, Addon, Theme, or Integration |
+| **Status** | Active or Inactive |
+| **Actions** | Activate, Deactivate, Settings, Uninstall |
+
+## Install a plugin
+
+<Tabs>
+<Tab title="ZIP upload">
+
+<Steps>
+<Step>
+
+Click **Upload Plugin** at the top of the page.
+
+</Step>
+<Step>
+
+Select the plugin ZIP file from your computer.
+
+</Step>
+<Step>
+
+OwnPay validates the archive structure, scans for security issues, and installs the plugin.
+
+</Step>
+<Step>
+
+Activate the plugin and configure it per brand if needed.
+
+</Step>
+</Steps>
+
+</Tab>
+<Tab title="Marketplace">
+
+<Steps>
+<Step>
+
+Click **Browse Marketplace** to view available plugins.
+
+</Step>
+<Step>
+
+Find the plugin you need and click **Install**.
+
+</Step>
+<Step>
+
+OwnPay downloads and installs the plugin automatically.
+
+</Step>
+</Steps>
+
+</Tab>
+</Tabs>
+
+## Activate per brand
+
+Plugins can be activated or deactivated independently for each brand. Click **Settings** on a plugin row, then toggle the brands where the plugin should be active.
+
+<Tip>
+If a gateway plugin is inactive for a brand, that gateway will not appear as a payment option on the brand's checkout page.
+</Tip>
+
+## Update plugins
+
+When a newer version is available, a **Update** badge appears on the plugin row. Click **Update** to apply the new version. OwnPay creates a backup of the current version before updating.
+
+## Uninstall
+
+Click **Uninstall** to remove a plugin entirely. This removes the plugin's files and any brand-specific configuration. Uninstalling a gateway plugin does **not** delete historical transaction data — those records remain in the database.
+
+## Plugin sandbox scanning
+
+Every uploaded ZIP is scanned before installation:
+
+- **File structure validation** — Ensures the archive follows the expected plugin layout
+- **PHP syntax check** — Lints all PHP files for parse errors
+- **Forbidden function detection** — Blocks use of `eval()`, `exec()`, `system()`, and other dangerous functions
+
+<Warning>
+Only install plugins from trusted sources. Even with sandbox scanning, review the plugin's source code if you handle sensitive financial data.
+</Warning>
+
+## Related Pages
+
+- [Addons](/system/addons) — Manage addon-type plugins specifically
+- [Plugin Developer Overview](/developer/plugins/overview) — Build your own plugins
+- [Gateway Configuration](/gateways/configuration) — Configure installed gateway plugins

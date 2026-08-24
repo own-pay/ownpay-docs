@@ -1,13 +1,15 @@
 ---
-title: "API Error Codes - HTTP Status Codes and Response Reference"
-description: "Reference for OwnPay API HTTP status codes, error response format, and common error codes covering payments, authentication, and validation."
-keywords: "API errors, HTTP status codes, error codes, API troubleshooting, payment errors"
+title: "API Error Codes"
+description: "Canonical reference for OwnPay API error responses, HTTP status codes, the error object structure, and field-level validation errors."
+keywords: "API errors, error codes, HTTP status codes, validation errors, error response format, API troubleshooting"
 sidebarTitle: "Error codes"
 ---
 
-OwnPay API returns consistent error responses across all endpoints.
+Every OwnPay API error follows a single consistent JSON structure. This page is the canonical reference for understanding and handling errors.
 
 ## Error response format
+
+All error responses share this shape:
 
 ```json
 {
@@ -19,71 +21,111 @@ OwnPay API returns consistent error responses across all endpoints.
 }
 ```
 
+- `success` — always `false` for errors
+- `error.code` — machine-readable string you can switch on in your code
+- `error.message` — human-readable description safe to display to end users
+
 ## HTTP status codes
 
-| Code | Meaning |
-|------|---------|
-| 200 | Success |
-| 201 | Created |
-| 400 | Bad request (validation error) |
-| 401 | Unauthorized (invalid API key) |
-| 403 | Forbidden (insufficient permissions) |
-| 404 | Resource not found |
-| 409 | Conflict (duplicate resource) |
-| 422 | Unprocessable entity (business logic error) |
-| 429 | Rate limit exceeded |
-| 500 | Internal server error |
+| Status | Meaning | When it occurs |
+|---|---|---|
+| 400 | Bad request | Malformed JSON, missing required fields |
+| 401 | Unauthorized | Missing, invalid, or revoked API key |
+| 403 | Forbidden | Valid key but insufficient scope or brand access |
+| 404 | Not found | Requested resource does not exist |
+| 409 | Conflict | Duplicate resource (e.g. duplicate Idempotency-Key) |
+| 422 | Validation failed | Business-logic validation error (see field errors below) |
+| 429 | Rate limited | Too many requests — retry after `X-RateLimit-Reset` epoch |
+| 500 | Server error | Unexpected internal failure — retry with backoff |
 
-## Common error codes
+## Error object structure
 
-### Authentication errors
+The `error` object always contains at least `code` and `message`. Some errors include a `details` key with extra context:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "gateway_unavailable",
+    "message": "The Stripe gateway is currently unavailable",
+    "details": {
+      "gateway": "stripe",
+      "retry_after": 60
+    }
+  }
+}
+```
+
+## Field-level validation errors (422)
+
+When your request body fails validation, the response includes a `details.fields` array showing every invalid field:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "validation_failed",
+    "message": "The request failed validation",
+    "details": {
+      "fields": [
+        {
+          "field": "amount",
+          "message": "Amount must be greater than 0"
+        },
+        {
+          "field": "currency",
+          "message": "Currency must be a valid ISO 4217 code"
+        }
+      ]
+    }
+  }
+}
+```
+
+<Tip>
+Use the `field` value to map errors to your form inputs programmatically. This avoids showing a generic error message when only one field is wrong.
+</Tip>
+
+## Common error codes by domain
+
+### Authentication
 
 | Code | Description |
-|------|-------------|
-| `invalid_api_key` | API key not found or malformed |
-| `expired_api_key` | API key has expired |
-| `revoked_api_key` | API key has been revoked |
-| `insufficient_permissions` | Key lacks required access level |
+|---|---|
+| `invalid_api_key` | Key not found or malformed |
+| `expired_api_key` | Key has expired |
+| `revoked_api_key` | Key was revoked |
+| `insufficient_permissions` | Key scope too low for this operation |
 
-### Payment errors
+### Payments
 
 | Code | Description |
-|------|-------------|
+|---|---|
 | `invalid_amount` | Amount must be greater than 0 |
 | `invalid_currency` | Unsupported currency code |
 | `gateway_unavailable` | Payment gateway is down |
 | `payment_declined` | Gateway declined the payment |
-| `insufficient_funds` | Customer account has insufficient funds |
+| `insufficient_funds` | Customer lacks funds |
 | `expired_card` | Card has expired |
 | `invalid_card` | Card details are invalid |
 
-### Resource errors
+### Resources
 
 | Code | Description |
-|------|-------------|
+|---|---|
 | `not_found` | Resource does not exist |
 | `already_exists` | Resource already exists |
-| `invalid_state` | Resource is in an invalid state for this operation |
+| `invalid_state` | Resource is in the wrong state for this operation |
 
-### Webhook errors
+### Webhooks
 
 | Code | Description |
-|------|-------------|
+|---|---|
 | `invalid_webhook_url` | URL is not valid or not HTTPS |
-| `webhook_secret_missing` | Webhook secret not configured |
+| `webhook_secret_missing` | No webhook secret configured |
 | `signature_mismatch` | Webhook signature verification failed |
 
-## Handling errors
-
-### Best practices
-
-1. Check the `success` field first
-2. Use the `error.code` for programmatic handling
-3. Display `error.message` to users (it's human-readable)
-4. Implement retry logic for 5xx errors
-5. Log all errors for debugging
-
-### Example error handling
+## Handling errors in code
 
 ```php
 $response = $client->payments()->create([...]);
@@ -91,11 +133,21 @@ $response = $client->payments()->create([...]);
 if (!$response['success']) {
     $code = $response['error']['code'];
     $message = $response['error']['message'];
-    
+
     match ($code) {
-        'invalid_amount' => handleInvalidAmount(),
-        'gateway_unavailable' => retryLater(),
-        default => logError($code, $message),
+        'invalid_amount'       => handleInvalidAmount(),
+        'gateway_unavailable'  => retryLater(),
+        'validation_failed'    => showFieldErrors($response['error']['details']['fields'] ?? []),
+        default                => logError($code, $message),
     };
 }
 ```
+
+For a deeper troubleshooting guide including common misconfigurations and resolution steps, see [Common errors](/resources/common-errors).
+
+## Related pages
+
+- [API overview](/api/overview)
+- [Authentication](/api/authentication)
+- [Common errors](/resources/common-errors)
+- [Rate limiting](/resources/rate-limiting)

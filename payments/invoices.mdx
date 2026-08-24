@@ -1,0 +1,64 @@
+---
+title: "Create and manage invoices"
+description: "How to create invoices with line items, send them to customers, track payment status, and generate PDF receipts in OwnPay."
+keywords: "invoices, invoice creation, invoice PDF, invoice status, invoice numbering"
+sidebarTitle: "Invoices"
+---
+
+Invoices are structured payment requests you send to customers. Each invoice generates a unique checkout link where the customer can pay using any active gateway. Invoices differ from payment links because they carry line items, a due date, and a formal invoice number.
+
+## How invoices relate to payment links
+
+When you create an invoice, OwnPay generates a payment link behind the scenes. The customer clicks the invoice link, sees the itemized total, and completes payment through the checkout. You can also create standalone payment links without line items — see [Payment links](/payments/payment-links).
+
+## Create an invoice
+
+1. Go to **Payments** → **Invoices**.
+2. Click **+ Create Invoice**.
+3. Fill in the invoice details (see table below).
+4. Add one or more **line items** with a description, quantity, and unit price.
+5. Click **Create Invoice**.
+
+| Field | Required | Description |
+|---|---|---|
+| **Invoice number** | Yes | Unique serial (e.g. `INV-2025-0042`). The system does not auto-generate this — you control the numbering scheme |
+| **Customer** | Yes | Select from existing customer profiles |
+| **Currency** | Yes | Billing currency for this invoice |
+| **Due date** | Yes | Deadline for payment |
+| **Notes** | No | Instructions shown to the customer on the checkout page |
+| **Line item description** | Yes | What the customer is being billed for |
+| **Quantity** | Yes | Number of units (default 1) |
+| **Unit price** | Yes | Price per unit |
+
+## Invoice statuses
+
+| Status | Meaning |
+|---|---|
+| **Draft** | Saved but not yet shared with the customer |
+| **Sent** | Checkout link has been generated and can be shared |
+| **Paid** | Customer completed payment through the checkout link |
+| **Overdue** | Due date passed without payment |
+| **Cancelled** | Invoice was voided and is no longer payable |
+
+## Generate invoice PDFs
+
+Open an invoice and click **Download PDF** to get a formatted receipt. The PDF includes your brand logo, the customer’s details, all line items, the total amount, and the payment status. Use this for accounting records or to email to the customer as a receipt.
+
+## Send invoices via email
+
+Click **Send via Email** on any invoice in Sent or Draft status. OwnPay sends the customer an email with the invoice details and the payment link. The email uses your brand’s SMTP configuration and support email as the sender.
+
+## Invoice numbering
+
+OwnPay does not auto-increment invoice numbers. You set the number manually when you create each invoice. This gives you flexibility to match your existing accounting system (e.g. `INV-2025-0042`, `REC-0042`, or any format you prefer).
+
+<Warning>
+Every invoice must have at least one line item with a quantity and unit price greater than zero. An invoice with no line items or a total of 0.00 cannot be paid.
+</Warning>
+
+## Related Pages
+
+- [Payment links](/payments/payment-links) — create simple shareable payment URLs
+- [Transactions](/payments/transactions) — view payments from paid invoices
+- [Customers](/people/customers) — manage customer profiles for invoicing
+- [Ledger](/payments/ledger) — accounting entries from invoice payments

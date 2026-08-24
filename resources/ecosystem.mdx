@@ -1,147 +1,151 @@
 ---
-title: "OwnPay Ecosystem - Demo, Plugins, Registry, and Support"
-description: "Discover the wider OwnPay ecosystem, including our live demo, plugin marketplace, version registry, blog, and enterprise support channels."
-keywords: "OwnPay ecosystem, payment marketplace, live demo, version registry, enterprise support, payment plugins"
+title: "OwnPay Ecosystem - SDKs, Plugins, Companion App, and Marketplace"
+description: "Discover the OwnPay ecosystem including official SDKs, integrations, the companion app, plugin marketplace, and community resources."
+keywords: "OwnPay ecosystem, payment SDK, WooCommerce, WHMCS, companion app, plugin marketplace, community"
 sidebarTitle: "Ecosystem"
 ---
 
-The OwnPay platform is supported by a rich ecosystem of external services, resources, and support portals to help you deploy, configure, and scale your payment gateway infrastructure.
+OwnPay is more than a standalone application. A growing ecosystem of SDKs, plugins, mobile tools, and community resources surrounds the platform, making it easier to integrate, extend, and operate.
 
 ---
 
-## Key Platforms
+## Official SDKs
 
-Access the official platforms powering the OwnPay ecosystem.
+OwnPay provides first-party client libraries so you can integrate payments without writing HTTP calls from scratch.
 
 <CardGroup cols={3}>
-  <Card title="Main Website" icon="globe" href="https://ownpay.org">
-    Explore marketing features, download binaries, and check out open-source licensing.
+  <Card title="PHP SDK" icon="code">
+    Lightweight PHP package for creating payment intents, verifying webhooks, and querying transactions. Works with any PHP 8.1+ project.
   </Card>
-  <Card title="Live Demo" icon="play" href="https://demo.ownpay.org">
-    Interact with the sandbox dashboard, test sample payments, and review setup interfaces risk-free.
+  <Card title="Laravel Package" icon="boxes">
+    Native Laravel integration with a facade, config publishing, and event listeners. Drop-in replacement for other payment packages.
   </Card>
-  <Card title="Blog & News" icon="newspaper" href="https://blog.ownpay.org">
-    Read implementation tutorials, release highlights, and engineering updates from the core team.
+  <Card title="Node.js SDK" icon="braces">
+    TypeScript-ready npm package for Express, Fastify, and Next.js applications. Includes webhook signature verification utilities.
   </Card>
 </CardGroup>
 
-<CardGroup cols={3}>
-  <Card title="Plugin Marketplace" icon="puzzle-piece" href="https://plugins.ownpay.org">
-    Browse gateway integrations, admin dashboard addons, and checkout themes submitted by the community.
+<Info>
+  All SDKs are open source under AGPL-3.0 and hosted on the [OwnPay GitHub organization](https://github.com/own-pay). Install them via Composer or npm as you would any other dependency.
+</Info>
+
+For code examples in every SDK language, see the [Code Examples](/resources/code-examples) page.
+
+---
+
+## Integration Plugins
+
+Pre-built plugins connect OwnPay to popular e-commerce and billing platforms. These run on **your** server alongside your existing setup and communicate with OwnPay via the Merchant API.
+
+<CardGroup cols={2}>
+  <Card title="WooCommerce" icon="cart-shopping">
+    Accept payments through OwnPay-powered gateways on your WooCommerce store. Supports automatic order status updates via webhooks.
   </Card>
-  <Card title="Version Registry" icon="list-check" href="https://update.ownpay.org">
-    Monitor release updates, check dependency security alerts, and track update tags.
-  </Card>
-  <Card title="Enterprise Support" icon="headset" href="https://support.ownpay.org">
-    Obtain dedicated SLAs, architectural consulting, and custom gateway design services.
+  <Card title="WHMCS" icon="server">
+    Let your WHMCS clients pay invoices through OwnPay. Supports recurring billing callbacks and multi-gateway selection at checkout.
   </Card>
 </CardGroup>
 
----
-
-## 1. Version Registry & Updates
-
-The **Version Registry** (`update.ownpay.org`) is the central database of all official OwnPay releases, security patches, and version checks.
-
-> [!TIP]
-> You can check for updates directly inside your platform administrative panel at **System > System Update**. For custom integrations or automated container build checks, query our public REST API.
-
-### Registry Update API Reference
-
-The Update Registry API is a public, CORS-enabled REST service that provides information about releases, package download mirrors, and cryptographic signatures.
-
-* **Base URL**: `https://update.ownpay.org/api/v1`
+<Note>
+  Integration plugins are maintained by the community. Check the [plugin marketplace](https://plugins.ownpay.org) for the latest versions and compatibility information.
+</Note>
 
 ---
 
-#### 1. Fetch Latest & Historical Releases
-Retrieve the most recent release metadata along with a chronologically sorted history of all releases.
+## Companion App
 
-* **Endpoint**: `/release`
-* **Method**: `GET`
-* **Response payload (`200 OK`)**:
-```json
-{
-  "latest": {
-    "version": "0.2.0",
-    "version_code": "0.2.0",
-    "channel": "stable",
-    "download_url": {
-      "github": "https://github.com/own-pay/OwnPay/releases/download/v0.2.0/ownpay-0.2.0.zip",
-      "local": "https://update.ownpay.org/releases/download/0.2.0/ownpay-0.2.0.zip"
-    },
-    "signature": "a0k4m4Cj3ljrV1/R0jtI4w1FR...",
-    "checksum_sha256": "7f8e833ce3dd4d6b97fa519e69d40b15e3587aa52a3c4c5db01a5bf8281aa7a0",
-    "min_php_version": "8.3.0",
-    "min_ownpay_version": "0.1.0",
-    "breaking_changes": false
-  },
-  "releases": [
-    {
-      "version": "0.2.0",
-      "version_code": "0.2.0",
-      "channel": "stable",
-      "download_url": {
-        "github": "https://github.com/own-pay/OwnPay/releases/download/v0.2.0/ownpay-0.2.0.zip",
-        "local": "https://update.ownpay.org/releases/download/0.2.0/ownpay-0.2.0.zip"
-      }
-    }
-  ]
-}
-```
+The OwnPay Android companion app pairs with your installation to enable SMS-based payment verification for manual and mobile financial service (MFS) gateways.
+
+<Columns>
+  <Column>
+    **How it works**
+    - Admin generates a one-time OTP in the dashboard
+    - App exchanges the OTP for a JWT and AES session key
+    - Incoming SMS from gateways (bKash, Nagad, M-Pesa, etc.) are forwarded to your OwnPay server
+    - The server parses transaction details and auto-matches pending payments
+  </Column>
+  <Column>
+    **Key features**
+    - Real-time push notifications for completed payments, refunds, and disputes
+    - Configurable SMS privacy filters to ignore unrelated messages
+    - Multi-device support (phone and tablet simultaneously)
+    - Revenue dashboard and pending transaction overview
+    - Device management and remote revocation from the admin panel
+  </Column>
+</Columns>
 
 ---
 
-#### 2. Get Specific Release Details
-Fetch detailed specifications, signatures, and DB migrations for a targeted version.
+## Plugin Marketplace
 
-* **Endpoint**: `/release/{version_code}`
-* **Method**: `GET`
-* **URL Parameters**:
-  * `version_code` (e.g., `0.2.0`)
-* **Response payload (`200 OK`)**:
-```json
-{
-  "version": "0.2.0",
-  "version_code": "0.2.0",
-  "channel": "stable",
-  "download_url": {
-    "github": "https://github.com/own-pay/OwnPay/releases/download/v0.2.0/ownpay-0.2.0.zip",
-    "local": "https://update.ownpay.org/releases/download/0.2.0/ownpay-0.2.0.zip"
-  },
-  "signature": "a0k4m4Cj3ljrV1/R0jtI4w1FR...",
-  "signature_url": "https://github.com/own-pay/OwnPay/releases/download/v0.2.0/signature.sig",
-  "checksum_sha256": "7f8e833ce3dd4d6b97fa519e69d40b15e3587aa52a3c4c5db01a5bf8281aa7a0",
-  "changelog_url": "https://github.com/own-pay/OwnPay/releases/download/v0.2.0/changelog.md",
-  "release_date": "2026-07-07",
-  "size_bytes": 10512303,
-  "min_php_version": "8.3.0",
-  "min_ownpay_version": "0.1.0",
-  "migrations": [
-    "001_add_locked_api_key_status.sql",
-    "002_add_manual_gateway_payment_number.sql"
-  ],
-  "breaking_changes": false
-}
-```
+The [plugin marketplace](https://plugins.ownpay.org) is the central hub for discovering and installing community-built extensions.
+
+- **Gateway plugins** - Additional payment processors beyond the 123 built-in adapters
+- **Theme plugins** - Custom checkout skins for specific industries or brand identities
+- **Addon plugins** - Admin dashboard widgets, reporting tools, and workflow automations
+- **Integration plugins** - Connectors for e-commerce, CRM, and accounting platforms
+
+Plugins are published as signed ZIP packages. Each undergoes static code analysis before installation, ensuring no dangerous function calls reach your server.
+
+<Tip>
+  Want to publish your own plugin? Read the [Plugin Development Overview](/developer/plugins/overview) to get started with the manifest format, hook system, and sandbox rules.
+</Tip>
 
 ---
 
-## 2. Plugin Marketplace
+## Community Resources
 
-The **Plugin Marketplace** (`plugins.ownpay.org`) lets you extend OwnPay's capabilities without modifying the core codebase.
+The OwnPay community contributes documentation, translations, and support across several channels.
 
-- **Explore Adapters**: Find local adapters (bKash, Nagad, GCash, Razorpay) and global processors (Stripe, PayPal, Square).
-- **Themes & UI**: Download Blade layouts to override checkouts for specific tenant niches.
-- **Publish Extensions**: Submit your custom gateway or addon module. Learn more in the [Plugin Development Overview](/developer/plugins/overview).
+| Resource | Description |
+|:---|:---|
+| [GitHub Discussions](https://github.com/own-pay/OwnPay/discussions) | Ask questions, share setups, and propose features |
+| [GitHub Issues](https://github.com/own-pay/OwnPay/issues) | Bug reports and feature requests |
+| [Discord](https://discord.gg/ownpay) | Real-time chat with other operators and contributors |
+| [blog.ownpay.org](https://blog.ownpay.org) | Release announcements, tutorials, and engineering deep-dives |
+| [learn.ownpay.org](https://learn.ownpay.org) | Step-by-step integration guides and plugin development tutorials |
+| [docs.ownpay.org](https://docs.ownpay.org) | Full REST API reference with interactive examples |
 
 ---
 
-## 3. Enterprise Support
+## Third-Party Integrations
 
-For high-volume merchants, platforms, or payment networks requiring guaranteed uptime, **Enterprise Support** (`support.ownpay.org`) offers direct developer access.
+Beyond the official WooCommerce and WHMCS plugins, the community has built integrations for:
 
-### Support Scope
-- **Custom Gateway Scaffold**: Custom PHP gateway driver development.
-- **Auditing**: Database scoping reviews, PCI-DSS compliance consultation, and penetration testing support.
-- **SLA Contracts**: Guaranteed ticket turnaround times for system-critical bugs.
+- **Invoice Ninja** - Generate OwnPay payment links from invoices
+- **WordPress** - Shortcode-based payment forms and donation buttons
+- **ERPNext** - Sync payment records between ERPNext and OwnPay ledger
+- **Custom REST consumers** - Any platform that can make HTTP calls and verify HMAC-SHA256 signatures
+
+<Note>
+  Third-party integrations are not officially maintained by the OwnPay core team. Check compatibility with your version before deploying to production.
+</Note>
+
+---
+
+## Contributing to the Ecosystem
+
+You can help grow the OwnPay ecosystem in several ways:
+
+1. **Build a plugin** - Create a new gateway, theme, or addon and publish it to the marketplace
+2. **Write an integration** - Connect OwnPay to a platform you use and share it on GitHub
+3. **Improve SDKs** - Fix bugs, add features, or create SDKs for new languages (Python, Go, Java welcome)
+4. **Translate** - Add or improve language catalogs for the admin panel and checkout
+5. **Write docs** - Improve guides, add tutorials, or expand API documentation
+
+See the [Contributing Guide](/resources/contributing) for detailed instructions on code standards and the pull request process.
+
+---
+
+## Version Registry and Updates
+
+The [Version Registry](https://update.ownpay.org) tracks all OwnPay releases and provides a public API for checking available updates. You can also check for updates directly from the admin panel under **System > System Update**.
+
+---
+
+## Related Pages
+
+- [Features](/resources/features) - Complete list of platform capabilities
+- [Code Examples](/resources/code-examples) - Multi-language integration samples
+- [Contributing](/resources/contributing) - How to contribute code, plugins, and translations
+- [Changelog](/resources/changelog) - Detailed release history

@@ -1,0 +1,81 @@
+---
+title: "Configure payment gateways"
+description: "How to add, configure, test, and activate API-based payment gateways in OwnPay with encrypted credential storage."
+keywords: "payment gateways, gateway configuration, API keys, sandbox mode, AES-256-GCM"
+sidebarTitle: "Gateways"
+---
+
+Payment gateways are the processors that actually move money — Stripe, PayPal, bKash, Nagad, and over 100 others. You configure them once in OwnPay and then assign them to brands so they appear at checkout.
+
+## Add a gateway
+
+1. Go to **Gateways & Currencies** → **Payment Gateways**.
+2. Click **+ Add Gateway**.
+3. Select the provider from the list (e.g. Stripe, bKash API, Razorpay).
+4. Enter the required credentials (see table below).
+5. Click **Save**.
+
+## Enter credentials
+
+Each gateway requires different credentials depending on the provider. Common fields include:
+
+| Field | Description |
+|---|---|
+| **API key** | Public or secret key from your gateway dashboard |
+| **API secret** | Secret key or token for authentication |
+| **Merchant ID** | Your merchant identifier at the gateway |
+| **Webhook secret** | HMAC signing key for verifying incoming webhooks |
+| **Sandbox mode** | Toggle to use the gateway’s test environment |
+
+<Note>
+All credentials are encrypted at rest using **AES-256-GCM**. They are never stored in plaintext in the database. Only the OwnPay application can decrypt them using the server-side encryption key.
+</Note>
+
+## Gateway settings reference
+
+| Setting | Type | Description |
+|---|---|---|
+| **Min amount** | Number | Minimum transaction amount this gateway will accept |
+| **Max amount** | Number | Maximum transaction amount this gateway will accept |
+| **Allowed currencies** | Multi-select | Which currencies this gateway supports for checkout |
+| **Status** | Toggle | Active (available at checkout) or Inactive |
+| **Sandbox mode** | Toggle | Route payments through the provider’s test environment |
+
+## Test with sandbox mode
+
+Before going live, enable **Sandbox mode** on the gateway and run a test payment:
+
+1. Set **Sandbox mode** to **On**.
+2. Set the gateway status to **Active** and assign it to a brand.
+3. Create a test payment link and complete a checkout.
+4. Verify the transaction appears in **Payments** → **Transactions** with **Completed** status.
+5. Once confirmed, disable Sandbox mode.
+
+## Activate per brand
+
+Configuring a gateway makes it available globally, but it only appears at checkout when you assign it to a brand:
+
+1. Go to **People** → **Brands** and edit the target brand.
+2. In the **Gateways** section, toggle the gateway on.
+3. Only gateways that support the brand’s currency are eligible.
+
+## Common issues
+
+| Problem | Cause | Solution |
+|---|---|---|
+| **Invalid credentials** error at checkout | Wrong API key or secret copied | Re-check the keys in your gateway provider dashboard and paste them again |
+| Transactions stay Pending | Webhook URL not configured at the gateway provider | Add your OwnPay webhook endpoint (`/webhook/{gateway-slug}`) in the gateway’s dashboard |
+| Gateway not showing at checkout | Gateway not assigned to the brand, or currency mismatch | Edit the brand and enable the gateway; verify the gateway supports the brand’s currency |
+| Sandbox payment fails | Sandbox keys differ from live keys | Make sure you are using the sandbox/test keys, not your production keys |
+
+<Warning>
+Never commit API keys to version control or share them in chat. All credential management happens through the OwnPay admin UI or encrypted environment variables.
+</Warning>
+
+## Related Pages
+
+- [Manual methods](/gateways/manual-methods) — configure offline payment methods
+- [Currencies](/gateways/currencies) — manage currencies and exchange rates
+- [Brands](/people/brands) — assign gateways to brands
+- [SMS verification](/gateways/sms-verification) — auto-verify manual payments
+- [Webhooks](/api/webhooks) — configure webhook endpoints

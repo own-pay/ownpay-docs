@@ -1,0 +1,105 @@
+---
+title: "Email Notifications"
+description: "Configure SMTP email notifications through the mail-gateway addon to send transaction alerts, password resets, and other automated messages."
+keywords: "email notifications, SMTP, mail gateway, email templates, transaction alerts, Twig templates"
+sidebarTitle: "Email"
+---
+
+OwnPay sends automated email notifications for key events such as successful payments, refund confirmations, and password resets. Emails are delivered through the **mail-gateway** addon using standard SMTP, giving you full control over delivery infrastructure.
+
+<Note>
+The mail-gateway addon must be installed and activated before you can send emails. See the [addons page](/system/addons) for installation instructions.
+</Note>
+
+## Configure SMTP settings
+
+<Steps>
+<Step>
+
+Navigate to **Settings** in the left sidebar, then click the **Mail** tab.
+
+</Step>
+<Step>
+
+Fill in your SMTP credentials:
+
+| Field | Description |
+|-------|-------------|
+| **SMTP Host** | Your mail server address (e.g., `smtp.gmail.com`) |
+| **SMTP Port** | Commonly `587` (TLS) or `465` (SSL) |
+| **Username** | SMTP login username, usually your email address |
+| **Password** | SMTP password or app-specific password |
+| **Encryption** | Select `tls` or `ssl` matching your port |
+| **From Address** | The sender email displayed to recipients |
+
+</Step>
+<Step>
+
+Click **Save** to persist your configuration. OwnPay tests the connection automatically.
+
+</Step>
+</Steps>
+
+## Email templates
+
+OwnPay ships with Twig-based email templates for common events. You can customize these from **Settings > Mail > Templates**.
+
+<Tabs>
+<Tab title="payment_received">
+
+Sent to the brand operator when a payment completes successfully. Contains the transaction ID, amount, currency, gateway used, and customer email.
+
+</Tab>
+<Tab title="refund_processed">
+
+Sent when a refund is issued and confirmed. Includes the original transaction reference, refund amount, and current ledger balance.
+
+</Tab>
+<Tab title="password_reset">
+
+Sent to staff members who request a password reset. Contains a time-limited secure link. See [password reset](/security/password-reset) for the full flow.
+
+</Tab>
+</Tabs>
+
+<Info>
+All templates use the Twig templating engine. You can access transaction data, brand settings, and customer fields using dot-notation variables like `{{ transaction.amount }}`.
+</Info>
+
+## Test your email setup
+
+After configuring SMTP, send a test email from **Settings > Mail > Send Test Email**. Enter a recipient address and click **Send**. Check the following:
+
+- The email arrives in the inbox (not spam)
+- The sender address matches your configured From Address
+- Template variables render correctly
+
+## Common issues
+
+<Accordion title="SPF/DKIM/DMARC failures">
+
+Email providers may reject or flag your messages if DNS authentication records are missing. Add an **SPF** record authorizing your SMTP host, a **DKIM** record for cryptographic signing, and a **DMARC** policy to your sending domain. Your email provider's documentation covers the exact record values.
+
+</Accordion>
+
+<Accordion title="Gmail requires an App Password">
+
+If you use Gmail as your SMTP provider, standard account passwords will not work. Go to your Google Account > Security > 2-Step Verification > App Passwords and generate a dedicated 16-character password for OwnPay.
+
+</Accordion>
+
+<Accordion title="Emails landing in spam">
+
+Beyond SPF/DKIM/DMARC, ensure your From Address domain matches the SMTP host domain. Warm up new IP addresses gradually and avoid sending bulk emails through the same SMTP credentials used for transactional notifications.
+
+</Accordion>
+
+<Warning>
+Never store SMTP passwords in plain-text configuration files. OwnPay encrypts all mail credentials at rest using AES-256-GCM.
+</Warning>
+
+## Related Pages
+
+- [Addons](/system/addons) — Install and manage the mail-gateway addon
+- [Telegram Notifications](/notifications/telegram) — Push notifications as an alternative channel
+- [Password Reset](/security/password-reset) — Email-triggered password recovery flow

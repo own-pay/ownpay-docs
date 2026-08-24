@@ -1,0 +1,105 @@
+---
+title: "Custom Domains — White-Label Checkout URLs"
+description: "Serve each brand's checkout on its own domain (e.g., pay.yourbrand.com) with automated DNS verification, SSL certificate provisioning, and tenant isolation."
+keywords: "custom domains, SSL provisioning, DNS verification, brand domains, checkout isolation, white-label domain"
+sidebarTitle: "Domains"
+icon: "globe"
+---
+
+import LlmsDirective from "/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay is a white-label payment engine. Your customers should see **your** brand — not a shared platform URL. The domain system lets each brand operate under its own fully qualified domain with automated SSL and zero cross-tenant leakage.
+
+## How custom domains work
+
+When a request arrives, OwnPay's `DomainMiddleware` inspects the `HTTP_HOST` header and resolves it against the `op_domains` table. If it matches a brand's custom domain, OwnPay injects that brand's `merchant_id` into the request context and loads its visual identity.
+
+<Mermaid
+  chart={`
+    sequenceDiagram
+      participant C as Customer Browser
+      participant DNS as DNS Resolver
+      participant N as Nginx
+      participant DM as DomainMiddleware
+      participant BT as BrandThemeService
+      participant CO as Checkout Page
+
+      C->>DNS: Resolve pay.acme.com
+      DNS-->>C: A record -> OwnPay server IP
+      C->>N: GET /pay/inv_123 (Host: pay.acme.com)
+      N->>DM: Forward request
+      DM->>DM: Look up op_domains by HTTP_HOST
+      DM->>DM: Inject merchant_id, domain_type
+      DM->>BT: Load brand logo, colors, CSS
+      BT-->>CO: Return brand assets
+      CO-->>C: Render branded checkout page
+  `}
+/>
+
+## Domain types
+
+| Type | Purpose | Example |
+| :-- | :-- | :-- |
+| **checkout** | Serves checkout, invoice, and payment pages | `pay.yourbrand.com` |
+| **api** | Serves API endpoints only | `api.yourbrand.com` |
+
+The **master domain** (configured via the `APP_DOMAIN` environment variable) is the only domain that can access the admin panel (`/admin/*`). Custom domains return a 404 for admin routes — this is a security feature, not a bug.
+
+## DNS configuration
+
+Point your custom domain to your OwnPay server using one of these records:
+
+| Record type | Name | Value |
+| :-- | :-- | :-- |
+| **A** | `pay` | `203.0.113.10` (your server IP) |
+| **CNAME** | `pay` | `ownpay.yourdomain.com` |
+
+<Info>
+  If you already have an A record on the root domain, a CNAME for the `pay` subdomain is usually the cleanest approach.
+</Info>
+
+## Domain verification flow
+
+<Steps>
+  <Step title="Add the domain in OwnPay">
+    Go to **System > Domains**, click **Add Domain**, and enter `pay.yourbrand.com`. Set the domain type to `checkout` and assign it to your brand.
+  </Step>
+  <Step title="Configure DNS">
+    Add the A or CNAME record at your DNS provider. DNS propagation typically takes a few minutes to a few hours.
+  </Step>
+  <Step title="Verify DNS">
+    Click **Verify DNS** in the OwnPay domain settings. OwnPay performs a DNS lookup and checks that the record points to your server. Once verified, `dns_verified` is set to `1`.
+  </Step>
+  <Step title="SSL is provisioned">
+    After DNS verification, OwnPay provisions an SSL certificate for the domain. Checkout pages are served over HTTPS automatically.
+  </Step>
+</Steps>
+
+<Warning>
+  Until DNS verification passes, the custom domain returns a **503 Service Unavailable** response. Make sure your DNS records are correctly configured before verifying.
+</Warning>
+
+## URL generation
+
+All customer-facing and gateway-facing URLs are built by `DomainUrlService` — never hardcoded. The priority order is:
+
+1. `GATEWAY_CALLBACK_URL` environment variable
+2. Brand's custom domain
+3. `APP_URL` from `.env`
+4. Current request host
+
+<Note>
+  If you need to generate a checkout or callback URL in your code, always use `DomainUrlService` methods like `buildCheckoutUrl()` and `buildCallbackUrl()`. Hardcoding URLs will break when brands use custom domains.
+</Note>
+
+## Related pages
+
+- [System — Domains](/system/domains) — step-by-step setup guide with troubleshooting
+- [Appearance — Branding](/appearance/branding) — customize logos, colors, and checkout design
+- [Brands](/fundamentals/brands) — understand brand-level isolation and settings
+- [How OwnPay works](/fundamentals/how-ownpay-works) — full architecture overview
+- [Payment flow](/fundamentals/payment-flow) — how the checkout page fits into the transaction lifecycle
