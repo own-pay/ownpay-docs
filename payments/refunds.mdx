@@ -3,6 +3,7 @@ title: "Issue refunds"
 description: "How to issue full or partial refunds, understand gateway-specific refund behavior, and troubleshoot failed refunds in OwnPay."
 keywords: "refunds, partial refund, refund status, gateway refund, RefundReconciliationJob"
 sidebarTitle: "Refunds"
+icon: "rotate-ccw"
 ---
 
 Refunds return money to customers for completed transactions. You can issue refunds from the admin UI or the API. OwnPay tracks refund statuses separately from the original transaction.
@@ -28,7 +29,7 @@ Refunds return money to customers for completed transactions. You can issue refu
 
 - You can only refund transactions with **Completed** status.
 - The refund amount cannot exceed the original transaction amount.
-- Partial refunds are allowed — you can refund any amount up to the original.
+- Partial refunds are allowed - you can refund any amount up to the original.
 - You cannot refund a transaction that has already been fully refunded.
 - Gateway fees from the original transaction are **not** refunded to the customer.
 
@@ -69,7 +70,7 @@ You can issue refunds programmatically with a `POST` request to `/payments/{id}/
 
 ## Related Pages
 
-- [Transactions](/payments/transactions) — find transactions to refund
-- [Ledger](/payments/ledger) — see the accounting impact of refunds
-- [Payment flow](/fundamentals/payment-flow) — full transaction lifecycle explanation
-- [Merchant API](/api/overview) — programmatic refund endpoint
+- [Transactions](/payments/transactions) - find transactions to refund
+- [Ledger](/payments/ledger) - see the accounting impact of refunds
+- [Payment flow](/fundamentals/payment-flow) - full transaction lifecycle explanation
+- [Merchant API](/api/overview) - programmatic refund endpoint

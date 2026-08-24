@@ -3,6 +3,7 @@ title: "Code Examples"
 description: "Canonical multi-language code examples for creating payment intents, verifying webhooks, and querying transaction status via the OwnPay API."
 keywords: "code examples, PHP SDK, Laravel, Node.js, Python, Go, Java, cURL, payment integration, webhook verification"
 sidebarTitle: "Code Examples"
+icon: "code"
 ---
 
 This page is the canonical reference for integrating with the OwnPay API. Every example shows how to create a payment intent, handle the response, and redirect the customer to the checkout page.
@@ -21,7 +22,7 @@ Create a payment intent by calling `POST /api/v1/payments`. The response include
 
 ```cURL
 curl -X POST https://pay.yourbrand.com/api/v1/payments \\
-  -H "Authorization: Bearer op_live_xxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "Authorization: Bearer op_live_abc123.def456" \\
   -H "Content-Type: application/json" \\
   -d '{
     "amount": "500.00",
@@ -38,7 +39,7 @@ curl -X POST https://pay.yourbrand.com/api/v1/payments \\
 <?php
 use OwnPay\Client;
 
-$client = new Client('https://pay.yourbrand.com/api/v1', 'op_live_xxxxxxxxxxxxxxxxxxxxxx');
+$client = new Client('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
 
 $payment = $client->payments->create([
     'amount'        => '500.00',
@@ -74,7 +75,7 @@ return redirect($payment->checkout_url);
 ```Node.js
 import OwnPay from 'ownpay';
 
-const client = new OwnPay('https://pay.yourbrand.com/api/v1', 'op_live_xxxxxxxxxxxxxxxxxxxxxx');
+const client = new OwnPay('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
 
 const payment = await client.payments.create({
   amount: '500.00',
@@ -94,7 +95,7 @@ import ownpay
 
 client = ownpay.Client(
     base_url="https://pay.yourbrand.com/api/v1",
-    api_key="op_live_xxxxxxxxxxxxxxxxxxxxxx"
+    api_key="op_live_abc123.def456"
 )
 
 payment = client.payments.create(
@@ -114,27 +115,27 @@ print(f"Redirect to: {payment['checkout_url']}")
 package main
 
 import (
-	"fmt"
-	"github.com/own-pay/ownpay-go"
+        "fmt"
+        "github.com/own-pay/ownpay-go"
 )
 
 func main() {
-	client := ownpay.NewClient("https://pay.yourbrand.com/api/v1", "op_live_xxxxxxxxxxxxxxxxxxxxxx")
+        client := ownpay.NewClient("https://pay.yourbrand.com/api/v1", "op_live_abc123.def456")
 
-	payment, err := client.Payments.Create(ownpay.PaymentParams{
-		Amount:        "500.00",
-		Currency:      "USD",
-		RedirectURL:   "https://my-store.com/success",
-		CancelURL:     "https://my-store.com/cancel",
-		CustomerEmail: "customer@example.com",
-		CustomerName:  "Jane Doe",
-		Reference:     "ORDER-10024",
-	})
-	if err != nil {
-		panic(err)
-	}
+        payment, err := client.Payments.Create(ownpay.PaymentParams{
+                Amount:        "500.00",
+                Currency:      "USD",
+                RedirectURL:   "https://my-store.com/success",
+                CancelURL:     "https://my-store.com/cancel",
+                CustomerEmail: "customer@example.com",
+                CustomerName:  "Jane Doe",
+                Reference:     "ORDER-10024",
+        })
+        if err != nil {
+                panic(err)
+        }
 
-	fmt.Println("Redirect to:", payment.CheckoutURL)
+        fmt.Println("Redirect to:", payment.CheckoutURL)
 }
 ```
 
@@ -147,7 +148,7 @@ public class Main {
     public static void main(String[] args) {
         Client client = new Client(
             "https://pay.yourbrand.com/api/v1",
-            "op_live_xxxxxxxxxxxxxxxxxxxxxx"
+            "op_live_abc123.def456"
         );
 
         Payment payment = client.payments().create(Map.of(
@@ -275,7 +276,7 @@ You can query a payment's status directly, which is useful when a customer retur
 <?php
 use OwnPay\Client;
 
-$client = new Client('https://pay.yourbrand.com/api/v1', 'op_live_xxxxxxxxxxxxxxxxxxxxxx');
+$client = new Client('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
 
 $payment = $client->payments->get('pi_01j0x8kz7m3wd4b9qfhec5rtg6');
 
@@ -291,7 +292,7 @@ if ($payment->status === 'completed') {
 ```Node.js
 import OwnPay from 'ownpay';
 
-const client = new OwnPay('https://pay.yourbrand.com/api/v1', 'op_live_xxxxxxxxxxxxxxxxxxxxxx');
+const client = new OwnPay('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
 
 const payment = await client.payments.get('pi_01j0x8kz7m3wd4b9qfhec5rtg6');
 

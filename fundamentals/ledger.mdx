@@ -1,5 +1,5 @@
 ---
-title: "Ledger — Double-Entry Bookkeeping for Payments"
+title: "Ledger - Double-Entry Bookkeeping for Payments"
 description: "OwnPay records every payment, fee, and transfer as balanced debit-credit pairs using double-entry bookkeeping with bcmath precision and brand isolation."
 keywords: "double-entry ledger, payment accounting, bookkeeping, journal entries, financial reconciliation, bcmath, T-account"
 sidebarTitle: "Ledger"
@@ -12,7 +12,7 @@ import LlmsDirective from "/snippets/llms-directive.mdx";
   <LlmsDirective />
 </Visibility>
 
-Every time money moves in OwnPay — a customer pays, a gateway deducts fees, a refund is issued — the system records it as a pair of balanced journal entries. This is **double-entry bookkeeping**, the same method used by accounting software and banks. It means you can always trace where money came from and where it went, and the total debits always equal the total credits.
+Every time money moves in OwnPay - a customer pays, a gateway deducts fees, a refund is issued - the system records it as a pair of balanced journal entries. This is **double-entry bookkeeping**, the same method used by accounting software and banks. It means you can always trace where money came from and where it went, and the total debits always equal the total credits.
 
 ## How double-entry works in OwnPay
 
@@ -20,6 +20,7 @@ When a $100 payment completes through Stripe (with a $2.90 gateway fee), OwnPay 
 
 <Mermaid
   chart={`
+    %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
     graph LR
       subgraph "Cash Account (Asset)"
         C1[Debit $97.10]
@@ -53,7 +54,7 @@ OwnPay uses standard GAAP account categories:
 
 ## Balance calculation
 
-All monetary math uses PHP's `bcmath` extension — never floating-point arithmetic. Balances are validated at **4-decimal precision** using `bccomp()`.
+All monetary math uses PHP's `bcmath` extension - never floating-point arithmetic. Balances are validated at **4-decimal precision** using `bccomp()`.
 
 ```php
 // Internal balance validation (simplified)
@@ -66,7 +67,7 @@ if (bccomp($debits, $credits, 4) !== 0) {
 ```
 
 <Warning>
-  Never manually update the `op_ledger_accounts.balance` column. Always use `LedgerService` — direct SQL edits will cause reconciliation mismatches.
+  Never manually update the `op_ledger_accounts.balance` column. Always use `LedgerService` - direct SQL edits will cause reconciliation mismatches.
 </Warning>
 
 ## Double-post prevention
@@ -101,8 +102,8 @@ This compares OwnPay's recorded transactions against the gateway's reported tota
 
 ## Related pages
 
-- [Payments — Ledger](/payments/ledger) — view ledger entries and journal details in the UI
-- [Balance verification](/reports/balance-verification) — run reconciliation audits from the dashboard
-- [Brands](/fundamentals/brands) — understand brand-level ledger isolation
-- [Transaction statuses](/fundamentals/payment-flow) — which states trigger ledger entries
-- [Common errors](/resources/common-errors) — troubleshooting reconciliation mismatches
+- [Payments - Ledger](/payments/ledger) - view ledger entries and journal details in the UI
+- [Balance verification](/reports/balance-verification) - run reconciliation audits from the dashboard
+- [Brands](/fundamentals/brands) - understand brand-level ledger isolation
+- [Transaction statuses](/fundamentals/payment-flow) - which states trigger ledger entries
+- [Common errors](/resources/common-errors) - troubleshooting reconciliation mismatches

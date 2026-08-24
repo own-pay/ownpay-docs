@@ -3,9 +3,10 @@ title: "API Authentication"
 description: "Canonical reference for OwnPay API authentication using Bearer tokens, API key scopes, and the super admin override header."
 keywords: "API authentication, Bearer token, API key, key scopes, super admin, REST API auth, op_live"
 sidebarTitle: "Authentication"
+icon: "lock-keyhole"
 ---
 
-OwnPay authenticates every API request via a Bearer token in the `Authorization` header. You generate API keys from the admin panel — see [API keys](/security/api-keys) for the full key management guide.
+OwnPay authenticates every API request via a Bearer token in the `Authorization` header. You generate API keys from the admin panel - see [API keys](/security/api-keys) for the full key management guide.
 
 ## How to get an API key
 
@@ -13,7 +14,7 @@ OwnPay authenticates every API request via a Bearer token in the `Authorization`
 2. Navigate to **Developers → API Keys**
 3. Click **Generate API Key**
 4. Choose the access scope (read, write, or admin)
-5. Copy the key immediately — it is shown only once
+5. Copy the key immediately - it is shown only once
 
 <Warning>
 Store API keys in environment variables. Never commit them to version control.
@@ -24,7 +25,7 @@ Store API keys in environment variables. Never commit them to version control.
 Every API request must include the key as a Bearer token:
 
 ```http
-Authorization: Bearer op_live_abc123...
+Authorization: Bearer op_live_abc123.def456
 ```
 
 The key prefix `op_live_` identifies a live key. Test-mode keys use the `op_test_` prefix.
@@ -48,7 +49,7 @@ The scope is set when you generate the key and cannot be changed afterward. Crea
 A small set of platform-level operations (creating brands, managing system users) require an additional header on top of an `admin`-scoped key:
 
 ```http
-Authorization: Bearer op_live_abc123...
+Authorization: Bearer op_live_abc123.def456
 X-Super-Admin-Email: admin@your-domain.com
 ```
 
@@ -82,7 +83,7 @@ Common auth error codes:
 <CodeGroup>
 ```bash cURL
 curl -X GET https://your-domain.com/api/v1/payments/pay_abc123 \
-  -H "Authorization: Bearer op_live_abc123..."
+  -H "Authorization: Bearer op_live_abc123.def456"
 ```
 
 ```php PHP

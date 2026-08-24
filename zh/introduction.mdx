@@ -1,0 +1,81 @@
+---
+title: "OwnPay：自托管支付编排平台"
+description: "OwnPay 是一个开源的自托管支付网关编排平台，支持多品牌、100+ 支付网关、复式记账账本和白标结账域名。"
+keywords: "OwnPay, 支付网关, 自托管支付, 开源支付平台, 多品牌支付编排, 白标结账, 支付编排"
+sidebarTitle: "简介"
+icon: "bolt"
+---
+
+欢迎使用 **OwnPay** —— 一个开源的自托管支付编排平台，让您完全掌控业务的收款方式。您无需将每笔交易都路由到第三方处理商，而是可以在自己信任的基础设施上运行自己的网关服务器。
+
+OwnPay 通过统一的 API 连接 123+ 个支付网络（Stripe、PayPal、bKash、Nagad、Razorpay、SSLCommerz 等），并允许您从一个仪表板管理多个隔离的商户品牌。每笔支付都记录在内置的复式记账账本中，确保审计级别的财务追踪。
+
+## 核心功能
+
+<CardGroup cols={2}>
+  <Card title="100+ 支付网关" icon="wallet">
+    通过单一集成点接受信用卡、移动钱包、银行转账和本地支付方式，覆盖 50+ 个国家。
+  </Card>
+  <Card title="多租户品牌" icon="store">
+    从单个 OwnPay 实例运行隔离的商户租户 —— 每个品牌拥有自己的网关、域名、品牌标识、员工、API 密钥和账本。
+  </Card>
+  <Card title="复式记账账本" icon="book-open">
+    每笔支付、费用和转账都使用 `bcmath` 扩展记录为平衡的借贷方日记账分录，确保精确的财务计算。
+  </Card>
+  <Card title="白标域名" icon="globe">
+    在自定义域名（如 `pay.yourbrand.com`）上提供品牌化的结账页面，支持自动 SSL 配置和 DNS 验证。
+  </Card>
+</CardGroup>
+
+## 文档导航
+
+<CardGroup cols={2}>
+  <Card title="快速开始" icon="rocket" href="/quickstart">
+    在 5 分钟内启动一个支付网关。创建品牌、激活网关并接受第一笔测试支付。
+  </Card>
+  <Card title="API 参考" icon="code" href="/api/overview">
+    使用 Merchant、Mobile 和 Admin REST API 将支付集成到您的应用中。包含 Webhook 验证和 SDK 示例。
+  </Card>
+  <Card title="开发者中心" icon="wrench" href="/developer/quickstart">
+    使用插件系统（钩子、过滤器和事件回调）构建自定义网关插件、主题和集成。
+  </Card>
+  <Card title="功能概览" icon="sparkles" href="/resources/features">
+    探索完整的功能集 —— 短信验证、发票、手动支付、多币种等。
+  </Card>
+</CardGroup>
+
+## OwnPay 的独特之处
+
+- **自托管，完全数据主权** —— 您的服务器、您的数据库、您的规则。没有第三方能看到您的客户数据或交易历史。
+- **内置 123+ 网关** —— 国际处理器（Stripe、PayPal）与区域领导者（bKash、Nagad、GCash、Razorpay、SSLCommerz）并存，每个版本都有新增。
+- **OwnPay 零交易手续费** —— 采用 AGPL-3.0 许可证，无每笔交易收费。您只需支付网关自身的处理费用。
+- **AGPL-3.0 许可，永久免费** —— 无许可层级，无功能限制，无电话回传遥测。完整源代码在 [GitHub]({{github}}) 上。
+- **插件可扩展架构** —— 无需修改核心代码即可添加网关、主题、插件和集成。拥有 60+ 个钩子和完整的 WordPress 风格生命周期。
+- **复式记账账本** —— 会计级别的财务追踪，具有借贷平衡验证、品牌隔离和内置对账功能。
+
+## 谁应该阅读这些文档？
+
+选择适合您角色的路径：
+
+<CardGroup cols={2}>
+  <Card title="我是商户" icon="store" href="/quickstart">
+    您想在网站或通过支付链接接受付款。请从快速开始指南开始。
+  </Card>
+  <Card title="我是开发者" icon="code" href="/developer/quickstart">
+    您想集成 API、构建插件或将 OwnPay 嵌入现有应用。请前往开发者中心。
+  </Card>
+  <Card title="我是系统管理员" icon="server" href="/installation">
+    您需要部署、配置和维护 OwnPay 实例。请阅读安装指南。
+  </Card>
+  <Card title="我是插件开发者" icon="puzzle" href="/developer/plugins/overview">
+    您想构建自定义网关适配器、主题或插件。请从插件系统概览开始。
+  </Card>
+</CardGroup>
+
+## 相关页面
+
+- [快速开始](/quickstart) - 5 分钟内启动运行
+- [安装](/installation) - 共享主机、VPS 和 Docker 的详细部署指南
+- [OwnPay 工作原理](/fundamentals/how-ownpay-works) - 整体架构概览
+- [功能列表](/resources/features) - 完整功能列表
+- [开发者中心](/developer/quickstart) - API 集成和插件开发

@@ -3,6 +3,7 @@ title: "Plugin Directory Structure"
 description: "Standard directory layout for OwnPay plugins showing every file and folder with explanations of each component."
 keywords: "plugin structure, plugin files, plugin directory, Plugin.php, manifest.json, plugin migrations, plugin views"
 sidebarTitle: "Directory structure"
+icon: "folder-tree"
 ---
 
 Every OwnPay plugin follows this standard directory layout. The plugin loader expects this structure when scanning the `plugins/` directory.
@@ -10,7 +11,7 @@ Every OwnPay plugin follows this standard directory layout. The plugin loader ex
 <Tree>
 my-plugin/
 ├── manifest.json              # Plugin metadata and capabilities
-├── Plugin.php                 # Entry point — implements PluginInterface
+├── Plugin.php                 # Entry point - implements PluginInterface
 ├── composer.json              # PHP dependencies (optional)
 ├── config/
 │   └── settings.php           # Default configuration values
@@ -46,8 +47,8 @@ Required. Contains the plugin name, slug, version, type, capabilities, and other
 
 Required. The entry point. Must implement `OwnPay\Plugin\PluginInterface` with these methods:
 
-- `register(EventManager $events, Container $container)` — register hooks and filters
-- `boot()` — called after all plugins are registered
+- `register(EventManager $events, Container $container)` - register hooks and filters
+- `boot()` - called after all plugins are registered
 
 The class name must match the directory name in PascalCase: `my-plugin` → `MyPlugin`.
 

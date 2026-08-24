@@ -1,5 +1,5 @@
 ---
-title: "Quickstart — Accept Your First Payment in 5 Minutes"
+title: "Quickstart - Accept Your First Payment in 5 Minutes"
 description: "Deploy OwnPay, create a brand, activate a payment gateway, and accept a test payment. The fastest path from zero to processing payments."
 keywords: "quickstart, payment gateway setup, first payment, self-hosted payments, payment tutorial, OwnPay setup"
 sidebarTitle: "Quickstart"
@@ -12,7 +12,7 @@ import LlmsDirective from "/snippets/llms-directive.mdx";
   <LlmsDirective />
 </Visibility>
 
-Get your self-hosted payment gateway running and accept a test payment in under five minutes. This guide walks you through every step — from deploying OwnPay to completing a transaction.
+Get your self-hosted payment gateway running and accept a test payment in under five minutes. This guide walks you through every step - from deploying OwnPay to completing a transaction.
 
 <Info>
   Developers looking to integrate the API should start with the [Developer Quickstart](/developer/quickstart) instead.
@@ -24,12 +24,12 @@ Before you start, make sure you have:
 
 - **PHP 8.3+** with `bcmath`, `pdo_mysql`, `mbstring`, `curl`, `gd`, `zip`, `json`, `openssl`, `intl`
 - **MySQL 8+** (or MariaDB 10.4+)
-- **A domain with HTTPS** — SSL is required for payment processing
+- **A domain with HTTPS** - SSL is required for payment processing
 - **About 5 minutes** of focused time
 
 ## Step 1: Deploy OwnPay
 
-Choose your hosting environment. Each tab covers the essentials — visit [Installation](/installation) for the full guide.
+Choose your hosting environment. Each tab covers the essentials - visit [Installation](/installation) for the full guide.
 
 <Tabs>
   <Tab title="Shared Hosting" icon="globe">
@@ -91,13 +91,13 @@ Open your browser and navigate to `https://yourdomain.com/install`. The setup wi
     Enter the MySQL host, database name, username, and password you created in Step 1. The wizard tests the connection and confirms it can read and write.
   </Step>
   <Step title="Import the schema">
-    OwnPay automatically creates all required tables — ledger accounts, brands, gateways, transactions, and settings. No manual SQL needed.
+    OwnPay automatically creates all required tables - ledger accounts, brands, gateways, transactions, and settings. No manual SQL needed.
   </Step>
   <Step title="Create your admin account">
     Register a master administrator with your email and a strong password. This account has full system access across all brands.
   </Step>
   <Step title="Generate API keys">
-    The wizard generates your first set of API keys for the Merchant, Mobile, and Admin APIs. Store these securely — you won't see the secret again.
+    The wizard generates your first set of API keys for the Merchant, Mobile, and Admin APIs. Store these securely - you won't see the secret again.
   </Step>
 </Steps>
 
@@ -107,15 +107,15 @@ Open your browser and navigate to `https://yourdomain.com/install`. The setup wi
 
 ## Step 3: Create your first brand
 
-A **brand** is your isolated merchant tenant — it holds its own gateways, customers, transactions, and ledger.
+A **brand** is your isolated merchant tenant - it holds its own gateways, customers, transactions, and ledger.
 
 1. Go to **People > Brands** in the sidebar.
 2. Click **Add Brand**.
 3. Fill in:
-   - **Brand name** — the display name customers see (e.g., "Acme Store")
-   - **Default currency** — the primary currency for this brand
-   - **Timezone** — used for reports and timestamps
-   - **Logo** — upload your brand's logo for the checkout page
+   - **Brand name** - the display name customers see (e.g., "Acme Store")
+   - **Default currency** - the primary currency for this brand
+   - **Timezone** - used for reports and timestamps
+   - **Logo** - upload your brand's logo for the checkout page
 
 <Note>
   You can always add more brands later. Each brand operates in complete isolation from the others.
@@ -128,22 +128,22 @@ A **brand** is your isolated merchant tenant — it holds its own gateways, cust
 
    <CardGroup cols={3}>
      <Card title="Stripe" icon="credit-card">
-       Cards, Apple Pay, Google Pay — global coverage.
+       Cards, Apple Pay, Google Pay - global coverage.
      </Card>
      <Card title="bKash" icon="smartphone">
-       Mobile money — Bangladesh.
+       Mobile money - Bangladesh.
      </Card>
      <Card title="PayPal" icon="wallet">
-       PayPal accounts and cards — worldwide.
+       PayPal accounts and cards - worldwide.
      </Card>
      <Card title="Nagad" icon="smartphone">
-       Mobile payment — Bangladesh.
+       Mobile payment - Bangladesh.
      </Card>
      <Card title="SSLCommerz" icon="shield">
-       Cards and bank transfers — South Asia.
+       Cards and bank transfers - South Asia.
      </Card>
      <Card title="Razorpay" icon="credit-card">
-       Cards, UPI, wallets — India.
+       Cards, UPI, wallets - India.
      </Card>
    </CardGroup>
 
@@ -159,9 +159,9 @@ A **brand** is your isolated merchant tenant — it holds its own gateways, cust
 1. Go to **Payments > Payment Links**.
 2. Click **Create Payment Link**.
 3. Fill in:
-   - **Title** — a description for the payment (e.g., "Pro Plan — Monthly")
-   - **Amount** — the charge amount
-   - **Currency** — defaults to your brand's currency
+   - **Title** - a description for the payment (e.g., "Pro Plan - Monthly")
+   - **Amount** - the charge amount
+   - **Currency** - defaults to your brand's currency
 4. Save the link.
 
 OwnPay generates a unique URL you can share via email, chat, or embed on your website.
@@ -193,8 +193,8 @@ OwnPay generates a unique URL you can share via email, chat, or embed on your we
 
 ## Related pages
 
-- [Installation](/installation) — detailed deployment for all environments
-- [How OwnPay works](/fundamentals/how-ownpay-works) — architecture and concepts overview
-- [Gateway configuration](/gateways/configuration) — full setup guide for each provider
-- [Payment flow](/fundamentals/payment-flow) — understand transaction statuses and lifecycle
-- [Developer quickstart](/developer/quickstart) — API integration guide
+- [Installation](/installation) - detailed deployment for all environments
+- [How OwnPay works](/fundamentals/how-ownpay-works) - architecture and concepts overview
+- [Gateway configuration](/gateways/configuration) - full setup guide for each provider
+- [Payment flow](/fundamentals/payment-flow) - understand transaction statuses and lifecycle
+- [Developer quickstart](/developer/quickstart) - API integration guide

@@ -1,0 +1,194 @@
+---
+title: "快速开始 - 5 分钟内接受第一笔支付"
+description: "部署 OwnPay、创建品牌、激活支付网关并接受测试支付。从零到处理支付的最快路径。"
+keywords: "快速开始, 支付网关设置, 第一笔支付, 自托管支付, 支付教程, OwnPay 设置"
+sidebarTitle: "快速开始"
+icon: "rocket"
+---
+
+让您的自托管支付网关运行起来并在五分钟内接受一笔测试支付。本指南将引导您完成每个步骤 —— 从部署 OwnPay 到完成一笔交易。
+
+<Info>
+  希望集成 API 的开发者应从 [开发者快速开始](/developer/quickstart) 开始。
+</Info>
+
+## 前提条件
+
+在开始之前，请确保您已具备：
+
+- **PHP 8.3+**，包含 `bcmath`、`pdo_mysql`、`mbstring`、`curl`、`gd`、`zip`、`json`、`openssl`、`intl` 扩展
+- **MySQL 8+**（或 MariaDB 10.4+）
+- **一个启用 HTTPS 的域名** - 支付处理需要 SSL
+- **大约 5 分钟**的专注时间
+
+## 第 1 步：部署 OwnPay
+
+选择您的托管环境。每个选项卡涵盖基本要点 —— 完整指南请参阅 [安装](/installation)。
+
+<Tabs>
+  <Tab title="共享主机" icon="globe">
+    适用于 cPanel、Plesk、DirectAdmin 和大多数共享主机。
+
+    1. 从 [GitHub Releases]({{github}}/releases) 下载最新版本。
+    2. 将 `.zip` 文件上传到您的 Web 根目录（`public_html/`）并解压。
+    3. 在您的托管控制面板中将 PHP 设置为 **8.3**。
+    4. 创建一个 MySQL 数据库和具有 **ALL PRIVILEGES** 权限的用户。
+
+    <Tip>
+      如果解压后创建了嵌套文件夹（例如 `public_html/ownpay-v0.2.0/`），请将所有文件上移一级到 `public_html/` 目录中。
+    </Tip>
+  </Tab>
+
+  <Tab title="VPS + Nginx" icon="server">
+    适用于具有完整 root 权限的 Ubuntu/Debian 服务器。
+
+    ```bash
+    # 安装依赖
+    sudo apt update && sudo apt install -y nginx mysql-server \
+      php8.3-fpm php8.3-mysql php8.3-mbstring php8.3-curl \
+      php8.3-xml php8.3-zip php8.3-gd php8.3-bcmath \
+      php8.3-intl certbot python3-certbot-nginx
+
+    # 克隆并配置
+    cd /var/www
+    sudo git clone {{github}}.git ownpay
+    cd ownpay
+    sudo chown -R www-data:www-data .
+    sudo chmod -R 775 storage public/assets/uploads
+    ```
+
+    将 Nginx 服务器块指向 `/var/www/ownpay/public` 并使用 `certbot` 配置 SSL。完整详情请参阅 [安装指南](/installation)。
+  </Tab>
+
+  <Tab title="Docker" icon="box">
+    适用于本地开发或云编排的容器化部署。
+
+    ```bash
+    git clone {{github}}.git && cd OwnPay
+    cp .env.example .env
+    # 编辑 .env 填入您的数据库凭据
+    docker-compose up -d
+    docker-compose exec app php bin/migrate
+    docker-compose exec app php bin/seed
+    ```
+
+    访问 `http://localhost:8080/install` 完成设置向导。
+  </Tab>
+</Tabs>
+
+## 第 2 步：运行 Web 安装器
+
+打开浏览器并访问 `https://yourdomain.com/install`。设置向导将引导您完成四个阶段：
+
+<Steps>
+  <Step title="连接数据库">
+    输入您在第 1 步中创建的 MySQL 主机、数据库名称、用户名和密码。向导会测试连接并确认可以读写。
+  </Step>
+  <Step title="导入数据库架构">
+    OwnPay 自动创建所有必需的表 —— 账本账户、品牌、网关、交易和设置。无需手动执行 SQL。
+  </Step>
+  <Step title="创建管理员账户">
+    注册一个主管理员，填写您的邮箱和强密码。此账户拥有所有品牌的完整系统访问权限。
+  </Step>
+  <Step title="生成 API 密钥">
+    向导为 Merchant、Mobile 和 Admin API 生成您的第一组 API 密钥。请安全保存 —— 您将无法再次查看密钥。
+  </Step>
+</Steps>
+
+<Warning>
+  首次登录后，请在 **我的账户** 中更改管理员密码并启用双因素认证。
+</Warning>
+
+## 第 3 步：创建您的第一个品牌
+
+**品牌** 是您隔离的商户租户 —— 它拥有自己的网关、客户、交易和账本。
+
+1. 在侧边栏中转到 **人员 > 品牌**。
+2. 点击 **添加品牌**。
+3. 填写以下信息：
+   - **品牌名称** - 客户看到的显示名称（例如 "Acme Store"）
+   - **默认货币** - 该品牌的主要货币
+   - **时区** - 用于报告和时间戳
+   - **Logo** - 上传品牌 Logo 用于结账页面
+
+<Note>
+  您可以随时添加更多品牌。每个品牌之间完全隔离运行。
+</Note>
+
+## 第 4 步：激活支付网关
+
+1. 在侧边栏中转到 **网关**。
+2. 点击 **添加网关** 并从可用提供商中选择：
+
+   <CardGroup cols={3}>
+     <Card title="Stripe" icon="credit-card">
+       信用卡、Apple Pay、Google Pay - 全球覆盖。
+     </Card>
+     <Card title="bKash" icon="smartphone">
+       移动支付 - 孟加拉国。
+     </Card>
+     <Card title="PayPal" icon="wallet">
+       PayPal 账户和信用卡 - 全球范围。
+     </Card>
+     <Card title="Nagad" icon="smartphone">
+       移动支付 - 孟加拉国。
+     </Card>
+     <Card title="SSLCommerz" icon="shield">
+       信用卡和银行转账 - 南亚。
+     </Card>
+     <Card title="Razorpay" icon="credit-card">
+       信用卡、UPI、钱包 - 印度。
+     </Card>
+   </CardGroup>
+
+3. 输入您的提供商凭据（API 密钥、密钥、商户 ID）。
+4. 切换 **启用** 开关以激活该品牌的网关。
+
+<Info>
+  所有网关凭据使用 AES-256-GCM 静态加密。OwnPay 从不在数据库中存储原始密钥。
+</Info>
+
+## 第 5 步：创建支付链接
+
+1. 转到 **支付 > 支付链接**。
+2. 点击 **创建支付链接**。
+3. 填写以下信息：
+   - **标题** - 支付的描述（例如 "专业版 - 月付"）
+   - **金额** - 收费金额
+   - **货币** - 默认为品牌的货币
+4. 保存链接。
+
+OwnPay 会生成一个唯一的 URL，您可以通过电子邮件、聊天分享或嵌入到您的网站中。
+
+## 第 6 步：测试结账
+
+1. 在隐私浏览窗口中打开支付链接。
+2. 在结账页面选择您已激活的网关。
+3. 使用网关的沙盒/测试模式凭据完成一笔测试支付。
+4. 确认您看到成功页面。
+
+<Tip>
+  此步骤请使用网关的 **测试模式**。Stripe 测试卡如 `4242 4242 4242 4242` 可以正常使用。不会产生真实资金流动。
+</Tip>
+
+## 接下来做什么？
+
+<CardGroup cols={3}>
+  <Card title="在您的网站上接受支付" icon="code" href="/developer/quickstart">
+    使用 Merchant API、Webhook 和 SDK 将 OwnPay 集成到您的应用中。
+  </Card>
+  <Card title="设置自定义域名" icon="globe" href="/system/domains">
+    在 `pay.yourbrand.com` 上提供您的结账页面，支持自动 SSL 和白标品牌。
+  </Card>
+  <Card title="邀请您的团队" icon="users" href="/people/staff">
+    添加具有基于角色的权限的团队成员，以便团队可以协作管理支付。
+  </Card>
+</CardGroup>
+
+## 相关页面
+
+- [安装](/installation) - 所有环境的详细部署指南
+- [OwnPay 工作原理](/fundamentals/how-ownpay-works) - 架构和概念概览
+- [网关配置](/gateways/configuration) - 每个提供商的完整设置指南
+- [支付流程](/fundamentals/payment-flow) - 了解交易状态和生命周期
+- [开发者快速开始](/developer/quickstart) - API 集成指南

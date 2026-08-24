@@ -3,6 +3,7 @@ title: "Plugins"
 description: "Upload, install, activate, update, and uninstall plugins that extend OwnPay with new gateways, themes, addons, and integrations."
 keywords: "plugins, plugin manager, install plugin, upload plugin, activate plugin, plugin sandbox"
 sidebarTitle: "Plugins"
+icon: "puzzle"
 ---
 
 The Plugin Manager handles all extensions to your OwnPay instance. Plugins add payment gateways, themes, addons, and third-party integrations.
@@ -89,15 +90,15 @@ When a newer version is available, a **Update** badge appears on the plugin row.
 
 ## Uninstall
 
-Click **Uninstall** to remove a plugin entirely. This removes the plugin's files and any brand-specific configuration. Uninstalling a gateway plugin does **not** delete historical transaction data — those records remain in the database.
+Click **Uninstall** to remove a plugin entirely. This removes the plugin's files and any brand-specific configuration. Uninstalling a gateway plugin does **not** delete historical transaction data - those records remain in the database.
 
 ## Plugin sandbox scanning
 
 Every uploaded ZIP is scanned before installation:
 
-- **File structure validation** — Ensures the archive follows the expected plugin layout
-- **PHP syntax check** — Lints all PHP files for parse errors
-- **Forbidden function detection** — Blocks use of `eval()`, `exec()`, `system()`, and other dangerous functions
+- **File structure validation** - Ensures the archive follows the expected plugin layout
+- **PHP syntax check** - Lints all PHP files for parse errors
+- **Forbidden function detection** - Blocks use of `eval()`, `exec()`, `system()`, and other dangerous functions
 
 <Warning>
 Only install plugins from trusted sources. Even with sandbox scanning, review the plugin's source code if you handle sensitive financial data.
@@ -105,6 +106,6 @@ Only install plugins from trusted sources. Even with sandbox scanning, review th
 
 ## Related Pages
 
-- [Addons](/system/addons) — Manage addon-type plugins specifically
-- [Plugin Developer Overview](/developer/plugins/overview) — Build your own plugins
-- [Gateway Configuration](/gateways/configuration) — Configure installed gateway plugins
+- [Addons](/system/addons) - Manage addon-type plugins specifically
+- [Plugin Developer Overview](/developer/plugins/overview) - Build your own plugins
+- [Gateway Configuration](/gateways/configuration) - Configure installed gateway plugins

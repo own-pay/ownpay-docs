@@ -3,6 +3,7 @@ title: "Disputes"
 description: "Track chargebacks and disputes through their full lifecycle, respond with evidence, and understand the financial impact of dispute outcomes."
 keywords: "disputes, chargebacks, dispute response, evidence upload, dispute lifecycle, financial disputes"
 sidebarTitle: "Disputes"
+icon: "alert-circle"
 ---
 
 A dispute (also called a chargeback) occurs when a customer contacts their bank or card issuer to reverse a completed payment. OwnPay tracks each dispute through its full lifecycle and records the financial impact on your ledger.
@@ -10,6 +11,7 @@ A dispute (also called a chargeback) occurs when a customer contacts their bank 
 ## Dispute lifecycle
 
 <Mermaid>
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
 stateDiagram-v2
     [*] --> Open: Chargeback received
     Open --> Under_Review: Evidence requested
@@ -49,7 +51,7 @@ Review the customer's dispute reason and the original transaction details.
 </Step>
 <Step>
 
-Under the **Evidence** section, upload supporting documents — delivery receipts, service logs, communication records, or any proof of fulfillment.
+Under the **Evidence** section, upload supporting documents - delivery receipts, service logs, communication records, or any proof of fulfillment.
 
 </Step>
 <Step>
@@ -100,7 +102,7 @@ Missing a dispute deadline almost always results in an automatic loss. Set up [w
 
 ## Related Pages
 
-- [Transactions](/payments/transactions) — View the original payment behind a dispute
-- [Refunds](/payments/refunds) — Issue refunds proactively to avoid disputes
-- [Audit Log](/reports/audit-log) — Track all dispute-related actions by staff
-- [Webhooks](/notifications/webhooks) — Set up real-time dispute alerts
+- [Transactions](/payments/transactions) - View the original payment behind a dispute
+- [Refunds](/payments/refunds) - Issue refunds proactively to avoid disputes
+- [Audit Log](/reports/audit-log) - Track all dispute-related actions by staff
+- [Webhooks](/notifications/webhooks) - Set up real-time dispute alerts

@@ -1,6 +1,6 @@
 ---
-title: "Plugin System — Extensible Architecture"
-description: "OwnPay's plugin architecture supports four types — gateway, addon, theme, and integration — using a manifest-based discovery system with hooks, filters, and a capabilities model."
+title: "Plugin System - Extensible Architecture"
+description: "OwnPay's plugin architecture supports four types - gateway, addon, theme, and integration - using a manifest-based discovery system with hooks, filters, and a capabilities model."
 keywords: "plugin system, plugin architecture, gateway plugins, theme plugins, addon plugins, integration plugins, hooks, filters, capabilities"
 sidebarTitle: "Plugins"
 icon: "puzzle"
@@ -12,7 +12,7 @@ import LlmsDirective from "/snippets/llms-directive.mdx";
   <LlmsDirective />
 </Visibility>
 
-OwnPay's core handles routing, the ledger, brands, and the checkout framework. Everything else — payment providers, custom themes, extra features, and third-party integrations — is delivered through **plugins**. This means you can extend OwnPay without modifying a single line of core code.
+OwnPay's core handles routing, the ledger, brands, and the checkout framework. Everything else - payment providers, custom themes, extra features, and third-party integrations - is delivered through **plugins**. This means you can extend OwnPay without modifying a single line of core code.
 
 ## Four plugin types
 
@@ -98,7 +98,7 @@ Common capabilities: `payment_processing`, `admin_ui`, `cron_jobs`, `webhook_han
 
 ## Plugin sandbox
 
-OwnPay restricts plugin upload to the platform owner (master administrator). A **footgun scanner** runs on upload and blocks dangerous functions like `eval()` and direct OS command execution. Standard PHP operations — reflection, callbacks, file I/O — are permitted.
+OwnPay restricts plugin upload to the platform owner (master administrator). A **footgun scanner** runs on upload and blocks dangerous functions like `eval()` and direct OS command execution. Standard PHP operations - reflection, callbacks, file I/O - are permitted.
 
 <Note>
   The security boundary is **owner-only upload**, not in-process isolation. Plugins run with full application trust, similar to the WordPress plugin model. Only install plugins from sources you trust.
@@ -106,8 +106,8 @@ OwnPay restricts plugin upload to the platform owner (master administrator). A *
 
 ## Related pages
 
-- [Plugin overview (developer)](/developer/plugins/overview) — build and register your first plugin
-- [Hooks reference](/developer/plugins/hooks) — complete list of available filters and actions
-- [Events reference](/developer/plugins/events) — event categories and listener registration
-- [Capabilities](/developer/plugins/capabilities) — declare and check plugin capabilities
-- [Build a gateway plugin](/developer/plugin-types/gateway) — step-by-step gateway development guide
+- [Plugin overview (developer)](/developer/plugins/overview) - build and register your first plugin
+- [Hooks reference](/developer/plugins/hooks) - complete list of available filters and actions
+- [Events reference](/developer/plugins/events) - event categories and listener registration
+- [Capabilities](/developer/plugins/capabilities) - declare and check plugin capabilities
+- [Build a gateway plugin](/developer/plugin-types/gateway) - step-by-step gateway development guide

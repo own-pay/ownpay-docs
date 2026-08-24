@@ -3,6 +3,7 @@ title: "PHP SDK"
 description: "Official OwnPay PHP SDK for creating payments, verifying statuses, and handling webhooks with type-safe responses."
 keywords: "PHP SDK, OwnPay PHP, composer, payment SDK, webhook helper, PHP payment integration"
 sidebarTitle: "PHP SDK"
+icon: "file-code-2"
 ---
 
 The official OwnPay PHP SDK provides a typed client for the Merchant API, a webhook verification helper, and automatic error handling.
@@ -36,8 +37,8 @@ $payment = $client->payments()->create([
     'cancel_url'     => 'https://your-store.com/cancel',
 ]);
 
-// $payment['data']['checkout_url'] — redirect customer here
-// $payment['data']['id']           — store for later verification
+// $payment['data']['checkout_url'] - redirect customer here
+// $payment['data']['id']           - store for later verification
 header('Location: ' . $payment['data']['checkout_url']);
 exit;
 ```
@@ -117,14 +118,14 @@ use OwnPay\SDK\Exceptions\{
 try {
     $payment = $client->payments()->create($payload);
 } catch (AuthenticationException $e) {
-    // 401 — check your API key
+    // 401 - check your API key
 } catch (ValidationException $e) {
-    // 422 — $e->getFields() returns the field-level errors array
+    // 422 - $e->getFields() returns the field-level errors array
     foreach ($e->getFields() as $fieldError) {
         echo $fieldError['field'] . ': ' . $fieldError['message'];
     }
 } catch (RateLimitException $e) {
-    // 429 — retry after $e->getRetryAfter() seconds
+    // 429 - retry after $e->getRetryAfter() seconds
     sleep($e->getRetryAfter());
 } catch (OwnPayException $e) {
     // Any other OwnPay error
@@ -137,7 +138,7 @@ try {
 ```env
 # .env
 OWNPAY_BASE_URL=https://your-domain.com
-OWNPAY_API_KEY=op_live_abc123...
+OWNPAY_API_KEY=op_live_abc123.def456
 OWNPAY_WEBHOOK_SECRET=whsec_abc123...
 ```
 

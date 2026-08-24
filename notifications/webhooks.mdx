@@ -3,6 +3,7 @@ title: "Webhooks"
 description: "Configure outbound webhooks with HMAC-SHA256 signatures to receive real-time event notifications when payments, refunds, and other actions occur."
 keywords: "webhooks, outbound webhooks, HMAC-SHA256, event notifications, webhook signatures, dead letter queue"
 sidebarTitle: "Webhooks"
+icon: "webhook"
 ---
 
 Webhooks let your external systems receive real-time notifications when events happen in OwnPay. Every webhook payload is signed with HMAC-SHA256 so you can verify authenticity. Webhook management lives in the [Developer Hub](/security/developer-hub).
@@ -17,7 +18,7 @@ Open **Developer Hub** from the left sidebar, then click the **Webhooks** tab.
 </Step>
 <Step>
 
-Click **Add Endpoint**. Enter your HTTPS URL — for example, `https://your-app.com/api/ownpay/webhook`.
+Click **Add Endpoint**. Enter your HTTPS URL - for example, `https://your-app.com/api/ownpay/webhook`.
 
 </Step>
 <Step>
@@ -27,7 +28,7 @@ Select the events you want to receive from the checkbox list. You can choose all
 </Step>
 <Step>
 
-Click **Save**. OwnPay generates a unique **signing secret**. Copy this secret immediately — it will not be shown again.
+Click **Save**. OwnPay generates a unique **signing secret**. Copy this secret immediately - it will not be shown again.
 
 </Step>
 </Steps>
@@ -82,6 +83,6 @@ Click the **Test Webhook** button next to any endpoint to send a sample `payment
 
 ## Related Pages
 
-- [Developer Hub](/security/developer-hub) — Overview of the developer tools section
-- [API Keys](/security/api-keys) — Manage credentials for API access
-- [Webhook API Reference](/api/webhooks) — Signature verification algorithm and payload schemas
+- [Developer Hub](/security/developer-hub) - Overview of the developer tools section
+- [API Keys](/security/api-keys) - Manage credentials for API access
+- [Webhook API Reference](/api/webhooks) - Signature verification algorithm and payload schemas

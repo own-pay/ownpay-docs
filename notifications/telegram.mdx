@@ -3,6 +3,7 @@ title: "Telegram Notifications"
 description: "Receive real-time push notifications for payment events directly in a Telegram chat using the telegram-bot addon."
 keywords: "telegram, telegram bot, push notifications, telegram notifications, bot token, chat ID"
 sidebarTitle: "Telegram"
+icon: "send"
 ---
 
 The **telegram-bot** addon sends instant push notifications to a Telegram chat whenever key payment events occur. This is faster than email and ideal for operators who want real-time alerts on their phone.
@@ -53,9 +54,9 @@ Click **Save**. A test message is sent to confirm the connection.
 
 The Telegram bot sends notifications for these events:
 
-- `payment.completed` — Payment received successfully
-- `payment.failed` — Payment attempt failed
-- `refund.issued` — Refund processed
+- `payment.completed` - Payment received successfully
+- `payment.failed` - Payment attempt failed
+- `refund.issued` - Refund processed
 
 Each notification includes the transaction amount, currency, gateway name, customer email (partial), and a link to the transaction in the admin panel.
 
@@ -74,6 +75,6 @@ Transaction amounts and partial customer identifiers are visible in Telegram mes
 
 ## Related Pages
 
-- [Addons](/system/addons) — Install and manage addons including telegram-bot
-- [Email Notifications](/notifications/email) — Alternative notification channel via SMTP
-- [Companion App](/mobile/companion-app) — Android app for SMS-based verification and notifications
+- [Addons](/system/addons) - Install and manage addons including telegram-bot
+- [Email Notifications](/notifications/email) - Alternative notification channel via SMTP
+- [Companion App](/mobile/companion-app) - Android app for SMS-based verification and notifications

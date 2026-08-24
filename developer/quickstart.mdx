@@ -1,8 +1,9 @@
 ---
 title: "API Integration Quick Start"
-description: "Build a simple payment form that creates a payment, redirects to checkout, and verifies the result — the fastest path to accepting payments with OwnPay."
+description: "Build a simple payment form that creates a payment, redirects to checkout, and verifies the result - the fastest path to accepting payments with OwnPay."
 keywords: "API quickstart, payment integration, create payment, checkout URL, payment verification, developer tutorial"
 sidebarTitle: "Quickstart"
+icon: "zap"
 ---
 
 In this quick start you will build a simple payment flow: create a payment intent, redirect the customer to the OwnPay checkout page, and verify the payment status. By the end you will have a working integration in under 10 minutes.
@@ -10,7 +11,7 @@ In this quick start you will build a simple payment flow: create a payment inten
 ## Prerequisites
 
 - A running OwnPay instance (v{{version}} or later)
-- An API key with `write` scope — see [API keys](/security/api-keys)
+- An API key with `write` scope - see [API keys](/security/api-keys)
 - Your preferred language (PHP, Node.js, or cURL)
 
 <Steps>
@@ -23,7 +24,7 @@ In this quick start you will build a simple payment flow: create a payment inten
 4. Copy the key and store it in an environment variable:
 
 ```bash
-export OWNPAY_API_KEY="op_live_your_key_here"
+export OWNPAY_API_KEY="op_live_abc123.def456"
 export OWNPAY_BASE_URL="https://your-domain.com/api/v1"
 ```
 
@@ -113,7 +114,7 @@ The customer sees the OwnPay-hosted checkout page where they choose a payment me
 
 ### Handle the return redirect
 
-After payment, OwnPay redirects the customer back to your `return_url` (configured per brand). You should **never trust the redirect alone** — always verify the payment status via the API.
+After payment, OwnPay redirects the customer back to your `return_url` (configured per brand). You should **never trust the redirect alone** - always verify the payment status via the API.
 
 ```php
 $payment = $client->payments()->get($_GET['payment_id']);

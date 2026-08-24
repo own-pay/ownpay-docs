@@ -1,5 +1,5 @@
 ---
-title: "Custom Domains — White-Label Checkout URLs"
+title: "Custom Domains - White-Label Checkout URLs"
 description: "Serve each brand's checkout on its own domain (e.g., pay.yourbrand.com) with automated DNS verification, SSL certificate provisioning, and tenant isolation."
 keywords: "custom domains, SSL provisioning, DNS verification, brand domains, checkout isolation, white-label domain"
 sidebarTitle: "Domains"
@@ -12,7 +12,7 @@ import LlmsDirective from "/snippets/llms-directive.mdx";
   <LlmsDirective />
 </Visibility>
 
-OwnPay is a white-label payment engine. Your customers should see **your** brand — not a shared platform URL. The domain system lets each brand operate under its own fully qualified domain with automated SSL and zero cross-tenant leakage.
+OwnPay is a white-label payment engine. Your customers should see **your** brand - not a shared platform URL. The domain system lets each brand operate under its own fully qualified domain with automated SSL and zero cross-tenant leakage.
 
 ## How custom domains work
 
@@ -20,6 +20,7 @@ When a request arrives, OwnPay's `DomainMiddleware` inspects the `HTTP_HOST` hea
 
 <Mermaid
   chart={`
+    %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
     sequenceDiagram
       participant C as Customer Browser
       participant DNS as DNS Resolver
@@ -47,7 +48,7 @@ When a request arrives, OwnPay's `DomainMiddleware` inspects the `HTTP_HOST` hea
 | **checkout** | Serves checkout, invoice, and payment pages | `pay.yourbrand.com` |
 | **api** | Serves API endpoints only | `api.yourbrand.com` |
 
-The **master domain** (configured via the `APP_DOMAIN` environment variable) is the only domain that can access the admin panel (`/admin/*`). Custom domains return a 404 for admin routes — this is a security feature, not a bug.
+The **master domain** (configured via the `APP_DOMAIN` environment variable) is the only domain that can access the admin panel (`/admin/*`). Custom domains return a 404 for admin routes - this is a security feature, not a bug.
 
 ## DNS configuration
 
@@ -85,7 +86,7 @@ Point your custom domain to your OwnPay server using one of these records:
 
 ## URL generation
 
-All customer-facing and gateway-facing URLs are built by `DomainUrlService` — never hardcoded. The priority order is:
+All customer-facing and gateway-facing URLs are built by `DomainUrlService` - never hardcoded. The priority order is:
 
 1. `GATEWAY_CALLBACK_URL` environment variable
 2. Brand's custom domain
@@ -98,8 +99,8 @@ All customer-facing and gateway-facing URLs are built by `DomainUrlService` — 
 
 ## Related pages
 
-- [System — Domains](/system/domains) — step-by-step setup guide with troubleshooting
-- [Appearance — Branding](/appearance/branding) — customize logos, colors, and checkout design
-- [Brands](/fundamentals/brands) — understand brand-level isolation and settings
-- [How OwnPay works](/fundamentals/how-ownpay-works) — full architecture overview
-- [Payment flow](/fundamentals/payment-flow) — how the checkout page fits into the transaction lifecycle
+- [System - Domains](/system/domains) - step-by-step setup guide with troubleshooting
+- [Appearance - Branding](/appearance/branding) - customize logos, colors, and checkout design
+- [Brands](/fundamentals/brands) - understand brand-level isolation and settings
+- [How OwnPay works](/fundamentals/how-ownpay-works) - full architecture overview
+- [Payment flow](/fundamentals/payment-flow) - how the checkout page fits into the transaction lifecycle

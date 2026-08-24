@@ -3,6 +3,7 @@ title: "Balance Verification"
 description: "Reconcile your double-entry ledger by comparing system-recorded balances against recalculated totals to catch any discrepancies."
 keywords: "balance verification, ledger reconciliation, double-entry, balance mismatch, financial audit"
 sidebarTitle: "Balance Verification"
+icon: "scale"
 ---
 
 Balance Verification lets you compare the balances stored in OwnPay's double-entry ledger against independently recalculated totals. This is essential for financial integrity and catching any data inconsistencies.
@@ -53,10 +54,10 @@ A **Matched** status means your ledger is consistent. All debits and credits sum
 
 If the verification shows a mismatch:
 
-1. **Check for manual ledger adjustments** — Review the [audit log](/reports/audit-log) for any `ledger.adjustment` actions in the selected period
-2. **Verify no transactions were deleted** — OwnPay prevents transaction deletion, but direct database modifications could cause inconsistencies
-3. **Check for partial refunds** — Ensure partial refunds were recorded with the correct amounts using `bcmath` precision
-4. **Run the verification again** — Exclude the most recent day to isolate when the discrepancy started
+1. **Check for manual ledger adjustments** - Review the [audit log](/reports/audit-log) for any `ledger.adjustment` actions in the selected period
+2. **Verify no transactions were deleted** - OwnPay prevents transaction deletion, but direct database modifications could cause inconsistencies
+3. **Check for partial refunds** - Ensure partial refunds were recorded with the correct amounts using `bcmath` precision
+4. **Run the verification again** - Exclude the most recent day to isolate when the discrepancy started
 
 <Warning>
 Never manually edit database tables to fix a balance mismatch. Contact {{supportEmail}} if you cannot identify the root cause. Incorrect manual fixes can compound the discrepancy.
@@ -68,6 +69,6 @@ Schedule a weekly balance verification as part of your operational routine. Smal
 
 ## Related Pages
 
-- [Ledger](/fundamentals/ledger) — How the double-entry system works
-- [Audit Log](/reports/audit-log) — Review actions that may have affected balances
-- [Dashboard](/reports/dashboard) — High-level financial metrics
+- [Ledger](/fundamentals/ledger) - How the double-entry system works
+- [Audit Log](/reports/audit-log) - Review actions that may have affected balances
+- [Dashboard](/reports/dashboard) - High-level financial metrics

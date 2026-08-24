@@ -9,9 +9,9 @@
     "raiseIssue": true
   },
   "colors": {
-    "primary": "#0178C8",
-    "light": "#7EC8FC",
-    "dark": "#4A6FA5"
+    "primary": "#0F97ED",
+    "light": "#5BB8F5",
+    "dark": "#102963"
   },
   "favicon": "/favicon.svg",
   "logo": {
@@ -156,7 +156,7 @@
     "docsUrl": "https://ownpay.org/docs",
     "mcpUrl": "https://ownpay.org/docs/mcp",
     "skillsUrl": "https://ownpay.org/docs/skill.md",
-    "supportEmail": "support@ownpay.org"
+    "supportEmail": "ping@ownpay.org"
   },
   "interaction": {
     "drilldown": true
@@ -294,284 +294,284 @@
       ]
     },
     "tabs": [
-      {
-        "tab": "Documentation",
-        "icon": "book-open",
-        "groups": [
           {
-            "group": "Get Started",
-            "icon": "rocket",
-            "pages": [
-              "introduction",
-              "quickstart",
-              "installation"
+            "tab": "Documentation",
+            "icon": "book-open",
+            "groups": [
+              {
+                "group": "Get Started",
+                "icon": "rocket",
+                "pages": [
+                  "introduction",
+                  "quickstart",
+                  "installation"
+                ]
+              },
+              {
+                "group": "Fundamentals",
+                "icon": "layers",
+                "pages": [
+                  "fundamentals/how-ownpay-works",
+                  "fundamentals/brands",
+                  "fundamentals/payment-flow",
+                  "fundamentals/gateways",
+                  "fundamentals/ledger",
+                  "fundamentals/plugins",
+                  "fundamentals/domains"
+                ]
+              },
+              {
+                "group": "People",
+                "icon": "users",
+                "pages": [
+                  "people/brands",
+                  "people/staff",
+                  "people/roles",
+                  "people/customers"
+                ]
+              },
+              {
+                "group": "Payments",
+                "icon": "credit-card",
+                "pages": [
+                  "payments/payment-links",
+                  "payments/transactions",
+                  "payments/refunds",
+                  "payments/invoices",
+                  "payments/ledger"
+                ]
+              },
+              {
+                "group": "Gateways & Currencies",
+                "icon": "wallet",
+                "pages": [
+                  "gateways/configuration",
+                  "gateways/manual-methods",
+                  "gateways/currencies",
+                  "gateways/sms-verification"
+                ]
+              },
+              {
+                "group": "Appearance",
+                "icon": "palette",
+                "pages": [
+                  "appearance/branding",
+                  "appearance/themes",
+                  "appearance/landing-page"
+                ]
+              },
+              {
+                "group": "Notifications",
+                "icon": "bell",
+                "pages": [
+                  "notifications/email",
+                  "notifications/webhooks",
+                  "notifications/telegram",
+                  "notifications/sms-center"
+                ]
+              },
+              {
+                "group": "Mobile",
+                "icon": "smartphone",
+                "pages": [
+                  "mobile/companion-app",
+                  "mobile/devices",
+                  "mobile/sms-templates"
+                ]
+              },
+              {
+                "group": "Reports & Finance",
+                "icon": "bar-chart-3",
+                "pages": [
+                  "reports/dashboard",
+                  "reports/audit-log",
+                  "reports/balance-verification",
+                  "reports/disputes"
+                ]
+              },
+              {
+                "group": "System",
+                "icon": "settings",
+                "pages": [
+                  "system/settings",
+                  "system/domains",
+                  "system/plugins",
+                  "system/addons",
+                  "system/languages",
+                  "system/system-update"
+                ]
+              },
+              {
+                "group": "Security & Access",
+                "icon": "lock",
+                "pages": [
+                  "security/login",
+                  "security/two-factor",
+                  "security/password-reset",
+                  "security/api-keys",
+                  "security/developer-hub",
+                  "security/my-account"
+                ]
+              },
+              {
+                "group": "Checkout",
+                "icon": "shopping-cart",
+                "pages": [
+                  "checkout/customer-experience"
+                ]
+              }
             ]
           },
           {
-            "group": "Fundamentals",
-            "icon": "layers",
-            "pages": [
-              "fundamentals/how-ownpay-works",
-              "fundamentals/brands",
-              "fundamentals/payment-flow",
-              "fundamentals/gateways",
-              "fundamentals/ledger",
-              "fundamentals/plugins",
-              "fundamentals/domains"
+            "tab": "API Reference",
+            "icon": "square-terminal",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "book",
+                "pages": [
+                  "api/overview",
+                  "api/authentication",
+                  "api/errors",
+                  "api/webhooks"
+                ]
+              },
+              {
+                "group": "Merchant API",
+                "icon": "store",
+                "openapi": "api/merchant_api.yaml"
+              },
+              {
+                "group": "Mobile API",
+                "icon": "smartphone",
+                "openapi": "api/mobile_api.yaml"
+              },
+              {
+                "group": "Admin API",
+                "icon": "shield",
+                "openapi": "api/admin_api.yaml"
+              }
             ]
           },
           {
-            "group": "People",
-            "icon": "users",
-            "pages": [
-              "people/brands",
-              "people/staff",
-              "people/roles",
-              "people/customers"
-            ]
-          },
-          {
-            "group": "Payments",
-            "icon": "credit-card",
-            "pages": [
-              "payments/payment-links",
-              "payments/transactions",
-              "payments/refunds",
-              "payments/invoices",
-              "payments/ledger"
-            ]
-          },
-          {
-            "group": "Gateways & Currencies",
-            "icon": "wallet",
-            "pages": [
-              "gateways/configuration",
-              "gateways/manual-methods",
-              "gateways/currencies",
-              "gateways/sms-verification"
-            ]
-          },
-          {
-            "group": "Appearance",
-            "icon": "palette",
-            "pages": [
-              "appearance/branding",
-              "appearance/themes",
-              "appearance/landing-page"
-            ]
-          },
-          {
-            "group": "Notifications",
-            "icon": "bell",
-            "pages": [
-              "notifications/email",
-              "notifications/webhooks",
-              "notifications/telegram",
-              "notifications/sms-center"
-            ]
-          },
-          {
-            "group": "Mobile",
-            "icon": "smartphone",
-            "pages": [
-              "mobile/companion-app",
-              "mobile/devices",
-              "mobile/sms-templates"
-            ]
-          },
-          {
-            "group": "Reports & Finance",
-            "icon": "chart-bar",
-            "pages": [
-              "reports/dashboard",
-              "reports/audit-log",
-              "reports/balance-verification",
-              "reports/disputes"
-            ]
-          },
-          {
-            "group": "System",
-            "icon": "settings",
-            "pages": [
-              "system/settings",
-              "system/domains",
-              "system/plugins",
-              "system/addons",
-              "system/languages",
-              "system/system-update"
-            ]
-          },
-          {
-            "group": "Security & Access",
-            "icon": "lock",
-            "pages": [
-              "security/login",
-              "security/two-factor",
-              "security/password-reset",
-              "security/api-keys",
-              "security/developer-hub",
-              "security/my-account"
-            ]
-          },
-          {
-            "group": "Checkout",
-            "icon": "shopping-cart",
-            "pages": [
-              "checkout/customer-experience"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "icon": "square-terminal",
-        "groups": [
-          {
-            "group": "Overview",
-            "icon": "book",
-            "pages": [
-              "api/overview",
-              "api/authentication",
-              "api/errors",
-              "api/webhooks"
-            ]
-          },
-          {
-            "group": "Merchant API",
-            "icon": "store",
-            "openapi": "api/merchant_api.yaml"
-          },
-          {
-            "group": "Mobile API",
-            "icon": "smartphone",
-            "openapi": "api/mobile_api.yaml"
-          },
-          {
-            "group": "Admin API",
-            "icon": "shield",
-            "openapi": "api/admin_api.yaml"
-          }
-        ]
-      },
-      {
-        "tab": "Developer",
-        "icon": "code",
-        "groups": [
-          {
-            "group": "Getting Started",
-            "icon": "rocket",
-            "pages": [
-              "developer/quickstart",
-              "developer/testing",
-              "developer/webhook-integration"
-            ]
-          },
-          {
-            "group": "SDKs & Libraries",
-            "icon": "plug",
-            "pages": [
-              "developer/integration/php",
-              "developer/integration/laravel",
-              "developer/integration/nodejs",
-              "developer/integration/python",
-              "developer/integration/woocommerce",
-              "developer/integration/whmcs"
-            ]
-          },
-          {
-            "group": "Plugin System",
-            "icon": "puzzle",
-            "pages": [
-              "developer/plugins/overview",
-              "developer/plugins/directory-structure",
-              "developer/plugins/manifest",
-              "developer/plugins/hooks",
-              "developer/plugins/events",
-              "developer/plugins/capabilities",
-              "developer/plugins/lifecycle"
-            ]
-          },
-          {
-            "group": "Building Plugins",
-            "icon": "wrench",
-            "pages": [
-              "developer/plugin-types/gateway",
-              "developer/plugin-types/addon",
-              "developer/plugin-types/theme",
-              "developer/plugin-types/integration"
-            ]
-          },
-          {
-            "group": "Translations",
-            "icon": "globe",
-            "pages": [
-              "developer/translations"
-            ]
-          },
-          {
-            "group": "AI Tools",
-            "icon": "bot",
-            "pages": [
-              "developer/ai/overview",
-              "developer/ai/mcp",
-              "developer/ai/skills"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Resources",
-        "icon": "folder",
-        "groups": [
-          {
-            "group": "About",
-            "icon": "info",
-            "pages": [
-              "resources/features",
-              "resources/architecture",
-              "resources/roadmap",
-              "resources/ecosystem"
-            ]
-          },
-          {
-            "group": "Advanced",
-            "icon": "shield",
-            "pages": [
-              "resources/security-compliance",
-              "resources/performance-scaling",
-              "resources/backup-export",
-              "resources/migration-guide",
-              "resources/rate-limiting"
-            ]
-          },
-          {
-            "group": "Troubleshooting",
-            "icon": "alert-triangle",
-            "pages": [
-              "resources/common-errors",
-              "resources/faq",
-              "resources/debug-mode"
-            ]
-          },
-          {
-            "group": "Community",
-            "icon": "users",
-            "pages": [
-              "resources/contributing",
-              "resources/code-of-conduct",
-              "resources/changelog",
-              "resources/glossary"
-            ]
-          },
-          {
-            "group": "Code Examples",
+            "tab": "Developer",
             "icon": "code",
-            "pages": [
-              "resources/code-examples"
+            "groups": [
+              {
+                "group": "Getting Started",
+                "icon": "rocket",
+                "pages": [
+                  "developer/quickstart",
+                  "developer/testing",
+                  "developer/webhook-integration"
+                ]
+              },
+              {
+                "group": "SDKs & Libraries",
+                "icon": "plug",
+                "pages": [
+                  "developer/integration/php",
+                  "developer/integration/laravel",
+                  "developer/integration/nodejs",
+                  "developer/integration/python",
+                  "developer/integration/woocommerce",
+                  "developer/integration/whmcs"
+                ]
+              },
+              {
+                "group": "Plugin System",
+                "icon": "puzzle",
+                "pages": [
+                  "developer/plugins/overview",
+                  "developer/plugins/directory-structure",
+                  "developer/plugins/manifest",
+                  "developer/plugins/hooks",
+                  "developer/plugins/events",
+                  "developer/plugins/capabilities",
+                  "developer/plugins/lifecycle"
+                ]
+              },
+              {
+                "group": "Building Plugins",
+                "icon": "wrench",
+                "pages": [
+                  "developer/plugin-types/gateway",
+                  "developer/plugin-types/addon",
+                  "developer/plugin-types/theme",
+                  "developer/plugin-types/integration"
+                ]
+              },
+              {
+                "group": "Translations",
+                "icon": "globe",
+                "pages": [
+                  "developer/translations"
+                ]
+              },
+              {
+                "group": "AI Tools",
+                "icon": "bot",
+                "pages": [
+                  "developer/ai/overview",
+                  "developer/ai/mcp",
+                  "developer/ai/skills"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Resources",
+            "icon": "folder",
+            "groups": [
+              {
+                "group": "About",
+                "icon": "info",
+                "pages": [
+                  "resources/features",
+                  "resources/architecture",
+                  "resources/roadmap",
+                  "resources/ecosystem"
+                ]
+              },
+              {
+                "group": "Advanced",
+                "icon": "shield",
+                "pages": [
+                  "resources/security-compliance",
+                  "resources/performance-scaling",
+                  "resources/backup-export",
+                  "resources/migration-guide",
+                  "resources/rate-limiting"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "alert-triangle",
+                "pages": [
+                  "resources/common-errors",
+                  "resources/faq",
+                  "resources/debug-mode"
+                ]
+              },
+              {
+                "group": "Community",
+                "icon": "users",
+                "pages": [
+                  "resources/contributing",
+                  "resources/code-of-conduct",
+                  "resources/changelog",
+                  "resources/glossary"
+                ]
+              },
+              {
+                "group": "Code Examples",
+                "icon": "code",
+                "pages": [
+                  "resources/code-examples"
+                ]
+              }
             ]
           }
         ]
-      }
-    ]
   }
 }

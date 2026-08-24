@@ -3,6 +3,7 @@ title: "Webhook Integration Tutorial"
 description: "End-to-end tutorial for building a webhook receiver that listens for payment.completed events with complete PHP and Node.js code examples."
 keywords: "webhook tutorial, webhook receiver, payment completed, webhook integration, PHP webhook, Node.js webhook, Express webhook"
 sidebarTitle: "Webhook integration"
+icon: "link"
 ---
 
 In this tutorial you will build a webhook receiver that listens for `payment.completed` events from OwnPay and updates your order database. By the end you will have a production-ready endpoint in PHP or Node.js.
@@ -57,7 +58,7 @@ if (abs(time() - $timestamp) > 300) {
     exit;
 }
 
-// 2. Verify HMAC-SHA256 signature — see /api/webhooks
+// 2. Verify HMAC-SHA256 signature - see /api/webhooks
 $expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
 if (!hash_equals($expected, $signature)) {
     http_response_code(401);
@@ -158,7 +159,7 @@ app.post('/webhooks/ownpay', async (req, res) => {
     return res.status(403).json({ error: 'Timestamp too old' });
   }
 
-  // 2. Verify signature — see /api/webhooks
+  // 2. Verify signature - see /api/webhooks
   const hmac = crypto.createHmac('sha256', SECRET).update(rawBody).digest('hex');
   const expected = `sha256=${hmac}`;
 
@@ -204,9 +205,9 @@ app.listen(8080, () => console.log('Webhook server listening on :8080'));
 
 When moving to production, keep these principles in mind:
 
-- **Idempotency** — check your database state before applying changes. OwnPay may deliver the same event more than once.
-- **Timeout** — respond within 10 seconds. If processing is slow, respond `200` immediately and handle asynchronously in a queue.
-- **Log everything** — store the raw payload and your processing result for debugging.
+- **Idempotency** - check your database state before applying changes. OwnPay may deliver the same event more than once.
+- **Timeout** - respond within 10 seconds. If processing is slow, respond `200` immediately and handle asynchronously in a queue.
+- **Log everything** - store the raw payload and your processing result for debugging.
 
 ### Error handling and retries
 
@@ -214,24 +215,24 @@ OwnPay uses your HTTP status code to decide whether to retry:
 
 | Your response | OwnPay action |
 |---|---|
-| 2xx | Delivered — no retry |
-| 4xx | Permanent failure — no retry (fix your code) |
-| 5xx or timeout | Temporary failure — retry on schedule |
+| 2xx | Delivered - no retry |
+| 4xx | Permanent failure - no retry (fix your code) |
+| 5xx or timeout | Temporary failure - retry on schedule |
 
 See the full retry schedule on the [Webhooks](/api/webhooks) page.
 
 <Warning>
-Never return a 5xx for validation errors (e.g. unknown event type). Return 200 and log the event — returning 5xx causes unnecessary retries.
+Never return a 5xx for validation errors (e.g. unknown event type). Return 200 and log the event - returning 5xx causes unnecessary retries.
 </Warning>
 
 </Steps>
 
 ### Security best practices
 
-- Verify the signature on **every** request — never skip it
+- Verify the signature on **every** request - never skip it
 - Reject events with timestamps older than 5 minutes to prevent replay attacks
-- Only process events you have registered for — ignore unknown event types
-- Use HTTPS exclusively — OwnPay never sends webhooks to HTTP endpoints
+- Only process events you have registered for - ignore unknown event types
+- Use HTTPS exclusively - OwnPay never sends webhooks to HTTP endpoints
 - Keep your webhook secret in environment variables, never in code
 
 ## Related pages

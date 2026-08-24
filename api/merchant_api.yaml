@@ -8,7 +8,7 @@ info:
     ### Authentication
     Authentication is performed via HTTP Bearer token in the `Authorization` header.
     ```http
-    Authorization: Bearer your_api_key_here
+    Authorization: Bearer op_live_abc123.def456
     ```
     API keys carry specific privilege scopes (e.g., `read`, `write`, `admin`).
     Some administrative operations (like listing/generating API keys) require **both** `write` and `admin` scopes, as well as passing a valid platform super-administrator's email address in the `X-Super-Admin-Email` header for safety.
@@ -1148,7 +1148,7 @@ components:
             key:
               type: string
               description: The full generated API key secret. You must copy and store this; it is never visible again.
-              example: "op_live_5gH2k8S3m9F0a1D2..."
+              example: "op_live_5gH2k8S3m9F0a1D2.xYz9Qw1Er8Tn"
             prefix:
               type: string
               description: Safe prefix string used to identify the key in reports.

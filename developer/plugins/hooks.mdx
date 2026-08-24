@@ -3,6 +3,7 @@ title: "Hooks Reference"
 description: "Comprehensive catalog of WordPress-style action and filter hooks organized by domain: payment, gateway, checkout, system, admin, and plugin lifecycle."
 keywords: "hooks reference, action hooks, filter hooks, EventManager, payment hooks, gateway hooks, checkout hooks, system hooks"
 sidebarTitle: "Hooks"
+icon: "anchor"
 ---
 
 The hook system is the primary way plugins interact with OwnPay core. It uses WordPress-style **actions** (fire-and-forget) and **filters** (data pipeline) implemented by `OwnPay\Event\EventManager`.
@@ -130,11 +131,11 @@ public function register(EventManager $events, Container $container): void
 
 These constraints cannot be bypassed by any plugin:
 
-1. **Security middleware is non-removable** — you cannot remove the authentication, CSRF, or TenantScope middleware from the pipeline
-2. **TenantScope is non-bypassable** — every request is scoped to a brand; a plugin cannot access data from other brands
-3. **Error isolation** — every callback runs in its own try/catch. A failing plugin never crashes the core
-4. **BCMath for money** — all monetary values in hooks must use `bcadd`, `bcsub`, `bcmul`, `bcdiv`, `bccomp`
-5. **No ledger writes from hooks** — plugins cannot post directly to the double-entry ledger
+1. **Security middleware is non-removable** - you cannot remove the authentication, CSRF, or TenantScope middleware from the pipeline
+2. **TenantScope is non-bypassable** - every request is scoped to a brand; a plugin cannot access data from other brands
+3. **Error isolation** - every callback runs in its own try/catch. A failing plugin never crashes the core
+4. **BCMath for money** - all monetary values in hooks must use `bcadd`, `bcsub`, `bcmul`, `bcdiv`, `bccomp`
+5. **No ledger writes from hooks** - plugins cannot post directly to the double-entry ledger
 
 ## Related pages
 

@@ -3,6 +3,7 @@ title: "Python Integration"
 description: "Integrate OwnPay into Python applications using the requests library with a complete OwnPayClient class, webhook verification, and pagination."
 keywords: "Python payment integration, OwnPay Python, requests library, webhook verification Python, payment client Python"
 sidebarTitle: "Python"
+icon: "terminal-square"
 ---
 
 There is no official OwnPay Python SDK yet. This guide shows you how to integrate using the popular `requests` library with a complete, reusable client class.
@@ -202,7 +203,7 @@ except OwnPayError as e:
     if e.status_code == 422:
         print(f"Validation failed: {e.message}")
     elif e.status_code == 429:
-        print("Rate limited — retry later")
+        print("Rate limited - retry later")
     elif e.status_code == 401:
         print("Check your API key")
     else:

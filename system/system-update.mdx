@@ -3,6 +3,7 @@ title: "System Update"
 description: "Keep your OwnPay instance up to date with one-click updates, automatic backups, and a rollback procedure if anything goes wrong."
 keywords: "system update, upgrade, rollback, backup, auto-update, one-click update, CLI update"
 sidebarTitle: "System Update"
+icon: "refresh-cw"
 ---
 
 OwnPay provides a one-click update system that keeps your instance current with the latest features, security patches, and bug fixes.
@@ -52,7 +53,7 @@ After every update, perform these checks:
 1. **Log in** and verify the dashboard loads correctly
 2. **Check the Environment Info** panel in [Settings](/system/settings) to confirm the new version
 3. **Test a checkout** on at least one brand to ensure payment flows work
-4. **Review plugin compatibility** — some plugins may need updates after a major OwnPay release
+4. **Review plugin compatibility** - some plugins may need updates after a major OwnPay release
 
 <Tip>
 OwnPay automatically clears the Redis cache after an update. If you see stale data, manually refresh the page.
@@ -86,7 +87,7 @@ Verify the rollback by checking the version in Settings > Environment Info.
 </Steps>
 
 <Warning>
-Rollback restores files and database to the pre-update state. Any transactions processed between the update and the rollback are preserved in the database — they are not reverted.
+Rollback restores files and database to the pre-update state. Any transactions processed between the update and the rollback are preserved in the database - they are not reverted.
 </Warning>
 
 ## Update via CLI
@@ -105,6 +106,6 @@ For migration guidance between major versions, see the [Migration Guide](/resour
 
 ## Related Pages
 
-- [Settings](/system/settings) — Verify version and environment after updating
-- [Backup & Export](/resources/backup-export) — Manual backup procedures
-- [Migration Guide](/resources/migration-guide) — Major version upgrade instructions
+- [Settings](/system/settings) - Verify version and environment after updating
+- [Backup & Export](/resources/backup-export) - Manual backup procedures
+- [Migration Guide](/resources/migration-guide) - Major version upgrade instructions

@@ -8,7 +8,7 @@ info:
     ### Authentication
     Administrative endpoints require Bearer authentication using an API key generated with the `admin` privilege scope.
     ```http
-    Authorization: Bearer <admin_api_key>
+    Authorization: Bearer op_admin_abc123.def456
     ```
     All actions executed via this API are strictly isolated and scoped to the brand/merchant associated with the provided credentials.
     Note that administrative API routes are protected and are **only** accessible on the master domain configured via the `APP_DOMAIN` environment variable (e.g. `ownpay.org`), and are blocked on custom brand domains.

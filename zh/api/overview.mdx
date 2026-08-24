@@ -1,0 +1,130 @@
+---
+title: "API 概览"
+description: "OwnPay REST API 的规范参考，涵盖基础 URL、三个 API 层、请求和响应格式、错误处理、幂等性和速率限制。"
+keywords: "OwnPay API, REST API, 支付 API, API 概览, 基础 URL, API 层, Merchant API, Mobile API, Admin API"
+sidebarTitle: "概览"
+icon: "square-terminal"
+---
+
+OwnPay API 让您能够创建支付、管理交易、处理退款并接收实时 Webhook。本页面是 API 工作方式的单一规范参考 —— 所有其他 API 页面都链接回此处。
+
+## 基础 URL
+
+所有 API 请求都发送到您 OwnPay 实例上的单一基础路径：
+
+```text
+https://your-domain.com/api/v1
+```
+
+<Note>
+将 `your-domain.com` 替换为您实际的 OwnPay 域名。所有端点都需要 HTTPS。
+</Note>
+
+## 身份验证
+
+每个请求都必须在 `Authorization` 头中包含 Bearer 令牌。请参阅完整的[身份验证](/api/authentication)指南了解如何生成、设置范围和轮换您的 API 密钥。
+
+```http
+Authorization: Bearer op_live_abc123.def456
+```
+
+## 三个 API 层
+
+OwnPay 暴露三个独立的 API 层，每个层服务于不同的受众，并拥有自己的 OpenAPI 规范。
+
+<Columns>
+<Column>
+
+### Merchant API
+
+面向您应用的业务操作：创建支付、列出交易、管理支付链接和处理退款。这是您最常使用的 API。
+
+[查看 Merchant API 规范](/api/merchant_api.yaml)
+
+</Column>
+<Column>
+
+### Mobile API
+
+仅供 OwnPay Android 伴侣应用使用。处理短信验证、设备配对和基于推送的交易审批。
+
+[查看 Mobile API 规范](/api/mobile_api.yaml)
+
+</Column>
+<Column>
+
+### Admin API
+
+平台管理操作：管理品牌、配置网关、控制用户和管理系统。需要提升的权限。
+
+[查看 Admin API 规范](/api/admin_api.yaml)
+
+</Column>
+</Columns>
+
+## 请求和响应格式
+
+所有请求和响应使用 **JSON** 格式和 **UTF-8** 编码。
+
+### 约定
+
+| 约定 | 详情 |
+|---|---|
+| 内容类型 | `application/json` |
+| 字符编码 | UTF-8 |
+| 日期格式 | ISO 8601（`2024-06-15T10:30:00Z`）|
+| 金额 | 通过 bcmath 的字符串（例如 `"5000"`、`"99.99"`）|
+| 标识符 | 带前缀的字符串（`pay_...`、`txn_...`）|
+
+<Tip>
+所有金额都以**字符串**形式返回，因为 OwnPay 使用 PHP 的 bcmath 扩展来确保精度。切勿将金额解析为浮点数 —— 请在您的编程语言中使用任意精度算术。
+</Tip>
+
+## 错误处理
+
+每个错误响应都遵循一致的 JSON 结构。请参阅完整的[错误代码](/api/errors)参考了解所有状态码、错误代码和故障排除步骤。
+
+## 幂等性
+
+对于写入端点（`POST`、`PATCH`、`DELETE`），您可以包含 `Idempotency-Key` 头以防止重复处理：
+
+```http
+Idempotency-Key: ord_1042_20240615
+```
+
+OwnPay 存储第一次请求的结果，并在 24 小时窗口内对具有相同密钥的后续请求返回相同的响应。
+
+## 速率限制
+
+所有 API 端点都实施速率限制。OwnPay 在每个响应中返回标准的速率限制头：
+
+```http
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 59
+X-RateLimit-Reset: 1718000060
+```
+
+请参阅[速率限制](/resources/rate-limiting)了解层级详情和最佳实践。
+
+## 快速链接
+
+<CardGroup cols={3}>
+<Card title="创建支付" icon="credit-card" href="/api/merchant_api.yaml">
+跳转到 Merchant API 规范并找到 POST /payments 端点。
+</Card>
+<Card title="验证 Webhook" icon="shield-check" href="/api/webhooks">
+规范的 Webhook 签名验证，包含 PHP、Node.js 和 Python 代码示例。
+</Card>
+<Card title="SDK" icon="code" href="/developer/quickstart">
+适用于 PHP、Laravel 和 Node.js 的官方 SDK，加速您的集成。
+</Card>
+</CardGroup>
+
+## 相关页面
+
+- [身份验证](/api/authentication)
+- [错误代码](/api/errors)
+- [Webhook](/api/webhooks)
+- [速率限制](/resources/rate-limiting)
+- [API 密钥](/security/api-keys)
+- [Merchant API 规范](/api/merchant_api.yaml)

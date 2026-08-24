@@ -3,9 +3,10 @@ title: "Integration Plugin Development"
 description: "Build integration plugins for third-party platforms like QuickBooks, HubSpot, and Slack using payment hooks and outbound API calls."
 keywords: "integration plugin, CRM integration, ERP integration, Slack notifications, QuickBooks sync, HubSpot integration, third-party plugin"
 sidebarTitle: "Integration Dev"
+icon: "plug"
 ---
 
-Integration plugins connect OwnPay to external platforms: CRMs, ERPs, accounting software, analytics dashboards, and notification services. They do not process payments — they react to payment events and push data outbound.
+Integration plugins connect OwnPay to external platforms: CRMs, ERPs, accounting software, analytics dashboards, and notification services. They do not process payments - they react to payment events and push data outbound.
 
 ## Common use cases
 
@@ -178,7 +179,7 @@ The `fields()` method defines the settings form that appears in the admin panel.
 
 - Always check if the webhook URL is configured before making outbound calls
 - Set a short HTTP timeout (5 seconds) so your hook callback does not block checkout
-- Never throw from a hook callback — the error isolation wrapper catches it, but logging is better
+- Never throw from a hook callback - the error isolation wrapper catches it, but logging is better
 - Log failed outbound calls for debugging
 
 ## Testing

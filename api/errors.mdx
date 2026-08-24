@@ -3,6 +3,7 @@ title: "API Error Codes"
 description: "Canonical reference for OwnPay API error responses, HTTP status codes, the error object structure, and field-level validation errors."
 keywords: "API errors, error codes, HTTP status codes, validation errors, error response format, API troubleshooting"
 sidebarTitle: "Error codes"
+icon: "alert-triangle"
 ---
 
 Every OwnPay API error follows a single consistent JSON structure. This page is the canonical reference for understanding and handling errors.
@@ -21,9 +22,9 @@ All error responses share this shape:
 }
 ```
 
-- `success` — always `false` for errors
-- `error.code` — machine-readable string you can switch on in your code
-- `error.message` — human-readable description safe to display to end users
+- `success` - always `false` for errors
+- `error.code` - machine-readable string you can switch on in your code
+- `error.message` - human-readable description safe to display to end users
 
 ## HTTP status codes
 
@@ -35,8 +36,8 @@ All error responses share this shape:
 | 404 | Not found | Requested resource does not exist |
 | 409 | Conflict | Duplicate resource (e.g. duplicate Idempotency-Key) |
 | 422 | Validation failed | Business-logic validation error (see field errors below) |
-| 429 | Rate limited | Too many requests — retry after `X-RateLimit-Reset` epoch |
-| 500 | Server error | Unexpected internal failure — retry with backoff |
+| 429 | Rate limited | Too many requests - retry after `X-RateLimit-Reset` epoch |
+| 500 | Server error | Unexpected internal failure - retry with backoff |
 
 ## Error object structure
 

@@ -1,6 +1,6 @@
 ---
 title: "How OwnPay Works"
-description: "The big-picture architecture of OwnPay — how customers, checkout, the payment router, gateways, callbacks, and webhooks connect to process a payment end to end."
+description: "The big-picture architecture of OwnPay - how customers, checkout, the payment router, gateways, callbacks, and webhooks connect to process a payment end to end."
 keywords: "OwnPay architecture, payment orchestrator, how it works, payment router, gateway routing, payment flow, multi-brand architecture"
 sidebarTitle: "How OwnPay Works"
 icon: "brain"
@@ -12,12 +12,13 @@ import LlmsDirective from "/snippets/llms-directive.mdx";
   <LlmsDirective />
 </Visibility>
 
-OwnPay sits between your business and 123+ payment providers. When a customer clicks "Pay," OwnPay routes the payment to the right gateway, records the result in a double-entry ledger, and sends a webhook back to your application — all from infrastructure you control.
+OwnPay sits between your business and 123+ payment providers. When a customer clicks "Pay," OwnPay routes the payment to the right gateway, records the result in a double-entry ledger, and sends a webhook back to your application - all from infrastructure you control.
 
 ## The big picture
 
 <Mermaid
   chart={`
+    %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
     sequenceDiagram
       participant C as Customer
       participant CO as OwnPay Checkout
@@ -46,7 +47,7 @@ This sequence plays out the same way whether the payment comes from a hosted che
 
 <CardGroup cols={3}>
   <Card title="Brands" icon="store" href="/fundamentals/brands">
-    Isolated merchant tenants — each brand has its own gateways, domain, staff, API keys, and ledger.
+    Isolated merchant tenants - each brand has its own gateways, domain, staff, API keys, and ledger.
   </Card>
   <Card title="Payment flow" icon="arrow-right-circle" href="/fundamentals/payment-flow">
     The lifecycle of a transaction from creation through processing to completion, failure, or expiry.
@@ -58,7 +59,7 @@ This sequence plays out the same way whether the payment comes from a hosted che
     Double-entry bookkeeping that records every money movement as balanced debit-credit pairs per brand.
   </Card>
   <Card title="Plugins" icon="puzzle" href="/fundamentals/plugins">
-    Extensible architecture with four plugin types — gateway, addon, theme, and integration — using hooks and events.
+    Extensible architecture with four plugin types - gateway, addon, theme, and integration - using hooks and events.
   </Card>
   <Card title="Domains" icon="globe" href="/fundamentals/domains">
     White-label custom domains per brand with automated DNS verification and SSL certificate provisioning.
@@ -67,19 +68,19 @@ This sequence plays out the same way whether the payment comes from a hosted che
 
 ## What makes OwnPay different
 
-- **Self-hosted with full data sovereignty** — your server, your database, your rules. Customer PII is encrypted with AES-256-GCM at rest. No third party sees your data.
-- **123+ gateways out of the box** — international processors (Stripe, PayPal) alongside regional leaders (bKash, Nagad, GCash, Razorpay, SSLCommerz) with more added every release.
-- **Zero transaction fees from OwnPay** — licensed under AGPL-3.0. You only pay your gateway's own processing fees.
-- **AGPL-3.0 licensed and free forever** — no feature gates, no licensing tiers, no phone-home telemetry. Full source on [GitHub]({{github}}).
-- **Plugin-extensible** — add gateways, themes, addons, and integrations without modifying core code. Over 60 hooks and a full event system.
-- **Double-entry ledger** — accounting-grade financial tracking with `bcmath`-powered precision, brand isolation, and built-in reconciliation.
+- **Self-hosted with full data sovereignty** - your server, your database, your rules. Customer PII is encrypted with AES-256-GCM at rest. No third party sees your data.
+- **123+ gateways out of the box** - international processors (Stripe, PayPal) alongside regional leaders (bKash, Nagad, GCash, Razorpay, SSLCommerz) with more added every release.
+- **Zero transaction fees from OwnPay** - licensed under AGPL-3.0. You only pay your gateway's own processing fees.
+- **AGPL-3.0 licensed and free forever** - no feature gates, no licensing tiers, no phone-home telemetry. Full source on [GitHub]({{github}}).
+- **Plugin-extensible** - add gateways, themes, addons, and integrations without modifying core code. Over 60 hooks and a full event system.
+- **Double-entry ledger** - accounting-grade financial tracking with `bcmath`-powered precision, brand isolation, and built-in reconciliation.
 
 ## Who is OwnPay for?
 
 | Audience | How they use OwnPay |
 | :-- | :-- |
 | **SaaS businesses** | Accept subscriptions and one-time payments through a unified API while keeping customer data in-house. |
-| **Marketplace platforms** | Multi-tenant payment orchestration — each seller gets a brand with isolated funds and reporting. |
+| **Marketplace platforms** | Multi-tenant payment orchestration - each seller gets a brand with isolated funds and reporting. |
 | **Freelancers and agencies** | Create payment links in seconds, white-label the checkout for clients, and track income in the ledger. |
 | **Enterprises** | Deploy on-premises or private cloud, comply with data residency requirements, and integrate via the Admin API. |
 
@@ -112,8 +113,8 @@ This sequence plays out the same way whether the payment comes from a hosted che
 
 ## Related pages
 
-- [Quickstart](/quickstart) — get running in 5 minutes
-- [Features](/resources/features) — complete feature list and comparisons
-- [Architecture](/resources/architecture) — deep-dive into the internal design
-- [API overview](/api/overview) — Merchant, Mobile, and Admin API reference
-- [Plugins overview](/developer/plugins/overview) — build your own extensions
+- [Quickstart](/quickstart) - get running in 5 minutes
+- [Features](/resources/features) - complete feature list and comparisons
+- [Architecture](/resources/architecture) - deep-dive into the internal design
+- [API overview](/api/overview) - Merchant, Mobile, and Admin API reference
+- [Plugins overview](/developer/plugins/overview) - build your own extensions

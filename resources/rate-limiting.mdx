@@ -3,6 +3,7 @@ title: "Rate Limiting"
 description: "Canonical reference for OwnPay's sliding window rate limiting including tiers, response headers, 429 error format, configuration, and IP whitelisting."
 keywords: "rate limiting, 429, throttle, X-RateLimit, API throttle, sliding window"
 sidebarTitle: "Rate Limiting"
+icon: "timer"
 ---
 
 OwnPay uses a **sliding window** rate limiter to protect against brute-force attacks, abuse, and accidental API floods. Limits are enforced per IP address for unauthenticated endpoints and per API key for authenticated endpoints.

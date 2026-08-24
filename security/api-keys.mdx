@@ -3,6 +3,7 @@ title: "API Keys"
 description: "Generate, scope, and manage API keys for programmatic access to the OwnPay Admin API, Merchant API, and Mobile API."
 keywords: "API keys, API authentication, key scopes, revoke key, rate limits, programmatic access"
 sidebarTitle: "API Keys"
+icon: "key"
 ---
 
 API keys let you authenticate programmatic requests to OwnPay's three API layers without going through the browser login flow. Each key has defined scopes that limit what it can access.
@@ -47,7 +48,7 @@ Optionally add a **label** (e.g., "WooCommerce Integration") for identification.
 </Step>
 <Step>
 
-Click **Create**. The full key is displayed once. Copy it immediately — it will not be shown again.
+Click **Create**. The full key is displayed once. Copy it immediately - it will not be shown again.
 
 </Step>
 </Steps>
@@ -71,7 +72,7 @@ Each API key in the list shows:
 
 ## Revoke a key
 
-Click **Revoke** on any key row. The key is immediately invalidated — any subsequent API request using that key returns a `401 Unauthorized` response.
+Click **Revoke** on any key row. The key is immediately invalidated - any subsequent API request using that key returns a `401 Unauthorized` response.
 
 <Note>
 Revocation is permanent. Generate a new key if you need to restore access.
@@ -93,10 +94,10 @@ For detailed rate limiting behavior and burst allowances, see [Rate Limiting](/r
 
 ## Super-admin API key generation
 
-Super-admins can generate keys with the `admin` scope, which grants full access to all system configuration, brand management, and user management endpoints. Only generate admin-scoped keys when absolutely necessary — use `read` or `write` scopes for integrations that only need data access or transaction creation.
+Super-admins can generate keys with the `admin` scope, which grants full access to all system configuration, brand management, and user management endpoints. Only generate admin-scoped keys when absolutely necessary - use `read` or `write` scopes for integrations that only need data access or transaction creation.
 
 ## Related Pages
 
-- [API Authentication](/api/authentication) — How to use your API key in requests
-- [Rate Limiting](/resources/rate-limiting) — Detailed rate limit documentation
-- [Developer Hub](/security/developer-hub) — Webhook and logging tools
+- [API Authentication](/api/authentication) - How to use your API key in requests
+- [Rate Limiting](/resources/rate-limiting) - Detailed rate limit documentation
+- [Developer Hub](/security/developer-hub) - Webhook and logging tools

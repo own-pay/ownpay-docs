@@ -1,11 +1,21 @@
 ---
 title: "Companion App"
-description: "Install and pair the Android companion app to forward incoming SMS, send heartbeats, and receive push commands from your OwnPay instance."
-keywords: "companion app, Android app, SMS forwarding, heartbeat, device pairing, mobile app"
+description: "Install and pair the Android companion app to forward incoming payment confirmation SMS (bKash, Nagad, Rocket, etc.), send heartbeats, and receive push commands from your OwnPay instance."
+keywords: "companion app, Android app, SMS forwarding, payment SMS, heartbeat, device pairing, mobile app"
 sidebarTitle: "Companion App"
+icon: "smartphone"
 ---
 
-The OwnPay Companion App is an Android application that bridges your Android phone with your self-hosted OwnPay instance. Its primary role is receiving SMS messages (such as bank verification codes) and forwarding them to OwnPay for automatic payment verification.
+The OwnPay Companion App is an Android application that bridges your Android phone with your self-hosted OwnPay instance. Its **sole SMS-related purpose** is forwarding **incoming payment confirmation SMS** (e.g., mobile money receipts from bKash, Nagad, Rocket, Upay) to OwnPay for automatic transaction verification.
+
+<Warning>
+**The companion app ONLY reads INCOMING SMS messages that contain payment transaction confirmations.**
+
+- It does **NOT** read, forward, or process outgoing, sent, or draft SMS.
+- It does **NOT** read or process OTP messages, verification codes, or 2FA codes from other services.
+- It does **NOT** read or process personal messages, promotional SMS, or any other non-payment SMS.
+- It applies a privacy filter on-device: only SMS that match known payment receipt patterns are forwarded to your OwnPay server. All other SMS are silently ignored and never leave the device.
+</Warning>
 
 <Info>
 The companion app is not available on Google Play. Download the APK directly from the [OwnPay GitHub releases]({{github}}) page.
@@ -13,10 +23,14 @@ The companion app is not available on Google Play. Download the APK directly fro
 
 ## What the app does
 
-- **Receives SMS** — Listens for incoming text messages on the device
-- **Forwards to OwnPay** — Sends raw SMS content to your instance via the Mobile API
-- **Sends heartbeats** — Periodic pings so OwnPay knows the device is online
-- **Receives push commands** — Accepts remote instructions from the admin panel
+- **Receives incoming payment SMS** - Listens for **incoming** SMS and applies a privacy filter that **only** passes through payment confirmation messages (mobile money receipts, bank transfer confirmations)
+- **Forwards to OwnPay** - Sends **only** the filtered payment SMS content to your instance via the Mobile API. All non-payment SMS never leave the device
+- **Sends heartbeats** - Periodic pings so OwnPay knows the device is online
+- **Receives push commands** - Accepts remote instructions from the admin panel
+
+<Note>
+The app has no access to outgoing, sent, or draft messages. It cannot read OTP codes, personal conversations, or any SMS other than incoming payment confirmations.
+</Note>
 
 ## Install and pair
 
@@ -49,7 +63,7 @@ The companion app requires the following Android permissions:
 
 | Permission | Purpose |
 |------------|---------|
-| **Read SMS** (`RECEIVE_SMS`, `READ_SMS`) | Intercept incoming verification SMS for forwarding |
+| **Read SMS** (`RECEIVE_SMS`, `READ_SMS`) | Receive **incoming** payment confirmation SMS only. Outgoing/sent/draft SMS are never accessed. On-device filter blocks all non-payment SMS before forwarding. |
 | **Foreground Service** (`FOREGROUND_SERVICE`) | Maintain a persistent connection for heartbeats and push commands |
 | **Battery optimization exemption** | Prevent the OS from killing the background service |
 
@@ -72,6 +86,6 @@ The app sends a heartbeat to your OwnPay instance every **60 seconds**. If OwnPa
 
 ## Related Pages
 
-- [Devices](/mobile/devices) — Manage paired devices and monitor health
-- [SMS Templates](/mobile/sms-templates) — Configure regex patterns for SMS verification
-- [SMS Center](/notifications/sms-center) — View all incoming and outgoing SMS logs
+- [Devices](/mobile/devices) - Manage paired devices and monitor health
+- [SMS Templates](/mobile/sms-templates) - Configure regex patterns for SMS verification
+- [SMS Center](/notifications/sms-center) - View incoming payment SMS logs and outbound notification queue

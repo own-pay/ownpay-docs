@@ -1,11 +1,16 @@
 ---
 title: "SMS Templates"
-description: "Create and manage regex-based SMS templates that match incoming verification codes from banks and gateways for automatic payment completion."
-keywords: "SMS templates, regex patterns, verification templates, SMS matching, field mappings, SMS logs"
+description: "Create and manage regex-based SMS templates that match incoming payment confirmation SMS from mobile money wallets and banks for automatic payment completion."
+keywords: "SMS templates, regex patterns, payment confirmation, SMS matching, field mappings, SMS logs"
 sidebarTitle: "SMS Templates"
+icon: "file-code"
 ---
 
-SMS templates define how OwnPay matches incoming SMS messages from the [companion app](/mobile/companion-app) to pending transactions. Each template binds a **gateway** to a **regex pattern** that extracts the verification code from the SMS text.
+SMS templates define how OwnPay matches incoming **payment confirmation SMS** from the [companion app](/mobile/companion-app) to pending transactions. Each template binds a **gateway** to a **regex pattern** that extracts the payment amount and transaction ID from the SMS text.
+
+<Note>
+The companion app's on-device privacy filter ensures only incoming payment receipt SMS (e.g., bKash/Nagad/Rocket confirmations) are forwarded. OTP messages, personal SMS, and all other non-payment SMS are never sent to the server, so templates only ever process payment confirmation messages.
+</Note>
 
 <Info>
 For the full end-to-end auto-verification flow, see [SMS Verification](/gateways/sms-verification).
@@ -18,8 +23,8 @@ Each SMS template has these fields:
 | Field | Description |
 |-------|-------------|
 | **Gateway Slug** | The payment gateway this template applies to (e.g., `bkash`, `nagad`, `citybank`) |
-| **Regex Pattern** | A PCRE-compatible regular expression that captures the verification code |
-| **Code Field Mapping** | Which capture group contains the code (default: group 1) |
+| **Regex Pattern** | A PCRE-compatible regular expression that captures the payment amount and/or transaction ID from the confirmation SMS |
+| **Code Field Mapping** | Which capture group contains the extracted value (default: group 1) |
 | **Label** | Human-readable name for the template |
 | **Status** | Active or Disabled |
 
@@ -38,18 +43,18 @@ Select the **Gateway** from the dropdown. This ensures the template only matches
 </Step>
 <Step>
 
-Enter a **Regex Pattern** that captures the verification code. For example, if a bank sends:
+Enter a **Regex Pattern** that captures the payment details. For example, a bKash payment confirmation SMS might look like:
 
 ```
-Your verification code is 482901. Do not share this code.
+Tk 500.00 received from 017XXXX1234. TrxID: CN4A7B9D2E. Balance: Tk 1,230.50
 ```
 
-You would use: `verification code is (\d{6})`
+You would use a pattern like: `Tk ([\d,.]+) received.*TrxID: (\w+)` to capture the amount and transaction ID.
 
 </Step>
 <Step>
 
-Set the **Code Field Mapping** to the capture group index that contains the code (usually `1`).
+Set the **Code Field Mapping** to the capture group index that contains the extracted value (usually `1`).
 
 </Step>
 <Step>
@@ -69,7 +74,7 @@ Always test your regex against multiple real SMS samples before going live. Bank
 
 ## SMS logs
 
-The lower section of the SMS Templates page displays recent incoming SMS logs. Use this to:
+The lower section of the SMS Templates page displays recent incoming **payment** SMS logs forwarded by the companion app. Use this to:
 
 - **Search** by phone number or transaction ID
 - **Filter** by gateway or match status (matched, unmatched, ignored)
@@ -79,10 +84,10 @@ Unmatched SMS appear with a red indicator. Review these regularly to identify ne
 
 ## Editing and disabling templates
 
-Click a template's row to edit it. If a gateway changes its SMS format, update the regex pattern and use the tester to confirm it still works. You can **disable** a template without deleting it — this is useful for temporarily pausing verification for a specific gateway.
+Click a template's row to edit it. If a gateway changes its SMS format, update the regex pattern and use the tester to confirm it still works. You can **disable** a template without deleting it - this is useful for temporarily pausing verification for a specific gateway.
 
 ## Related Pages
 
-- [SMS Verification](/gateways/sms-verification) — Complete auto-verification flow documentation
-- [Companion App](/mobile/companion-app) — Android app that forwards incoming SMS
-- [SMS Center](/notifications/sms-center) — Centralized SMS monitoring and queue status
+- [SMS Verification](/gateways/sms-verification) - Complete auto-verification flow documentation
+- [Companion App](/mobile/companion-app) - Android app that forwards incoming payment SMS only
+- [SMS Center](/notifications/sms-center) - Centralized SMS monitoring and queue status

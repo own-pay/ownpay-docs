@@ -1,5 +1,5 @@
 ---
-title: "Brands — Multi-Tenant Merchant Isolation"
+title: "Brands - Multi-Tenant Merchant Isolation"
 description: "A brand in OwnPay is an isolated merchant tenant. Each brand has its own gateways, domain, branding, staff, API keys, customers, and double-entry ledger."
 keywords: "brands, multi-tenant, merchant isolation, white-label, tenant scoping, payment merchants"
 sidebarTitle: "Brands"
@@ -12,15 +12,16 @@ import LlmsDirective from "/snippets/llms-directive.mdx";
   <LlmsDirective />
 </Visibility>
 
-A **brand** is OwnPay's unit of multi-tenant isolation. When you create a brand, you get a fully independent merchant entity — its own payment gateways, checkout domain, visual branding, staff team, API keys, customer database, and double-entry ledger — all walled off from every other brand on the same OwnPay instance.
+A **brand** is OwnPay's unit of multi-tenant isolation. When you create a brand, you get a fully independent merchant entity - its own payment gateways, checkout domain, visual branding, staff team, API keys, customer database, and double-entry ledger - all walled off from every other brand on the same OwnPay instance.
 
 ## Brand isolation model
 
 <Mermaid
   chart={`
+    %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
     graph TD
       subgraph "OwnPay Instance"
-        subgraph "Brand A — Acme Corp"
+        subgraph "Brand A - Acme Corp"
           A1[Customers]
           A2[Transactions]
           A3[Gateways]
@@ -29,7 +30,7 @@ A **brand** is OwnPay's unit of multi-tenant isolation. When you create a brand,
           A6[API Keys]
           A7[Custom Domain]
         end
-        subgraph "Brand B — TechCorp"
+        subgraph "Brand B - TechCorp"
           B1[Customers]
           B2[Transactions]
           B3[Gateways]
@@ -101,8 +102,8 @@ Each brand independently controls:
 
 ## Related pages
 
-- [People — Brands](/people/brands) — create and manage brands in the admin panel
-- [Custom domains](/fundamentals/domains) — assign a domain to each brand
-- [Gateway configuration](/gateways/configuration) — activate gateways per brand
-- [People — Staff](/people/staff) — assign team members to brands
-- [Appearance — Branding](/appearance/branding) — customize logos, colors, and checkout design
+- [People - Brands](/people/brands) - create and manage brands in the admin panel
+- [Custom domains](/fundamentals/domains) - assign a domain to each brand
+- [Gateway configuration](/gateways/configuration) - activate gateways per brand
+- [People - Staff](/people/staff) - assign team members to brands
+- [Appearance - Branding](/appearance/branding) - customize logos, colors, and checkout design

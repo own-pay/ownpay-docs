@@ -3,6 +3,7 @@ title: "Plugin System"
 description: "Overview of OwnPay's plugin architecture covering four plugin types, the sandbox, capabilities, and the hook system for extending core behavior."
 keywords: "plugin system, plugin architecture, gateway plugins, addon plugins, theme plugins, integration plugins, plugin sandbox"
 sidebarTitle: "Overview"
+icon: "puzzle"
 ---
 
 Plugins extend OwnPay without modifying core code. Write a plugin to add payment gateways, build custom features, redesign the checkout, or integrate with external platforms.
@@ -80,8 +81,8 @@ See the full [Capabilities](/developer/plugins/capabilities) reference.
 
 Plugins interact with OwnPay core through a WordPress-style action and filter hook system powered by `EventManager`:
 
-- **Actions** — fire-and-forget callbacks (react to events)
-- **Filters** — pipeline callbacks that transform data
+- **Actions** - fire-and-forget callbacks (react to events)
+- **Filters** - pipeline callbacks that transform data
 
 ```php
 // React to a payment completion (action)
