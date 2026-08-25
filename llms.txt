@@ -1,11 +1,11 @@
 > OwnPay Documentation
-> Version: {{version}}
+> Version: 0.2.0
 > URL: https://ownpay.org/docs
 > License: AGPL-3.0
 
-# OwnPay — Self-Hosted Payment Gateway
+# OwnPay — Open-Source, Self-Hosted Payment Gateway
 
-OwnPay is an open-source, self-hosted payment orchestration platform built on PHP 8.3. It supports 100+ payment gateways, multi-brand tenancy, white-label checkout, double-entry ledger, and plugin extensibility.
+OwnPay is an open-source, self-hosted payment gateway platform built on PHP 8.3. It supports 100+ payment gateways, multi-brand tenancy, white-label checkout, double-entry ledger, and plugin extensibility. Create by [Fattain Naime](https://iamnaime.info.bd)
 
 ## Documentation Structure
 

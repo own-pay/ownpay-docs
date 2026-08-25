@@ -73,7 +73,7 @@
     "prompt": "Search OwnPay docs..."
   },
   "banner": {
-    "content": "OwnPay v0.2.0 is available. [See what's new](/resources/changelog).",
+    "content": "OwnPay v {{version}} is available. [See what's new](/resources/changelog).",
     "dismissible": true,
     "type": "info"
   },
@@ -162,14 +162,14 @@
   "variables": {
     "version": "0.2.0",
     "github": "https://github.com/own-pay/OwnPay",
-    "githubDocs": "https://github.com/own-pay/ownpay-docs",
-    "githubWordpress": "https://github.com/own-pay/OwnPay-WordPress",
-    "githubWhmcs": "https://marketplace.whmcs.com/product/8845-ownpay-whmcs",
     "website": "https://ownpay.org",
-    "docsUrl": "https://ownpay.org/docs",
-    "mcpUrl": "https://ownpay.org/docs/mcp",
-    "skillsUrl": "https://ownpay.org/docs/skill.md",
-    "supportEmail": "ping@ownpay.org"
+    "github-docs": "https://github.com/own-pay/ownpay-docs",
+    "github-wordpress": "https://github.com/own-pay/OwnPay-WordPress",
+    "github-whmcs": "https://marketplace.whmcs.com/product/8845-ownpay-whmcs",
+    "docs-url": "https://ownpay.org/docs",
+    "mcp-url": "https://ownpay.org/docs/mcp",
+    "skills-url": "https://ownpay.org/docs/skill.md",
+    "support-email": "ping@ownpay.org"
   },
   "interaction": {
     "drilldown": true
