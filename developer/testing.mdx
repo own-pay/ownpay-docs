@@ -26,6 +26,36 @@ Use these cards with any Stripe-based gateway configured in test mode:
   Use any future expiry date, any CVC, and any postal code with these test cards.
 </Info>
 
+## Bkash sandbox credentials
+
+Use those sandbox credentials for bkash:
+
+| Field | Value |
+| --- | --- |
+| Username | `sandboxTokenizedUser02` |
+| Password | `sandboxTokenizedUser02@12345` |
+| App Key | `4f6o0cjiki2rfm34kfdadl1eqq` |
+| App Secret | `2is7hdktrekvrbljjh44ll3d9l1dtjo4pasmjvs5vl5qr3fug4b` |
+
+<Info>
+  Note: These are public sandbox credentials only. Never use them in a live/production environment. For live credentials, you must apply through the official bKash Merchant Portal
+</Info>
+
+## bKash Sandbox Test Wallet Numbers
+
+bKash provides specific test wallet numbers you can use to simulate payments inside the sandbox environment.
+
+| Wallet Number | OTP | PIN | Failure Reason |
+| --- | --- | --- | --- |
+| `01770618575` | `123456` | `12121` |  |
+| `01929918378` | `123456` | `12121` |  |
+| `01770618576` | `123456` | `12121` |  |
+| `01877722345` | `123456` | `12121` |  |
+| `01619777282` | `123456` | `12121` |  |
+| `01619777283` | `123456` | `12121` |  |
+| `01823074817` | `123456` | `12121` | Insufficient Balance |
+| `01823074818` | `123456` | `12121` | Debit Block |
+
 ## Gateway sandbox configuration
 
 Each gateway has a sandbox or test mode you activate from the admin panel. The table below shows where to find test credentials:
@@ -34,7 +64,7 @@ Each gateway has a sandbox or test mode you activate from the admin panel. The t
 | --- | --- | --- |
 | Stripe | Toggle **Test Mode** in gateway settings | [Stripe Dashboard → Developers → Test mode](https://dashboard.stripe.com/test/apikeys) |
 | PayPal | Use sandbox endpoint URL | [PayPal Developer → Sandbox → Apps](https://developer.paypal.com/developer/applications/sandbox) |
-| bKash | Use sandbox URL and token | Contact bKash merchant support for sandbox access |
+| bKash | Use sandbox URL and token | [https://tokenized.sandbox.bka.sh/v1.2.0-beta](https://tokenized.sandbox.bka.sh/v1.2.0-beta) |
 | Nagad | Use sandbox URL and merchant ID | Contact Nagad for sandbox credentials |
 | SSLCommerz | Toggle **Sandbox** in gateway settings | [SSLCommerz Sandbox](https://sandbox.sslcommerz.com/) |
 
