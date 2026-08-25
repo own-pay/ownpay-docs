@@ -1,9 +1,9 @@
 ---
-title: "Quickstart - Accept Your First Payment in 5 Minutes"
+title: Quickstart - Accept Your First Payment in 5 Minutes
 description: "Deploy OwnPay, create a brand, activate a payment gateway, and accept a test payment. The fastest path from zero to processing payments."
 keywords: "quickstart, payment gateway setup, first payment, self-hosted payments, payment tutorial, OwnPay setup"
-sidebarTitle: "Quickstart"
-icon: "rocket"
+sidebarTitle: Quickstart
+icon: rocket
 ---
 
 import LlmsDirective from "/snippets/llms-directive.mdx";
@@ -22,8 +22,8 @@ Get your self-hosted payment gateway running and accept a test payment in under 
 
 Before you start, make sure you have:
 
-- **PHP 8.3+** with `bcmath`, `pdo_mysql`, `mbstring`, `curl`, `gd`, `zip`, `json`, `openssl`, `intl`
-- **MySQL 8+** (or MariaDB 10.4+)
+- **PHP 8.3\+** with `bcmath`, `pdo_mysql`, `mbstring`, `curl`, `gd`, `zip`, `json`, `openssl`, `intl`
+- **MySQL 8\+** (or MariaDB 10.4\+)
 - **A domain with HTTPS** - SSL is required for payment processing
 - **About 5 minutes** of focused time
 
@@ -44,7 +44,6 @@ Choose your hosting environment. Each tab covers the essentials - visit [Install
       If extraction creates a nested folder (e.g., `public_html/ownpay-v0.2.0/`), move all files up one level into `public_html/` directly.
     </Tip>
   </Tab>
-
   <Tab title="VPS with Nginx" icon="server">
     For Ubuntu/Debian servers with full root access.
 
@@ -54,7 +53,7 @@ Choose your hosting environment. Each tab covers the essentials - visit [Install
       php8.3-fpm php8.3-mysql php8.3-mbstring php8.3-curl \
       php8.3-xml php8.3-zip php8.3-gd php8.3-bcmath \
       php8.3-intl certbot python3-certbot-nginx
-
+    
     # Clone and configure
     cd /var/www
     sudo git clone {{github}}.git ownpay
@@ -65,7 +64,6 @@ Choose your hosting environment. Each tab covers the essentials - visit [Install
 
     Point your Nginx server block at `/var/www/ownpay/public` and provision SSL with `certbot`. Full details in the [Installation guide](/installation).
   </Tab>
-
   <Tab title="Docker" icon="box">
     Containerized deployment for local development or cloud orchestration.
 
@@ -109,9 +107,10 @@ Open your browser and navigate to `https://yourdomain.com/install`. The setup wi
 
 A **brand** is your isolated merchant tenant - it holds its own gateways, customers, transactions, and ledger.
 
-1. Go to **People > Brands** in the sidebar.
+1. Go to **People \> Brands** in the sidebar.
 2. Click **Add Brand**.
 3. Fill in:
+
    - **Brand name** - the display name customers see (e.g., "Acme Store")
    - **Default currency** - the primary currency for this brand
    - **Timezone** - used for reports and timestamps
@@ -130,23 +129,27 @@ A **brand** is your isolated merchant tenant - it holds its own gateways, custom
      <Card title="Stripe" icon="credit-card">
        Cards, Apple Pay, Google Pay - global coverage.
      </Card>
+
      <Card title="bKash" icon="smartphone">
        Mobile money - Bangladesh.
      </Card>
+
      <Card title="PayPal" icon="wallet">
        PayPal accounts and cards - worldwide.
      </Card>
+
      <Card title="Nagad" icon="smartphone">
        Mobile payment - Bangladesh.
      </Card>
+
      <Card title="SSLCommerz" icon="shield">
        Cards and bank transfers - South Asia.
      </Card>
+
      <Card title="Razorpay" icon="credit-card">
        Cards, UPI, wallets - India.
      </Card>
    </CardGroup>
-
 3. Enter your provider credentials (API key, secret, merchant ID).
 4. Toggle **Active** to enable the gateway for your brand.
 
@@ -156,9 +159,10 @@ A **brand** is your isolated merchant tenant - it holds its own gateways, custom
 
 ## Step 5: Create a payment link
 
-1. Go to **Payments > Payment Links**.
+1. Go to **Payments \> Payment Links**.
 2. Click **Create Payment Link**.
 3. Fill in:
+
    - **Title** - a description for the payment (e.g., "Pro Plan - Monthly")
    - **Amount** - the charge amount
    - **Currency** - defaults to your brand's currency
@@ -183,9 +187,11 @@ OwnPay generates a unique URL you can share via email, chat, or embed on your we
   <Card title="Accept payments on your website" icon="code" href="/developer/quickstart">
     Integrate OwnPay into your app using the Merchant API, webhooks, and SDKs.
   </Card>
+
   <Card title="Set up a custom domain" icon="globe" href="/system/domains">
     Serve your checkout on `pay.yourbrand.com` with automated SSL and white-label branding.
   </Card>
+
   <Card title="Invite your team" icon="users" href="/people/staff">
     Add staff members with role-based permissions so your team can manage payments collaboratively.
   </Card>

@@ -1,9 +1,9 @@
 ---
-title: "Backup and Export"
+title: Backup and Export
 description: "Learn how to back up and restore your OwnPay installation including database dumps, file backups, automated backup scripts, and data export procedures."
 keywords: "backup, restore, mysqldump, data export, database backup, file backup, automated backup"
 sidebarTitle: "Backup & Export"
-icon: "hard-drive"
+icon: hard-drive
 ---
 
 A reliable backup strategy is essential for any payment platform. This guide covers what to back up, how to automate backups, how to restore from a backup, and how to export data for external use.
@@ -15,10 +15,10 @@ A reliable backup strategy is essential for any payment platform. This guide cov
 You need to protect four categories of data:
 
 | Category | Location | Contents |
-|:---|:---|:---|
+| :-- | :-- | :-- |
 | Database | MySQL | All `op_` tables - transactions, customers, ledger, settings, sessions |
 | Storage files | `storage/` | Cache, compiled views, logs, uploaded files (logos, dispute evidence) |
-| Environment config | `.env` | APP_KEY, ENCRYPTION_KEY, JWT_SECRET, database credentials, Redis config |
+| Environment config | `.env` | APP\_KEY, ENCRYPTION\_KEY, JWT\_SECRET, database credentials, Redis config |
 | Custom code | `modules/`, `config/` | Custom plugins, themes, and config overrides |
 
 <Warning>
@@ -120,41 +120,6 @@ crontab -e
 Follow these steps to restore an OwnPay installation from backup.
 
 <Steps>
-
-### Stop the web server
-
-```bash
-sudo systemctl stop php8.3-fpm nginx
-```
-
-### Restore the database
-
-```bash
-gunzip < /backups/ownpay/db-2025-01-15_020000.sql.gz | mysql -u ownpay_user -p ownpay_db
-```
-
-### Restore application files
-
-```bash
-tar -xzf /backups/ownpay/files-2025-01-15_020000.tar.gz -C /var/www/
-cp /backups/ownpay-env-2025-01-15.txt /var/www/ownpay/.env
-chown -R www-data:www-data /var/www/ownpay
-chmod 600 /var/www/ownpay/.env
-```
-
-### Clear caches and verify
-
-```bash
-# Clear all cached data
-rm -rf /var/www/ownpay/storage/cache/*
-rm -rf /var/www/ownpay/storage/sessions/*
-
-# Restart services
-sudo systemctl start php8.3-fpm nginx
-```
-
-Visit the admin panel and verify that brands, transactions, and settings are intact. Check the health endpoint: `curl https://your-domain.com/api/v1/health`.
-
 </Steps>
 
 ---

@@ -1,9 +1,9 @@
 ---
-title: "Create and manage brands"
+title: Create and manage brands
 description: "How to create, configure, and assign gateways and staff to brands in OwnPay for multi-tenant payment operations."
 keywords: "brands, multi-tenant, brand configuration, gateway assignment, staff assignment"
-sidebarTitle: "Brands"
-icon: "store"
+sidebarTitle: Brands
+icon: store
 ---
 
 Brands are the core organizational unit in OwnPay. Each brand operates as an independent payment storefront with its own currency, gateways, checkout appearance, and staff assignments. If you are new to the brand concept, read the [explanation in /fundamentals/brands](/fundamentals/brands) first.
@@ -12,7 +12,7 @@ Brands are the core organizational unit in OwnPay. Each brand operates as an ind
 
 1. Log in to the admin dashboard as a super admin.
 2. Go to **People** → **Brands** in the sidebar.
-3. Click **+ Add Brand**.
+3. Click **\+ Add Brand**.
 4. Fill in the brand details (see the table below).
 5. Click **Create** to save.
 
@@ -21,7 +21,7 @@ Brands are the core organizational unit in OwnPay. Each brand operates as an ind
 After creating a brand, click **Edit** on the brand row to adjust its configuration.
 
 | Setting | Type | Required | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Business name** | Text | Yes | Public-facing name shown on checkout and invoices |
 | **Slug** | Text | Yes | URL-safe identifier (lowercase, hyphens only) |
 | **Default currency** | Select | Yes | Base currency for the ledger and checkout (e.g. USD, BDT, EUR) |
@@ -43,7 +43,7 @@ After creating a brand, click **Edit** on the brand row to adjust its configurat
 5. Click **Save**.
 
 <Note>
-A gateway must be configured globally under **Gateways & Currencies** before you can assign it to a brand. Brand assignment controls which gateways appear at checkout for that brand.
+  A gateway must be configured globally under **Gateways & Currencies** before you can assign it to a brand. Brand assignment controls which gateways appear at checkout for that brand.
 </Note>
 
 ## Assign staff members
@@ -57,7 +57,7 @@ A gateway must be configured globally under **Gateways & Currencies** before you
 Staff members only see data for the brands they are assigned to. A staff member with no brand assignments cannot access any payment data.
 
 <Warning>
-Do not change the default currency of a brand after transactions have been processed. This causes inconsistencies in your ledger and reporting.
+  Do not change the default currency of a brand after transactions have been processed. This causes inconsistencies in your ledger and reporting.
 </Warning>
 
 ## Related Pages

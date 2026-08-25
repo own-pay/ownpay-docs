@@ -1,9 +1,9 @@
 ---
-title: "Settings"
+title: Settings
 description: "Configure application name, URL, timezone, maintenance mode, mail settings, and advanced options from the general settings page."
 keywords: "settings, app configuration, maintenance mode, timezone, system settings, mail settings"
-sidebarTitle: "Settings"
-icon: "settings"
+sidebarTitle: Settings
+icon: settings
 ---
 
 The Settings page is the central configuration hub for your OwnPay instance. It is organized into tabbed sections covering application, mail, security, and advanced settings.
@@ -15,14 +15,14 @@ Click **Settings** in the left sidebar under the **System** section.
 ## Application settings
 
 | Setting | Description |
-|---------|-------------|
+| --- | --- |
 | **Application Name** | Displayed in the browser tab title and email subjects |
 | **Application URL** | The canonical URL of your OwnPay instance. Used for generating links in emails and webhooks |
 | **Timezone** | Sets the default timezone for all timestamps in the admin panel and reports |
 | **Maintenance Mode** | When enabled, shows a maintenance page to visitors. Staff can still log in |
 
 <Note>
-Changing the Application URL after initial setup requires updating webhook endpoints and any external integrations that store your instance URL.
+  Changing the Application URL after initial setup requires updating webhook endpoints and any external integrations that store your instance URL.
 </Note>
 
 ## Mail settings
@@ -38,9 +38,9 @@ The Security tab provides links to related configuration:
 - **Login rate limit** - Maximum failed attempts before lockout
 - **Enforce 2FA** - Require two-factor authentication for specific roles
 
-<Callout type="info">
-For a comprehensive overview of all security features, see [Security & Compliance](/resources/security-compliance).
-</Callout>
+<Info>
+  For a comprehensive overview of all security features, see [Security & Compliance](/resources/security-compliance).
+</Info>
 
 ## Advanced settings
 
@@ -55,7 +55,7 @@ The Advanced tab contains options most users do not need to change:
 At the bottom of the Settings page, an **Environment Info** panel displays:
 
 - OwnPay version (`{{version}}`)
-- PHP version (must be 8.3+)
+- PHP version (must be 8.3\+)
 - MySQL version
 - Redis connection status
 - Available disk space

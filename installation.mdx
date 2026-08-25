@@ -2,8 +2,8 @@
 title: "Install OwnPay on Shared Hosting, VPS, or Docker"
 description: "Deploy OwnPay on shared hosting, VPS, or Docker. Prerequisite checks, step-by-step setup, and post-installation verification."
 keywords: "install payment gateway, cPanel payment processing, self-hosted payments setup, Docker payment platform, PHP payment gateway install, VPS payment gateway"
-sidebarTitle: "Installation"
-icon: "feather"
+sidebarTitle: Installation
+icon: feather
 ---
 
 import LlmsDirective from "/snippets/llms-directive.mdx";
@@ -20,19 +20,22 @@ OwnPay includes a **built-in web installer** that checks your server configurati
   <Accordion title="System requirements" icon="list-check">
     | Component | Minimum | Recommended |
     | :-- | :-- | :-- |
-    | **PHP Runtime** | 8.3 | 8.3+ |
-    | **MySQL** | 8.0 | 8.0+ (or MariaDB 10.4+) |
-    | **Memory** | 512 MB RAM | 2 GB+ RAM |
-    | **Disk** | 1 GB free | 10 GB+ SSD |
+    | **PHP Runtime** | 8.3 | 8.3\+ |
+    | **MySQL** | 8.0 | 8.0\+ (or MariaDB 10.4\+) |
+    | **Memory** | 512 MB RAM | 2 GB\+ RAM |
+    | **Disk** | 1 GB free | 10 GB\+ SSD |
     | **Redis** | Optional | Recommended for caching |
   </Accordion>
+
   <Accordion title="Required PHP extensions" icon="puzzle">
     Verify all of these are active: `mbstring`, `pdo_mysql`, `gd`, `curl`, `zip`, `json`, `openssl`, `bcmath`, `intl`.
 
     Run `php -m` in a terminal to check, or view the PHP Info page in your hosting panel.
   </Accordion>
+
   <Accordion title="Folder permissions" icon="folder">
     The web server must be able to write to:
+
     - `storage/` (logs, sessions, cache, uploads)
     - `public/assets/uploads/` (brand logos, attachments)
   </Accordion>
@@ -73,7 +76,6 @@ OwnPay includes a **built-in web installer** that checks your server configurati
       </Step>
     </Steps>
   </Tab>
-
   <Tab title="VPS (Nginx + PHP-FPM)" icon="server">
     Full control over the stack. Recommended for production.
 
@@ -117,11 +119,11 @@ OwnPay includes a **built-in web installer** that checks your server configurati
             server_name yourdomain.com;
             root /var/www/ownpay/public;
             index index.php;
-
+        
             location / {
                 try_files $uri $uri/ /index.php?$query_string;
             }
-
+        
             location ~ \.php$ {
                 fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
                 fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
@@ -156,7 +158,6 @@ OwnPay includes a **built-in web installer** that checks your server configurati
       </Step>
     </Steps>
   </Tab>
-
   <Tab title="Docker" icon="box">
     Containerized deployment for reproducible environments.
 
@@ -198,7 +199,7 @@ After the installer finishes, confirm everything is working:
     Wait two minutes, then check the system logs for scheduled task entries. If no entries appear, verify the cron command path is correct.
   </Step>
   <Step title="Configure SMTP">
-    Go to **System > Settings > Mail Settings** and enter your SMTP credentials. Send a test email to confirm delivery.
+    Go to **System \> Settings \> Mail Settings** and enter your SMTP credentials. Send a test email to confirm delivery.
   </Step>
   <Step title="Enable two-factor authentication">
     Go to **My Account** and enable 2FA. This is strongly recommended for the master admin account.

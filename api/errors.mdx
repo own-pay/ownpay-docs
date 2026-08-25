@@ -1,9 +1,9 @@
 ---
-title: "API Error Codes"
+title: API Error Codes
 description: "Canonical reference for OwnPay API error responses, HTTP status codes, the error object structure, and field-level validation errors."
 keywords: "API errors, error codes, HTTP status codes, validation errors, error response format, API troubleshooting"
-sidebarTitle: "Error codes"
-icon: "alert-triangle"
+sidebarTitle: Error codes
+icon: alert-triangle
 ---
 
 Every OwnPay API error follows a single consistent JSON structure. This page is the canonical reference for understanding and handling errors.
@@ -29,7 +29,7 @@ All error responses share this shape:
 ## HTTP status codes
 
 | Status | Meaning | When it occurs |
-|---|---|---|
+| --- | --- | --- |
 | 400 | Bad request | Malformed JSON, missing required fields |
 | 401 | Unauthorized | Missing, invalid, or revoked API key |
 | 403 | Forbidden | Valid key but insufficient scope or brand access |
@@ -84,7 +84,7 @@ When your request body fails validation, the response includes a `details.fields
 ```
 
 <Tip>
-Use the `field` value to map errors to your form inputs programmatically. This avoids showing a generic error message when only one field is wrong.
+  Use the `field` value to map errors to your form inputs programmatically. This avoids showing a generic error message when only one field is wrong.
 </Tip>
 
 ## Common error codes by domain
@@ -92,7 +92,7 @@ Use the `field` value to map errors to your form inputs programmatically. This a
 ### Authentication
 
 | Code | Description |
-|---|---|
+| --- | --- |
 | `invalid_api_key` | Key not found or malformed |
 | `expired_api_key` | Key has expired |
 | `revoked_api_key` | Key was revoked |
@@ -101,7 +101,7 @@ Use the `field` value to map errors to your form inputs programmatically. This a
 ### Payments
 
 | Code | Description |
-|---|---|
+| --- | --- |
 | `invalid_amount` | Amount must be greater than 0 |
 | `invalid_currency` | Unsupported currency code |
 | `gateway_unavailable` | Payment gateway is down |
@@ -113,7 +113,7 @@ Use the `field` value to map errors to your form inputs programmatically. This a
 ### Resources
 
 | Code | Description |
-|---|---|
+| --- | --- |
 | `not_found` | Resource does not exist |
 | `already_exists` | Resource already exists |
 | `invalid_state` | Resource is in the wrong state for this operation |
@@ -121,7 +121,7 @@ Use the `field` value to map errors to your form inputs programmatically. This a
 ### Webhooks
 
 | Code | Description |
-|---|---|
+| --- | --- |
 | `invalid_webhook_url` | URL is not valid or not HTTPS |
 | `webhook_secret_missing` | No webhook secret configured |
 | `signature_mismatch` | Webhook signature verification failed |

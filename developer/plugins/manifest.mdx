@@ -1,9 +1,9 @@
 ---
-title: "Plugin Manifest"
+title: Plugin Manifest
 description: "Complete manifest.json field reference for OwnPay plugins including all fields, capability values, and validation rules."
 keywords: "manifest.json, plugin metadata, plugin version, plugin capabilities, plugin manifest validation"
-sidebarTitle: "Manifest"
-icon: "file-json"
+sidebarTitle: Manifest
+icon: file-json
 ---
 
 Every OwnPay plugin must have a `manifest.json` in its root directory. The plugin loader reads this file before anything else - if validation fails, the plugin is not loaded.
@@ -11,7 +11,7 @@ Every OwnPay plugin must have a `manifest.json` in its root directory. The plugi
 ## Field reference
 
 | Field | Type | Required | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `name` | string | Yes | Human-readable plugin name |
 | `slug` | string | Yes | Unique machine identifier (lowercase, hyphens) |
 | `version` | string | Yes | Semantic version (e.g. `1.2.3`) |
@@ -31,7 +31,7 @@ Every OwnPay plugin must have a `manifest.json` in its root directory. The plugi
 Only declare capabilities your plugin actually uses. The sandbox enforces these as permission gates.
 
 | Capability | Effect |
-|---|---|
+| --- | --- |
 | `payment_process` | Plugin can implement `GatewayInterface` |
 | `webhook_receive` | Plugin can register webhook endpoint handlers |
 | `admin_page` | Plugin can add items to the admin sidebar menu |
@@ -44,7 +44,7 @@ Only declare capabilities your plugin actually uses. The sandbox enforces these 
 ## Validation rules
 
 | Rule | Detail |
-|---|---|
+| --- | --- |
 | Slug format | Must match `^[a-z][a-z0-9-]{1,48}[a-z0-9]$` |
 | Version format | Must be valid semver (`MAJOR.MINOR.PATCH`) |
 | Type | Must be one of the four supported types |

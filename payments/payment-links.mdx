@@ -1,9 +1,9 @@
 ---
-title: "Create payment links"
+title: Create payment links
 description: "How to create, configure, and share payment links that let customers pay you directly through a checkout URL."
 keywords: "payment links, shareable URL, checkout link, variable amount, payment link options"
-sidebarTitle: "Payment Links"
-icon: "link"
+sidebarTitle: Payment Links
+icon: link
 ---
 
 Payment links are shareable checkout URLs you create from the admin dashboard. Customers open the link, choose a payment method, and complete the payment - no invoice or API integration required.
@@ -11,7 +11,7 @@ Payment links are shareable checkout URLs you create from the admin dashboard. C
 ## Create a payment link
 
 1. Go to **Payments** → **Payment Links**.
-2. Click **+ Create Link**.
+2. Click **\+ Create Link**.
 3. Fill in the details (see options below).
 4. Click **Create Link**.
 5. Copy the shareable URL from the link list and send it to your customer.
@@ -19,7 +19,7 @@ Payment links are shareable checkout URLs you create from the admin dashboard. C
 ## Link options
 
 | Option | Type | Required | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Title** | Text | Yes | Name shown to the customer at checkout (e.g. "Consultation fee") |
 | **Description** | Text area | No | Additional instructions or details displayed on the checkout page |
 | **Amount** | Number | No | Fixed price. Leave blank to let the customer enter their own amount |
@@ -48,7 +48,7 @@ When a customer completes payment, they are redirected to the **Redirect URL** y
 You can embed a payment link in an `<iframe>` on your own website. Use the checkout URL as the `src` attribute. Make sure your website allows the OwnPay domain in your Content Security Policy headers.
 
 <Warning>
-At least one payment gateway must be active for the link’s currency before you share it. Otherwise customers see an error at checkout with no available payment methods.
+  At least one payment gateway must be active for the link’s currency before you share it. Otherwise customers see an error at checkout with no available payment methods.
 </Warning>
 
 ## Related Pages

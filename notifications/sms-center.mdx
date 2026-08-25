@@ -1,23 +1,23 @@
 ---
-title: "SMS Center"
+title: SMS Center
 description: "Monitor incoming payment SMS logs from the companion app, and manage outbound notification SMS queue status from the SMS Center."
 keywords: "SMS center, SMS logs, SMS queue, incoming payment SMS, outbound SMS, SMS monitoring"
-sidebarTitle: "SMS Center"
-icon: "message-square"
+sidebarTitle: SMS Center
+icon: message-square
 ---
 
 The SMS Center gives you a centralized view of SMS activity across your OwnPay instance. You can review incoming **payment confirmation** messages forwarded by the [companion app](/mobile/companion-app), inspect outbound notification SMS (if configured), and monitor queue health.
 
 <Note>
-The companion app only forwards **incoming payment receipt SMS** (e.g., bKash/Nagad/Rocket confirmations). OTP messages, personal SMS, and all other non-payment SMS are filtered on-device and never reach your OwnPay server. The SMS Center only displays messages that passed this filter.
+  The companion app only forwards **incoming payment receipt SMS** (e.g., bKash/Nagad/Rocket confirmations). OTP messages, personal SMS, and all other non-payment SMS are filtered on-device and never reach your OwnPay server. The SMS Center only displays messages that passed this filter.
 </Note>
 
 ## View SMS logs
 
-Navigate to **Notifications > SMS Center**. The main table displays every SMS processed by the system.
+Navigate to **Notifications \> SMS Center**. The main table displays every SMS processed by the system.
 
 | Column | Description |
-|--------|-------------|
+| --- | --- |
 | **Phone number** | Sender or recipient number |
 | **Direction** | Incoming (from companion app) or Outbound |
 | **Transaction** | Linked transaction ID, if matched |
@@ -32,7 +32,7 @@ Use the search bar to filter logs by **phone number** or **transaction ID**. The
 Incoming SMS arrive from Android companion apps via the [Mobile API](/api/overview). When a device receives an SMS, the companion app's on-device privacy filter checks whether it looks like a payment confirmation. Only payment receipt SMS are forwarded; all others (OTP, personal, promotional) are silently discarded. The system then attempts to match the forwarded message against active [SMS verification templates](/mobile/sms-templates) and auto-complete the associated transaction.
 
 <Info>
-Incoming payment SMS that do not match any template are still logged for auditing purposes. You can review unmatched messages to identify templates that need updating.
+  Incoming payment SMS that do not match any template are still logged for auditing purposes. You can review unmatched messages to identify templates that need updating.
 </Info>
 
 ## Outbound SMS
@@ -40,20 +40,16 @@ Incoming payment SMS that do not match any template are still logged for auditin
 Outbound SMS are sent when your gateways or addons trigger customer-facing text messages. The SMS Center shows the delivery queue status for each outbound message:
 
 <Columns>
-<Column>
+  <Column>
+    **Queued** - Waiting to be sent
 
-**Queued** - Waiting to be sent
+    **Sent** - Handed off to the SMS provider
+  </Column>
+  <Column>
+    **Delivered** - Provider confirmed delivery
 
-**Sent** - Handed off to the SMS provider
-
-</Column>
-<Column>
-
-**Delivered** - Provider confirmed delivery
-
-**Failed** - Delivery failed; check the error column
-
-</Column>
+    **Failed** - Delivery failed; check the error column
+  </Column>
 </Columns>
 
 ## SMS template testing

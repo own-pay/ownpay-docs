@@ -1,9 +1,9 @@
 ---
-title: "Internationalization - Multi-Language Checkout and Locale"
+title: Internationalization - Multi-Language Checkout and Locale
 description: "How OwnPay's translation architecture handles locale resolution, PHP i18n helpers, Twig templating, and per-brand multi-language checkout pages."
 keywords: "translation API, PHP i18n, Twig translations, localized payment checkout, multi-language payment gateway, internationalization"
-sidebarTitle: "i18n"
-icon: "languages"
+sidebarTitle: i18n
+icon: languages
 ---
 
 OwnPay has an internationalization (i18n) and localization architecture that delivers a localized administrative panel and white-labeled, customer-facing checkout interfaces. This guide covers the translation system, locale resolution flow, usage in PHP code and Twig templates, and how you can contribute or manage translation catalogs.
@@ -31,17 +31,16 @@ graph TD
 ```
 
 ### 1.1 Translation Storage
-* **Database Table (`op_languages`)**:
-  Stores language profiles and translation catalogs. Contains the following columns:
-  * `code` (VARCHAR): The ISO 639-1 language code (e.g., `en`, `bn`, `es`).
-  * `name` (VARCHAR): The human-readable name of the language (e.g., `English`, `Bengali`, `Spanish`).
-  * `status` (ENUM): The state of the language (`active`, `inactive`). Only active languages can be resolved by the system.
-  * `is_default` (TINYINT): Indicator for the system-wide fallback default language.
-  * `translations` (JSON): The catalog of flat translation key-value mappings.
-* **Filesystem Compilation (`storage/languages/`)**:
-  To prevent database query overhead on high-throughput payment checkouts, translations are compiled to `storage/languages/{code}.json` on-the-fly when a language is created, uploaded, or saved in the admin panel.
-* **Base English Fallback (`config/languages/`)**:
-  English (`en`) acts as the base default locale and fallback. The master file is maintained at `config/languages/en.json`. If the compiled filesystem cache `storage/languages/en.json` is missing or deleted, the system automatically recovers it by copying the contents from `config/languages/en.json`.
+
+- **Database Table (`op_languages`)**: Stores language profiles and translation catalogs. Contains the following columns:
+
+  - `code` (VARCHAR): The ISO 639-1 language code (e.g., `en`, `bn`, `es`).
+  - `name` (VARCHAR): The human-readable name of the language (e.g., `English`, `Bengali`, `Spanish`).
+  - `status` (ENUM): The state of the language (`active`, `inactive`). Only active languages can be resolved by the system.
+  - `is_default` (TINYINT): Indicator for the system-wide fallback default language.
+  - `translations` (JSON): The catalog of flat translation key-value mappings.
+- **Filesystem Compilation (`storage/languages/`)**: To prevent database query overhead on high-throughput payment checkouts, translations are compiled to `storage/languages/{code}.json` on-the-fly when a language is created, uploaded, or saved in the admin panel.
+- **Base English Fallback (`config/languages/`)**: English (`en`) acts as the base default locale and fallback. The master file is maintained at `config/languages/en.json`. If the compiled filesystem cache `storage/languages/en.json` is missing or deleted, the system automatically recovers it by copying the contents from `config/languages/en.json`.
 
 ---
 
@@ -60,7 +59,9 @@ Locale resolution is managed in the HTTP request lifecycle by [LanguageMiddlewar
 OwnPay enforces a flat, dot-notation format for translation keys.
 
 ### 3.1 Dot-Notation
+
 Language arrays uploaded via nested JSON structures are automatically flattened into a single-level key-value map using dot-notation. For example, the following nested JSON:
+
 ```json
 {
     "menu": {
@@ -74,7 +75,9 @@ Language arrays uploaded via nested JSON structures are automatically flattened 
     }
 }
 ```
+
 Is flattened and stored internally as:
+
 ```json
 {
     "menu.dashboard": "Dashboard",
@@ -84,7 +87,9 @@ Is flattened and stored internally as:
 ```
 
 ### 3.2 Placeholders & Replacements
+
 Dynamic parameters within translation strings are identified by a leading colon (`:`).
+
 ```json
 {
     "language.confirm_delete": "Are you sure you want to delete :name?",
@@ -129,7 +134,9 @@ final class SettingsController extends BaseController
 ```
 
 ### 4.1 Fallback Rules
+
 When `$translationService->trans($key)` is called:
+
 1. It searches the cached translations for the active locale (e.g. `bn`).
 2. If the key is missing or empty, it falls back to the baseline English (`en`) catalog.
 3. If the key is missing in English, the literal `$key` string is returned.
@@ -139,17 +146,21 @@ When `$translationService->trans($key)` is called:
 ## 5. Usage in Templates & Checkout Themes
 
 ### 5.1 Admin Templates
+
 Admin views utilize the base translations loaded during runtime. You can bind translated strings directly in Twig templates.
 
 ### 5.2 Checkout Templates
+
 Checkout views (e.g. `templates/checkout/checkout.twig`) represent white-labeled interfaces where merchants can customize standard messaging.
-* The customer-facing templates access translation and branding strings through the `lang` view variable:
+
+- The customer-facing templates access translation and branding strings through the `lang` view variable:
+
   ```twig
   <p class="st-subtitle">
       {{ lang.success_msg ?? 'Your transaction has been processed successfully.' }}
   </p>
   ```
-* These variables are populated from the active brand profile, metadata overrides, or system-wide default settings by the [BrandThemeService](https://github.com/own-pay/OwnPay/blob/main/src/Service/Brand/BrandThemeService.php).
+- These variables are populated from the active brand profile, metadata overrides, or system-wide default settings by the [BrandThemeService](https://github.com/own-pay/OwnPay/blob/main/src/Service/Brand/BrandThemeService.php).
 
 ---
 
@@ -170,8 +181,9 @@ Super-administrators can manage localization settings under **System → Setting
 When submitting a pull request to add or update language translations:
 
 ### Step 1: Create the Translation Catalog
-Create a translation JSON file using dot-notation. Placeholders (prefixed with `:`) must remain unchanged (e.g., `:name`, `:amount` must keep their colons).
-Example `es.json` (Spanish):
+
+Create a translation JSON file using dot-notation. Placeholders (prefixed with `:`) must remain unchanged (e.g., `:name`, `:amount` must keep their colons). Example `es.json` (Spanish):
+
 ```json
 {
     "menu.dashboard": "Tablero",
@@ -181,11 +193,13 @@ Example `es.json` (Spanish):
 ```
 
 ### Step 2: Test the Catalog
+
 1. Upload your JSON file via the **Upload Translation File** panel in settings.
 2. Verify that strings display correctly across the admin interface.
 3. Switch your staff user language to the newly uploaded language under **Account → My Account** to verify the user-specific middleware resolution.
 
 ### Step 3: Update Default Config (For core languages)
+
 If you are contributing a translation that should ship natively with OwnPay, place the file in the `config/languages/` directory of your branch (e.g., `config/languages/es.json`) and submit a pull request on GitHub.
 
 ---

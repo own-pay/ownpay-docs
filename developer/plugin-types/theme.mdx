@@ -1,9 +1,9 @@
 ---
-title: "Theme Plugin Development - Customize Checkout Appearance"
+title: Theme Plugin Development - Customize Checkout Appearance
 description: "Build theme plugins that customize the OwnPay checkout with Blade templates, static assets, layout overrides, and brand-scoped styling."
 keywords: "theme plugin, checkout customization, Blade templates, brand styling, checkout theme"
-sidebarTitle: "Theme Dev"
-icon: "paintbrush"
+sidebarTitle: Theme Dev
+icon: paintbrush
 ---
 
 Themes control the visual appearance of OwnPay's customer-facing checkout experience. A theme plugin overrides checkout template paths and injects CSS/JS assets via event hooks, without modifying any core file.
@@ -15,7 +15,7 @@ Themes are ordinary plugins of type `"theme"`. They are loaded by `PluginLoader`
 The checkout controller resolves which template to render by applying three filter hooks:
 
 | Hook | Purpose |
-|---|---|
+| --- | --- |
 | `checkout.template` | Main payment gateway selection and checkout page |
 | `checkout.status.template` | Success / failure / pending result page |
 | `checkout.payment_link.template` | Payment link amount-entry page |
@@ -216,7 +216,7 @@ $events->addAction('checkout.footer', function () use ($container): void {
 ## Full hook reference for themes
 
 | Hook | Type | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `checkout.template` | Filter | Override main checkout template path |
 | `checkout.status.template` | Filter | Override result page template path |
 | `checkout.payment_link.template` | Filter | Override payment link page template |
@@ -237,12 +237,12 @@ $events->addAction('checkout.footer', function () use ($container): void {
 ## Installation and activation
 
 1. Package the plugin directory as a ZIP
-2. Upload via Admin > Appearance > Themes > "Install Theme"
+2. Upload via Admin \> Appearance \> Themes \> "Install Theme"
 3. Activate via the Themes list
-4. Set as active theme via Admin > Appearance > Themes > "Set Active"
+4. Set as active theme via Admin \> Appearance \> Themes \> "Set Active"
 
 <Note>
-The `active_theme` value must match your manifest `slug` exactly. A mismatch means the system falls back to the built-in `own-pay` theme.
+  The `active_theme` value must match your manifest `slug` exactly. A mismatch means the system falls back to the built-in `own-pay` theme.
 </Note>
 
 ## Related pages

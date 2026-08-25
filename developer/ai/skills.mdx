@@ -1,15 +1,15 @@
 ---
-title: "OwnPay Skills for AI Agents - Platform Knowledge Pack"
+title: OwnPay Skills for AI Agents - Platform Knowledge Pack
 description: "Install OwnPay skills to give AI agents full knowledge of the OwnPay platform, payment gateway architecture, and development patterns."
 keywords: "AI skills, agent skills, OwnPay skill.md, Claude skills, Cursor skills, payment gateway AI, MCP skills"
-sidebarTitle: "AI Skills"
-icon: "sparkles"
+sidebarTitle: AI Skills
+icon: sparkles
 ---
 
 OwnPay provides **skills** that teach AI agents how to work with the OwnPay platform. A skill is a structured knowledge file that gives AI tools context about OwnPay's architecture, APIs, conventions, and best practices.
 
 <Info>
-Install the OwnPay skill to get better results when using AI tools with OwnPay. The skill gives agents knowledge of the payment gateway architecture, multi-brand system, plugin development, and API patterns.
+  Install the OwnPay skill to get better results when using AI tools with OwnPay. The skill gives agents knowledge of the payment gateway architecture, multi-brand system, plugin development, and API patterns.
 </Info>
 
 ## What are skills?
@@ -37,39 +37,43 @@ This downloads and installs the OwnPay skill for all compatible AI tools on your
 ### Manual installation
 
 <Tabs>
-<Tab title="Claude Code">
-```bash
-# Download the skill file
-curl -o ~/.claude/skills/ownpay/SKILL.md {{skillsUrl}}
+  <Tab title="Claude Code">
+    ```bash
+    # Download the skill file
+    curl -o ~/.claude/skills/ownpay/SKILL.md {{skillsUrl}}
+    
+    # The skill is now available in Claude Code
+    ```
+  </Tab>
+  <Tab title="Cursor">
+    1. Create the skills directory: `mkdir -p .cursor/skills/ownpay`
+    2. Download the skill:
 
-# The skill is now available in Claude Code
-```
-</Tab>
-<Tab title="Cursor">
-1. Create the skills directory: `mkdir -p .cursor/skills/ownpay`
-2. Download the skill:
-```bash
-curl -o .cursor/skills/ownpay/SKILL.md {{skillsUrl}}
-```
-3. Restart Cursor to load the skill
-</Tab>
-<Tab title="VS Code (Copilot)">
-1. Create the skills directory: `mkdir -p .vscode/skills/ownpay`
-2. Download the skill:
-```bash
-curl -o .vscode/skills/ownpay/SKILL.md {{skillsUrl}}
-```
-3. Reload VS Code to load the skill
-</Tab>
-<Tab title="Gemini CLI">
-```bash
-# Create skills directory
-mkdir -p ~/.gemini/skills/ownpay
+    ```bash
+    curl -o .cursor/skills/ownpay/SKILL.md {{skillsUrl}}
+    ```
 
-# Download the skill
-curl -o ~/.gemini/skills/ownpay/SKILL.md {{skillsUrl}}
-```
-</Tab>
+    3. Restart Cursor to load the skill
+  </Tab>
+  <Tab title="VS Code (Copilot)">
+    1. Create the skills directory: `mkdir -p .vscode/skills/ownpay`
+    2. Download the skill:
+
+    ```bash
+    curl -o .vscode/skills/ownpay/SKILL.md {{skillsUrl}}
+    ```
+
+    3. Reload VS Code to load the skill
+  </Tab>
+  <Tab title="Gemini CLI">
+    ```bash
+    # Create skills directory
+    mkdir -p ~/.gemini/skills/ownpay
+    
+    # Download the skill
+    curl -o ~/.gemini/skills/ownpay/SKILL.md {{skillsUrl}}
+    ```
+  </Tab>
 </Tabs>
 
 ## What the skill teaches
@@ -114,7 +118,7 @@ For the best experience, combine the skill with the [OwnPay MCP server](/develop
 Together, the AI agent understands OwnPay's architecture AND can search the latest documentation.
 
 <Tip>
-The skill teaches the AI *how* OwnPay works. The MCP server gives it access to *what* the docs say. Use both for the most accurate results.
+  The skill teaches the AI _how_ OwnPay works. The MCP server gives it access to _what_ the docs say. Use both for the most accurate results.
 </Tip>
 
 ## Example prompts after installing
@@ -123,21 +127,21 @@ With the skill installed, try these prompts:
 
 ### Development
 
-- *"Create a gateway plugin for a new payment provider"*
-- *"Build a webhook handler for payment.completed events"*
-- *"Show me how to create a payment intent using the PHP SDK"*
+- _"Create a gateway plugin for a new payment provider"_
+- _"Build a webhook handler for payment.completed events"_
+- _"Show me how to create a payment intent using the PHP SDK"_
 
 ### Architecture
 
-- *"Explain how multi-brand data isolation works"*
-- *"How does the double-entry ledger track transactions?"*
-- *"What hooks are available for customizing payment flow?"*
+- _"Explain how multi-brand data isolation works"_
+- _"How does the double-entry ledger track transactions?"_
+- _"What hooks are available for customizing payment flow?"_
 
 ### Operations
 
-- *"How do I set up OwnPay on a cPanel shared host?"*
-- *"Configure Redis caching for better performance"*
-- *"Set up a cron job for webhook retries"*
+- _"How do I set up OwnPay on a cPanel shared host?"_
+- _"Configure Redis caching for better performance"_
+- _"Set up a cron job for webhook retries"_
 
 ## Skill file location
 

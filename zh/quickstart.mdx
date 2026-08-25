@@ -1,9 +1,9 @@
 ---
-title: "快速开始 - 5 分钟内接受第一笔支付"
-description: "部署 OwnPay、创建品牌、激活支付网关并接受测试支付。从零到处理支付的最快路径。"
+title: 快速开始 - 5 分钟内接受第一笔支付
+description: 部署 OwnPay、创建品牌、激活支付网关并接受测试支付。从零到处理支付的最快路径。
 keywords: "快速开始, 支付网关设置, 第一笔支付, 自托管支付, 支付教程, OwnPay 设置"
-sidebarTitle: "快速开始"
-icon: "rocket"
+sidebarTitle: 快速开始
+icon: rocket
 ---
 
 让您的自托管支付网关运行起来并在五分钟内接受一笔测试支付。本指南将引导您完成每个步骤 —— 从部署 OwnPay 到完成一笔交易。
@@ -16,8 +16,8 @@ icon: "rocket"
 
 在开始之前，请确保您已具备：
 
-- **PHP 8.3+**，包含 `bcmath`、`pdo_mysql`、`mbstring`、`curl`、`gd`、`zip`、`json`、`openssl`、`intl` 扩展
-- **MySQL 8+**（或 MariaDB 10.4+）
+- **PHP 8.3\+**，包含 `bcmath`、`pdo_mysql`、`mbstring`、`curl`、`gd`、`zip`、`json`、`openssl`、`intl` 扩展
+- **MySQL 8\+**（或 MariaDB 10.4\+）
 - **一个启用 HTTPS 的域名** - 支付处理需要 SSL
 - **大约 5 分钟**的专注时间
 
@@ -38,7 +38,6 @@ icon: "rocket"
       如果解压后创建了嵌套文件夹（例如 `public_html/ownpay-v0.2.0/`），请将所有文件上移一级到 `public_html/` 目录中。
     </Tip>
   </Tab>
-
   <Tab title="VPS + Nginx" icon="server">
     适用于具有完整 root 权限的 Ubuntu/Debian 服务器。
 
@@ -48,7 +47,7 @@ icon: "rocket"
       php8.3-fpm php8.3-mysql php8.3-mbstring php8.3-curl \
       php8.3-xml php8.3-zip php8.3-gd php8.3-bcmath \
       php8.3-intl certbot python3-certbot-nginx
-
+    
     # 克隆并配置
     cd /var/www
     sudo git clone {{github}}.git ownpay
@@ -59,7 +58,6 @@ icon: "rocket"
 
     将 Nginx 服务器块指向 `/var/www/ownpay/public` 并使用 `certbot` 配置 SSL。完整详情请参阅 [安装指南](/installation)。
   </Tab>
-
   <Tab title="Docker" icon="box">
     适用于本地开发或云编排的容器化部署。
 
@@ -103,9 +101,10 @@ icon: "rocket"
 
 **品牌** 是您隔离的商户租户 —— 它拥有自己的网关、客户、交易和账本。
 
-1. 在侧边栏中转到 **人员 > 品牌**。
+1. 在侧边栏中转到 **人员 \> 品牌**。
 2. 点击 **添加品牌**。
 3. 填写以下信息：
+
    - **品牌名称** - 客户看到的显示名称（例如 "Acme Store"）
    - **默认货币** - 该品牌的主要货币
    - **时区** - 用于报告和时间戳
@@ -124,23 +123,27 @@ icon: "rocket"
      <Card title="Stripe" icon="credit-card">
        信用卡、Apple Pay、Google Pay - 全球覆盖。
      </Card>
+
      <Card title="bKash" icon="smartphone">
        移动支付 - 孟加拉国。
      </Card>
+
      <Card title="PayPal" icon="wallet">
        PayPal 账户和信用卡 - 全球范围。
      </Card>
+
      <Card title="Nagad" icon="smartphone">
        移动支付 - 孟加拉国。
      </Card>
+
      <Card title="SSLCommerz" icon="shield">
        信用卡和银行转账 - 南亚。
      </Card>
+
      <Card title="Razorpay" icon="credit-card">
        信用卡、UPI、钱包 - 印度。
      </Card>
    </CardGroup>
-
 3. 输入您的提供商凭据（API 密钥、密钥、商户 ID）。
 4. 切换 **启用** 开关以激活该品牌的网关。
 
@@ -150,9 +153,10 @@ icon: "rocket"
 
 ## 第 5 步：创建支付链接
 
-1. 转到 **支付 > 支付链接**。
+1. 转到 **支付 \> 支付链接**。
 2. 点击 **创建支付链接**。
 3. 填写以下信息：
+
    - **标题** - 支付的描述（例如 "专业版 - 月付"）
    - **金额** - 收费金额
    - **货币** - 默认为品牌的货币
@@ -177,9 +181,11 @@ OwnPay 会生成一个唯一的 URL，您可以通过电子邮件、聊天分享
   <Card title="在您的网站上接受支付" icon="code" href="/developer/quickstart">
     使用 Merchant API、Webhook 和 SDK 将 OwnPay 集成到您的应用中。
   </Card>
+
   <Card title="设置自定义域名" icon="globe" href="/system/domains">
     在 `pay.yourbrand.com` 上提供您的结账页面，支持自动 SSL 和白标品牌。
   </Card>
+
   <Card title="邀请您的团队" icon="users" href="/people/staff">
     添加具有基于角色的权限的团队成员，以便团队可以协作管理支付。
   </Card>

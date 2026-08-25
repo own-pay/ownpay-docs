@@ -1,9 +1,9 @@
 ---
-title: "Payment Flow - Transaction Statuses and Lifecycle"
+title: Payment Flow - Transaction Statuses and Lifecycle
 description: "The canonical reference for OwnPay transaction statuses. Understand every state a payment passes through: created, pending, processing, completed, failed, expired, cancelled, and refunded."
 keywords: "payment flow, transaction statuses, payment lifecycle, payment processing, transaction states, payment status"
-sidebarTitle: "Payment Flow"
-icon: "arrow-right-circle"
+sidebarTitle: Payment Flow
+icon: arrow-right-circle
 ---
 
 import LlmsDirective from "/snippets/llms-directive.mdx";
@@ -16,35 +16,34 @@ This is the **canonical reference** for OwnPay transaction statuses. Every payme
 
 ## Transaction state diagram
 
-<Mermaid
-  chart={`
-    %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
-    stateDiagram-v2
-      [*] --> Created
-      Created --> Pending: Payment link visited / API call
-      Pending --> Processing: Customer submits payment
-      Processing --> Completed: Gateway approves
-      Processing --> Failed: Gateway declines
-      Pending --> Expired: Auto-expiry timer fires
-      Pending --> Cancelled: Merchant cancels
-      Completed --> Refunded: Merchant initiates refund
-      Failed --> Pending: Customer retries
-      Refunded --> [*]
-      Completed --> [*]
-      Failed --> [*]
-      Expired --> [*]
-      Cancelled --> [*]
+<Mermaid chart={`
+  %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+  stateDiagram-v2
+    [*] --> Created
+    Created --> Pending: Payment link visited / API call
+    Pending --> Processing: Customer submits payment
+    Processing --> Completed: Gateway approves
+    Processing --> Failed: Gateway declines
+    Pending --> Expired: Auto-expiry timer fires
+    Pending --> Cancelled: Merchant cancels
+    Completed --> Refunded: Merchant initiates refund
+    Failed --> Pending: Customer retries
+    Refunded --> [*]
+    Completed --> [*]
+    Failed --> [*]
+    Expired --> [*]
+    Cancelled --> [*]
 
-      style Created fill:#E8F4FD,stroke:#0F97ED,color:#102963
-      style Pending fill:#E8F4FD,stroke:#0F97ED,color:#102963
-      style Processing fill:#E8F4FD,stroke:#0F97ED,color:#102963
-      style Completed fill:#0F97ED,stroke:#102963,color:#ffffff
-      style Failed fill:#c62828,stroke:#102963,color:#ffffff
-      style Expired fill:#f9a825,stroke:#102963,color:#102963
-      style Cancelled fill:#f9a825,stroke:#102963,color:#102963
-      style Refunded fill:#102963,stroke:#0F97ED,color:#ffffff
-  `}
-/>
+    style Created fill:#E8F4FD,stroke:#0F97ED,color:#102963
+    style Pending fill:#E8F4FD,stroke:#0F97ED,color:#102963
+    style Processing fill:#E8F4FD,stroke:#0F97ED,color:#102963
+    style Completed fill:#0F97ED,stroke:#102963,color:#ffffff
+    style Failed fill:#c62828,stroke:#102963,color:#ffffff
+    style Expired fill:#f9a825,stroke:#102963,color:#102963
+    style Cancelled fill:#f9a825,stroke:#102963,color:#102963
+    style Refunded fill:#102963,stroke:#0F97ED,color:#ffffff
+`}>
+</Mermaid>
 
 ## State descriptions
 
@@ -111,7 +110,7 @@ A previously completed payment was refunded (full or partial). The gateway retur
 
 ## Auto-expiry
 
-Unpaid payments are automatically moved to **Expired** after a configurable timeout (default: 24 hours). The cron job (`php public/index.php cron`) runs every minute and checks for stale pending payments. Adjust the expiry window in **System > Settings**.
+Unpaid payments are automatically moved to **Expired** after a configurable timeout (default: 24 hours). The cron job (`php public/index.php cron`) runs every minute and checks for stale pending payments. Adjust the expiry window in **System \> Settings**.
 
 <Info>
   If you need real-time status updates during the Processing phase, use polling or rely on the gateway's own callback. OwnPay only fires webhooks on terminal states.

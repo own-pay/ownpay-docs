@@ -2,15 +2,15 @@
 title: "OwnPay: Self-Hosted Payment Orchestrator"
 description: "OwnPay is an open-source, self-hosted payment gateway orchestrator with multi-brand support, 100+ gateways, a double-entry ledger, and white-label checkout domains."
 keywords: "OwnPay, payment gateway, self-hosted payments, open source payment platform, multi-brand payment orchestrator, white-label checkout, payment orchestration"
-sidebarTitle: "Introduction"
-icon: "bolt"
+sidebarTitle: Introduction
+icon: bolt
 ---
 
 import LlmsDirective from "/snippets/llms-directive.mdx";
 
 Welcome to **OwnPay** - the open-source, self-hosted payment orchestration platform that puts you in full control of how your business accepts money. Instead of routing every transaction through a third-party processor that takes a cut and holds your data, you run your own gateway server on infrastructure you trust.
 
-OwnPay connects you to 123+ payment networks (Stripe, PayPal, bKash, Nagad, Razorpay, SSLCommerz, and many more) through a single unified API, then lets you manage multiple isolated merchant brands from one dashboard. Every payment is recorded in a built-in double-entry ledger for audit-ready accounting.
+OwnPay connects you to 123\+ payment networks (Stripe, PayPal, bKash, Nagad, Razorpay, SSLCommerz, and many more) through a single unified API, then lets you manage multiple isolated merchant brands from one dashboard. Every payment is recorded in a built-in double-entry ledger for audit-ready accounting.
 
 <Visibility for="agents">
   <LlmsDirective />
@@ -20,14 +20,17 @@ OwnPay connects you to 123+ payment networks (Stripe, PayPal, bKash, Nagad, Razo
 
 <CardGroup cols={2}>
   <Card title="100+ payment gateways" icon="wallet">
-    Accept cards, mobile wallets, bank transfers, and local payment methods across 50+ countries through a single integration point.
+    Accept cards, mobile wallets, bank transfers, and local payment methods across 50\+ countries through a single integration point.
   </Card>
+
   <Card title="Multi-tenant brands" icon="store">
     Run isolated merchant tenants - each with its own gateways, domain, branding, staff, API keys, and ledger - from a single OwnPay instance.
   </Card>
+
   <Card title="Double-entry ledger" icon="book-open">
     Every payment, fee, and transfer is recorded as balanced debit-credit journal entries using the `bcmath` extension for precise money math.
   </Card>
+
   <Card title="White-label domains" icon="globe">
     Serve branded checkouts on custom domains like `pay.yourbrand.com` with automated SSL provisioning and DNS verification.
   </Card>
@@ -39,12 +42,15 @@ OwnPay connects you to 123+ payment networks (Stripe, PayPal, bKash, Nagad, Razo
   <Card title="Quickstart" icon="rocket" href="/quickstart">
     Get a payment gateway running in 5 minutes. Create a brand, activate a gateway, and accept your first test payment.
   </Card>
+
   <Card title="API reference" icon="code" href="/api/overview">
     Integrate payments into your apps with Merchant, Mobile, and Admin REST APIs. Includes webhook verification and SDK examples.
   </Card>
+
   <Card title="Developer hub" icon="wrench" href="/developer/quickstart">
     Build custom gateway plugins, themes, and integrations using the plugin system with hooks, filters, and event callbacks.
   </Card>
+
   <Card title="Features overview" icon="sparkles" href="/resources/features">
     Explore the full feature set - SMS verification, invoicing, manual payments, multi-currency, and more.
   </Card>
@@ -53,7 +59,7 @@ OwnPay connects you to 123+ payment networks (Stripe, PayPal, bKash, Nagad, Razo
 ## What makes OwnPay different
 
 - **Self-hosted with full data sovereignty** - your server, your database, your rules. No third party sees your customer data or transaction history.
-- **123+ gateways out of the box** - international processors (Stripe, PayPal) alongside regional leaders (bKash, Nagad, GCash, Razorpay, SSLCommerz) with more added every release.
+- **123\+ gateways out of the box** - international processors (Stripe, PayPal) alongside regional leaders (bKash, Nagad, GCash, Razorpay, SSLCommerz) with more added every release.
 - **Zero transaction fees from OwnPay** - licensed under AGPL-3.0 with no per-transaction charges. You only pay your gateway's processing fees.
 - **AGPL-3.0 licensed and free forever** - no licensing tiers, no feature gates, no phone-home telemetry. The full source code is on [GitHub]({{github}}).
 - **Plugin-extensible architecture** - add gateways, themes, addons, and integrations without touching core code. Over 60 hooks and a WordPress-style lifecycle.
@@ -67,12 +73,15 @@ Choose the path that matches your role:
   <Card title="I am a merchant owner" icon="store" href="/quickstart">
     You want to accept payments on your website or via payment links. Start with the Quickstart guide.
   </Card>
+
   <Card title="I am a developer" icon="code" href="/developer/quickstart">
     You want to integrate the API, build plugins, or embed OwnPay into an existing app. Head to the Developer Hub.
   </Card>
+
   <Card title="I am a sysadmin" icon="server" href="/installation">
     You need to deploy, configure, and maintain an OwnPay instance. Read the Installation guide.
   </Card>
+
   <Card title="I am a plugin developer" icon="puzzle" href="/developer/plugins/overview">
     You want to build a custom gateway adapter, theme, or addon. Start with the Plugin System overview.
   </Card>

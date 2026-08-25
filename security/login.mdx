@@ -1,9 +1,9 @@
 ---
-title: "Login"
+title: Login
 description: "Sign in to the OwnPay admin panel with your email and password. Learn about session management, rate limiting, and login troubleshooting."
 keywords: "admin login, dashboard login, staff login, session management, rate limiting, brute force protection"
-sidebarTitle: "Login"
-icon: "log-in"
+sidebarTitle: Login
+icon: log-in
 ---
 
 The Login page is the primary security gate of the OwnPay platform. Only pre-registered staff members and the super-administrator can sign in. Brute-force protection and secure session management protect your financial data.
@@ -12,12 +12,12 @@ The Login page is the primary security gate of the OwnPay platform. Only pre-reg
 
 Open your browser and navigate to your OwnPay domain followed by the login slug:
 
-```
+```text
 https://your-domain.com/login
 ```
 
 <Note>
-The default slug is `login`, but you can customize it in [branding settings](/appearance/branding) for additional security through obscurity.
+  The default slug is `login`, but you can customize it in [branding settings](/appearance/branding) for additional security through obscurity.
 </Note>
 
 ## Login process
@@ -37,13 +37,13 @@ OwnPay enforces a login rate limit of **10 failed attempts per 5 minutes** per I
 - The attempt is logged in the [audit log](/reports/audit-log)
 
 <Warning>
-Repeated lockouts from the same IP may indicate a brute-force attack. Review the audit log and consider blocking the IP at your server level.
+  Repeated lockouts from the same IP may indicate a brute-force attack. Review the audit log and consider blocking the IP at your server level.
 </Warning>
 
 ## Session management
 
 | Setting | Default | Description |
-|---------|---------|-------------|
+| --- | --- | --- |
 | **Session timeout** | 2 hours | Idle time before the session expires |
 | **Remember me duration** | 30 days | Extended session when "Remember me" is checked |
 | **Concurrent sessions** | Allowed | Multiple devices can be logged in simultaneously |
@@ -57,7 +57,7 @@ By default, staff can be logged in from multiple browsers and devices simultaneo
 ## Login troubleshooting
 
 | Symptom | Cause | Fix |
-|---------|-------|-----|
+| --- | --- | --- |
 | `Invalid credentials` | Wrong email or password | Verify your credentials. Passwords are case-sensitive |
 | `Account temporarily locked` | Too many failed attempts | Wait 5 minutes for the lockout to expire |
 | `404 Not Found` on `/login` | Custom login slug configured | Use the correct slug from your branding settings |

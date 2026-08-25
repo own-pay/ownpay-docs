@@ -1,27 +1,20 @@
 ---
-title: "Laravel SDK - Fluent Payment Integration for PHP Apps"
+title: Laravel SDK - Fluent Payment Integration for PHP Apps
 description: "Integrate OwnPay into Laravel 11+ applications with the official SDK featuring facade support, webhook verification, and type-safe value objects."
 keywords: "Laravel payment SDK, PHP payment integration, Laravel webhook, OwnPay Laravel, Laravel payment gateway, Composer payment package"
-sidebarTitle: "Laravel"
-icon: "layout-grid"
-tag: "NEW"
+sidebarTitle: Laravel
+icon: layout-grid
+tag: NEW
 ---
 
 The official OwnPay Laravel SDK provides a clean, fluent interface for integrating payments into your Laravel application. It handles authentication, retries, webhook verification, and error handling out of the box.
 
 <CardGroup cols={2}>
-  <Card
-    title="Packagist"
-    href="https://packagist.org/packages/ownpay/ownpay-laravel"
-    icon="box"
-  >
+  <Card title="Packagist" icon="box" href="https://packagist.org/packages/ownpay/ownpay-laravel">
     Install via Composer from Packagist.
   </Card>
-  <Card
-    title="GitHub"
-    href="https://github.com/own-pay/ownpay-laravel"
-    icon="github"
-  >
+
+  <Card title="GitHub" icon="github" href="https://github.com/own-pay/ownpay-laravel">
     View source code, report bugs, or contribute.
   </Card>
 </CardGroup>
@@ -30,57 +23,54 @@ The official OwnPay Laravel SDK provides a clean, fluent interface for integrati
 
 - PHP 8.3 or higher
 - Laravel 11.x, 12.x, or 13.x
-- An OwnPay API key from Admin > Developer Hub
+- An OwnPay API key from Admin \> Developer Hub
 
 ## Installation
 
 <Steps>
-<Step>
-**Install the package**
+  <Step>
+    **Install the package**
 
-```bash
-composer require ownpay/ownpay-laravel
-```
+    ```bash
+    composer require ownpay/ownpay-laravel
+    ```
 
-The package automatically registers its service provider and facade.
-</Step>
+    The package automatically registers its service provider and facade.
+  </Step>
+  <Step>
+    **Publish the configuration**
 
-<Step>
-**Publish the configuration**
+    ```bash
+    php artisan vendor:publish --tag=ownpay-config
+    ```
 
-```bash
-php artisan vendor:publish --tag=ownpay-config
-```
+    This creates `config/ownpay.php` in your application.
+  </Step>
+  <Step>
+    **Publish migrations (optional)**
 
-This creates `config/ownpay.php` in your application.
-</Step>
+    If you want to log webhooks to a database table:
 
-<Step>
-**Publish migrations (optional)**
+    ```bash
+    php artisan vendor:publish --tag=ownpay-migrations
+    php artisan migrate
+    ```
+  </Step>
+  <Step>
+    **Add environment variables**
 
-If you want to log webhooks to a database table:
+    Add these to your `.env` file:
 
-```bash
-php artisan vendor:publish --tag=ownpay-migrations
-php artisan migrate
-```
-</Step>
-
-<Step>
-**Add environment variables**
-
-Add these to your `.env` file:
-
-```env
-OWNPAY_API_KEY=op_live_abc123.def456
-OWNPAY_WEBHOOK_SECRET=your_webhook_secret_here
-OWNPAY_BASE_URL=https://pay.ownpay.org
-OWNPAY_TIMEOUT=30
-OWNPAY_RETRY_ATTEMPTS=3
-OWNPAY_RETRY_DELAY=100
-OWNPAY_VERIFY_SSL=true
-```
-</Step>
+    ```env
+    OWNPAY_API_KEY=op_live_abc123.def456
+    OWNPAY_WEBHOOK_SECRET=your_webhook_secret_here
+    OWNPAY_BASE_URL=https://pay.ownpay.org
+    OWNPAY_TIMEOUT=30
+    OWNPAY_RETRY_ATTEMPTS=3
+    OWNPAY_RETRY_DELAY=100
+    OWNPAY_VERIFY_SSL=true
+    ```
+  </Step>
 </Steps>
 
 ## Configuration
@@ -88,7 +78,7 @@ OWNPAY_VERIFY_SSL=true
 All options in `config/ownpay.php`:
 
 | Option | Default | Description |
-|--------|---------|-------------|
+| --- | --- | --- |
 | `api_key` | `null` | Your OwnPay API key (starts with `op_`) |
 | `webhook_secret` | `null` | Webhook signing secret for verification |
 | `base_url` | `https://pay.ownpay.org` | Your OwnPay instance URL |
@@ -104,55 +94,51 @@ All options in `config/ownpay.php`:
 Use the `OwnPay` facade or inject `OwnPayClient` directly.
 
 <Tabs>
-<Tab title="Facade">
-
-```php
-use OwnPay\Laravel\Facades\OwnPay;
-
-$payment = OwnPay::createPayment([
-    'amount'         => '1250.00',
-    'currency'       => 'BDT',
-    'description'    => 'Premium Subscription',
-    'redirect_url'   => 'https://example.com/success',
-    'cancel_url'     => 'https://example.com/cancel',
-    'callback_url'   => 'https://example.com/webhook',
-    'customer_name'  => 'John Doe',
-    'customer_mail'  => 'john@example.com',
-]);
-
-// Redirect the customer to checkout
-return redirect($payment->checkoutUrl);
-```
-
-</Tab>
-<Tab title="Dependency Injection">
-
-```php
-use OwnPay\Laravel\Client\OwnPayClient;
-
-class PaymentController extends Controller
-{
-    public function __construct(
-        private readonly OwnPayClient $ownpay,
-    ) {}
-
-    public function store(Request $request)
+  <Tab title="Facade">
+    ```php
+    use OwnPay\Laravel\Facades\OwnPay;
+    
+    $payment = OwnPay::createPayment([
+        'amount'         => '1250.00',
+        'currency'       => 'BDT',
+        'description'    => 'Premium Subscription',
+        'redirect_url'   => 'https://example.com/success',
+        'cancel_url'     => 'https://example.com/cancel',
+        'callback_url'   => 'https://example.com/webhook',
+        'customer_name'  => 'John Doe',
+        'customer_mail'  => 'john@example.com',
+    ]);
+    
+    // Redirect the customer to checkout
+    return redirect($payment->checkoutUrl);
+    ```
+  </Tab>
+  <Tab title="Dependency Injection">
+    ```php
+    use OwnPay\Laravel\Client\OwnPayClient;
+    
+    class PaymentController extends Controller
     {
-        $payment = $this->ownpay->createPayment([
-            'amount'       => $request->input('amount'),
-            'currency'     => $request->input('currency'),
-            'callback_url' => route('webhook.ownpay'),
-        ]);
-
-        return response()->json([
-            'checkout_url' => $payment->checkoutUrl,
-            'payment_id'   => $payment->paymentId,
-        ]);
+        public function __construct(
+            private readonly OwnPayClient $ownpay,
+        ) {}
+    
+        public function store(Request $request)
+        {
+            $payment = $this->ownpay->createPayment([
+                'amount'       => $request->input('amount'),
+                'currency'     => $request->input('currency'),
+                'callback_url' => route('webhook.ownpay'),
+            ]);
+    
+            return response()->json([
+                'checkout_url' => $payment->checkoutUrl,
+                'payment_id'   => $payment->paymentId,
+            ]);
+        }
     }
-}
-```
-
-</Tab>
+    ```
+  </Tab>
 </Tabs>
 
 ## Payment flow
@@ -251,7 +237,7 @@ Route::post('/webhooks/ownpay', [WebhookController::class, 'handle'])
 ```
 
 <Info>
-The `VerifyWebhookSignature` middleware validates the HMAC-SHA256 signature on every incoming webhook. No manual verification is needed.
+  The `VerifyWebhookSignature` middleware validates the HMAC-SHA256 signature on every incoming webhook. No manual verification is needed.
 </Info>
 
 ### Listening for events
@@ -459,13 +445,13 @@ try {
 ```
 
 <Accordion title="Exception reference">
-| Exception | HTTP Code | When thrown |
-|-----------|-----------|------------|
-| `AuthenticationException` | 401 | Invalid or missing API key |
-| `InvalidRequestException` | 422 | Validation errors in request body |
-| `NotFoundException` | 404 | Resource does not exist |
-| `RateLimitException` | 429 | Too many requests |
-| `ConnectionException` | - | Network or timeout errors |
+  | Exception | HTTP Code | When thrown |
+  | --- | --- | --- |
+  | `AuthenticationException` | 401 | Invalid or missing API key |
+  | `InvalidRequestException` | 422 | Validation errors in request body |
+  | `NotFoundException` | 404 | Resource does not exist |
+  | `RateLimitException` | 429 | Too many requests |
+  | `ConnectionException` | - | Network or timeout errors |
 </Accordion>
 
 ## Artisan commands
@@ -523,7 +509,7 @@ $this->assertSame('payment.completed', $result['event']);
 ## Security best practices
 
 <Warning>
-Never commit API keys to version control. Always use environment variables.
+  Never commit API keys to version control. Always use environment variables.
 </Warning>
 
 1. Store API keys in `.env`, not in `config/ownpay.php` directly
@@ -536,7 +522,7 @@ Never commit API keys to version control. Always use environment variables.
 ## API reference
 
 | Category | Method | Description |
-|----------|--------|-------------|
+| --- | --- | --- |
 | Payments | `createPayment(array $data)` | Create a new payment intent |
 | Payments | `getPayment(string $id)` | Get payment by ID |
 | Transactions | `listTransactions(array $params)` | List transactions with filters |

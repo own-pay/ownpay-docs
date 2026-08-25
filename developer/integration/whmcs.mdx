@@ -1,55 +1,32 @@
 ---
-title: "WHMCS Integration"
-description: "Install and configure the official OwnPay WHMCS payment gateway module to accept card and mobile wallet payments on hosting invoices."
+title: WHMCS Integration
+description: Install and configure the official OwnPay WHMCS payment gateway module to accept card and mobile wallet payments on hosting invoices.
 keywords: "WHMCS payment module, hosting invoices, WHMCS gateway, card payments, WHMCS integration"
-sidebarTitle: "WHMCS"
-icon: "server"
+sidebarTitle: WHMCS
+icon: server
 ---
 
 Integrate OwnPay with your WHMCS billing platform to accept credit cards, debit cards, and local mobile payments directly on hosting and service invoices.
 
 <CardGroup cols={2}>
-  <Card
-    title="WHMCS Marketplace"
-    href="https://marketplace.whmcs.com/product/8845-ownpay-whmcs"
-  >
+  <Card title="WHMCS Marketplace" href="https://marketplace.whmcs.com/product/8845-ownpay-whmcs">
     Download the official module from the WHMCS Marketplace.
   </Card>
-  <Card
-    title="GitHub"
-    href="https://github.com/own-pay/OwnPay-WHMCS"
-  >
+
+  <Card title="GitHub" href="https://github.com/own-pay/OwnPay-WHMCS">
     View source code, report bugs, or contribute.
   </Card>
 </CardGroup>
 
 ## Prerequisites
 
-- WHMCS 8.0+
+- WHMCS 8.0\+
 - A running OwnPay instance
 - An API key and webhook secret from **Developers → API Keys**
 
 ## Installation
 
 <Steps>
-
-### Download the module
-
-Download the latest release ZIP from the [OwnPay-WHMCS Releases](https://github.com/own-pay/OwnPay-WHMCS/releases) page.
-
-### Upload to WHMCS
-
-Extract the archive and copy these files to your WHMCS root, preserving the folder structure:
-
-```text
-whmcs-root/
-  modules/
-    gateways/
-      callback/
-        ownpay.php
-      ownpay.php
-```
-
 </Steps>
 
 ## Configuration
@@ -65,7 +42,7 @@ whmcs-root/
 Under **Manage Active Gateways**, fill in:
 
 | Field | Description |
-|---|---|
+| --- | --- |
 | Display Name | Name shown to clients (e.g. "Credit/Debit Card / Mobile Banking") |
 | API URL | Your OwnPay base URL (e.g. `https://pay.yourdomain.com`) |
 | API Key | Your OwnPay API key from **Developers → API Keys** |

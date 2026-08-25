@@ -1,9 +1,9 @@
 ---
-title: "Manual payment methods"
+title: Manual payment methods
 description: "How to create manual (offline) payment methods like bank transfer, cash on delivery, and mobile money with payment instructions in OwnPay."
 keywords: "manual gateway, offline payment, bank transfer, COD, mobile money, custom fields"
-sidebarTitle: "Manual Methods"
-icon: "hand-coins"
+sidebarTitle: Manual Methods
+icon: hand-coins
 ---
 
 Manual payment methods are offline channels where the customer pays outside of OwnPay - for example, by transferring money to your bank account, sending mobile money, or paying cash on delivery. You define the payment instructions and custom fields, and then verify the payment manually or automatically via SMS.
@@ -26,7 +26,7 @@ Common examples:
 4. Click **Create Gateway**.
 
 | Setting | Type | Description |
-|---|---|---|
+| --- | --- | --- |
 | **Name** | Text | Display name at checkout (e.g. "Bank Transfer - IBBL") |
 | **Slug** | Text | URL-safe identifier (lowercase, hyphens only) |
 | **Icon** | File upload | Logo or icon shown at checkout |
@@ -62,14 +62,14 @@ For automatic verification via SMS, see [SMS verification](/gateways/sms-verific
 ## Common mistakes
 
 | Mistake | Why it matters | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Vague payment instructions | Customer does not know where to send money | Write clear, step-by-step instructions with exact account numbers |
 | No custom fields for transaction ID | You cannot identify which payment belongs to which transaction | Always require at least a transaction ID field |
 | Min amount higher than max amount | Checkout will reject all amounts | Ensure min amount is less than or equal to max amount |
 | Spaces in slug | Breaks checkout URLs | Use only lowercase letters, numbers, and hyphens |
 
 <Warning>
-Manual payments stay in "awaiting verification" until you or the SMS auto-verification system process them. Check the Transactions page regularly if you are not using SMS verification.
+  Manual payments stay in "awaiting verification" until you or the SMS auto-verification system process them. Check the Transactions page regularly if you are not using SMS verification.
 </Warning>
 
 ## Related Pages

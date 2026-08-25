@@ -1,9 +1,9 @@
 ---
-title: "Create and manage invoices"
+title: Create and manage invoices
 description: "How to create invoices with line items, send them to customers, track payment status, and generate PDF receipts in OwnPay."
 keywords: "invoices, invoice creation, invoice PDF, invoice status, invoice numbering"
-sidebarTitle: "Invoices"
-icon: "file-text"
+sidebarTitle: Invoices
+icon: file-text
 ---
 
 Invoices are structured payment requests you send to customers. Each invoice generates a unique checkout link where the customer can pay using any active gateway. Invoices differ from payment links because they carry line items, a due date, and a formal invoice number.
@@ -15,13 +15,13 @@ When you create an invoice, OwnPay generates a payment link behind the scenes. T
 ## Create an invoice
 
 1. Go to **Payments** → **Invoices**.
-2. Click **+ Create Invoice**.
+2. Click **\+ Create Invoice**.
 3. Fill in the invoice details (see table below).
 4. Add one or more **line items** with a description, quantity, and unit price.
 5. Click **Create Invoice**.
 
 | Field | Required | Description |
-|---|---|---|
+| --- | --- | --- |
 | **Invoice number** | Yes | Unique serial (e.g. `INV-2025-0042`). The system does not auto-generate this - you control the numbering scheme |
 | **Customer** | Yes | Select from existing customer profiles |
 | **Currency** | Yes | Billing currency for this invoice |
@@ -34,7 +34,7 @@ When you create an invoice, OwnPay generates a payment link behind the scenes. T
 ## Invoice statuses
 
 | Status | Meaning |
-|---|---|
+| --- | --- |
 | **Draft** | Saved but not yet shared with the customer |
 | **Sent** | Checkout link has been generated and can be shared |
 | **Paid** | Customer completed payment through the checkout link |
@@ -54,7 +54,7 @@ Click **Send via Email** on any invoice in Sent or Draft status. OwnPay sends th
 OwnPay does not auto-increment invoice numbers. You set the number manually when you create each invoice. This gives you flexibility to match your existing accounting system (e.g. `INV-2025-0042`, `REC-0042`, or any format you prefer).
 
 <Warning>
-Every invoice must have at least one line item with a quantity and unit price greater than zero. An invoice with no line items or a total of 0.00 cannot be paid.
+  Every invoice must have at least one line item with a quantity and unit price greater than zero. An invoice with no line items or a total of 0.00 cannot be paid.
 </Warning>
 
 ## Related Pages

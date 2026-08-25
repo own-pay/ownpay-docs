@@ -1,9 +1,9 @@
 ---
-title: "在共享主机、VPS 或 Docker 上安装 OwnPay"
-description: "在共享主机、VPS 或 Docker 上部署 OwnPay。包含前提条件检查、分步设置和安装后验证。"
+title: 在共享主机、VPS 或 Docker 上安装 OwnPay
+description: 在共享主机、VPS 或 Docker 上部署 OwnPay。包含前提条件检查、分步设置和安装后验证。
 keywords: "安装支付网关, cPanel 支付处理, 自托管支付设置, Docker 支付平台, PHP 支付网关安装, VPS 支付网关"
-sidebarTitle: "安装"
-icon: "feather"
+sidebarTitle: 安装
+icon: feather
 ---
 
 OwnPay 包含一个**内置的 Web 安装器**，会检查您的服务器配置、创建数据库架构并引导您创建主管理员账户。只需上传文件、访问域名，向导会处理其余工作 —— 无需命令行经验。
@@ -14,19 +14,22 @@ OwnPay 包含一个**内置的 Web 安装器**，会检查您的服务器配置�
   <Accordion title="系统要求" icon="list-check">
     | 组件 | 最低要求 | 推荐配置 |
     | :-- | :-- | :-- |
-    | **PHP 运行时** | 8.3 | 8.3+ |
-    | **MySQL** | 8.0 | 8.0+（或 MariaDB 10.4+） |
-    | **内存** | 512 MB RAM | 2 GB+ RAM |
-    | **磁盘** | 1 GB 可用空间 | 10 GB+ SSD |
+    | **PHP 运行时** | 8.3 | 8.3\+ |
+    | **MySQL** | 8.0 | 8.0\+（或 MariaDB 10.4\+） |
+    | **内存** | 512 MB RAM | 2 GB\+ RAM |
+    | **磁盘** | 1 GB 可用空间 | 10 GB\+ SSD |
     | **Redis** | 可选 | 推荐用于缓存 |
   </Accordion>
+
   <Accordion title="必需的 PHP 扩展" icon="puzzle">
     确认以下扩展均已启用：`mbstring`、`pdo_mysql`、`gd`、`curl`、`zip`、`json`、`openssl`、`bcmath`、`intl`。
 
     在终端中运行 `php -m` 检查，或在您的托管面板中查看 PHP 信息页面。
   </Accordion>
+
   <Accordion title="文件夹权限" icon="folder">
     Web 服务器必须能够写入以下目录：
+
     - `storage/`（日志、会话、缓存、上传）
     - `public/assets/uploads/`（品牌 Logo、附件）
   </Accordion>
@@ -67,7 +70,6 @@ OwnPay 包含一个**内置的 Web 安装器**，会检查您的服务器配置�
       </Step>
     </Steps>
   </Tab>
-
   <Tab title="VPS（Nginx + PHP-FPM）" icon="server">
     完全控制技术栈。推荐用于生产环境。
 
@@ -111,11 +113,11 @@ OwnPay 包含一个**内置的 Web 安装器**，会检查您的服务器配置�
             server_name yourdomain.com;
             root /var/www/ownpay/public;
             index index.php;
-
+        
             location / {
                 try_files $uri $uri/ /index.php?$query_string;
             }
-
+        
             location ~ \.php$ {
                 fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
                 fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
@@ -150,7 +152,6 @@ OwnPay 包含一个**内置的 Web 安装器**，会检查您的服务器配置�
       </Step>
     </Steps>
   </Tab>
-
   <Tab title="Docker" icon="box">
     适用于可复现环境的容器化部署。
 
@@ -192,7 +193,7 @@ OwnPay 包含一个**内置的 Web 安装器**，会检查您的服务器配置�
     等待两分钟，然后检查系统日志中是否有定时任务条目。如果没有出现条目，请验证 cron 命令路径是否正确。
   </Step>
   <Step title="配置 SMTP">
-    转到 **系统 > 设置 > 邮件设置** 并输入您的 SMTP 凭据。发送一封测试邮件确认投递。
+    转到 **系统 \> 设置 \> 邮件设置** 并输入您的 SMTP 凭据。发送一封测试邮件确认投递。
   </Step>
   <Step title="启用双因素认证">
     转到 **我的账户** 并启用 2FA。强烈建议主管理员账户启用此功能。

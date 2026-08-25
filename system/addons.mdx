@@ -1,15 +1,15 @@
 ---
-title: "Addons"
+title: Addons
 description: "Install and manage built-in and marketplace addons that extend OwnPay with email, Telegram, and other functional capabilities."
 keywords: "addons, addon manager, mail-gateway, telegram-bot, marketplace addons, install addon"
-sidebarTitle: "Addons"
-icon: "package"
+sidebarTitle: Addons
+icon: package
 ---
 
 Addons are a specialized plugin type that provide functional capabilities to OwnPay - such as email delivery, Telegram notifications, and other integrations. They are managed from their own section for convenience.
 
 <Info>
-Addons are technically plugins of type `addon`. For the general plugin management interface, see [Plugins](/system/plugins).
+  Addons are technically plugins of type `addon`. For the general plugin management interface, see [Plugins](/system/plugins).
 </Info>
 
 ## Built-in addons
@@ -17,41 +17,30 @@ Addons are technically plugins of type `addon`. For the general plugin managemen
 OwnPay ships with two built-in addons that are available immediately after installation:
 
 <CardGroup>
-<Card title="mail-gateway" icon="mail">
+  <Card title="mail-gateway" icon="mail">
+    Provides SMTP email delivery for transaction notifications, password resets, and custom templates. See [Email Notifications](/notifications/email) for configuration.
+  </Card>
 
-Provides SMTP email delivery for transaction notifications, password resets, and custom templates. See [Email Notifications](/notifications/email) for configuration.
-
-</Card>
-<Card title="telegram-bot" icon="message">
-
-Sends real-time push notifications to a Telegram chat for payment and refund events. See [Telegram Notifications](/notifications/telegram) for setup.
-
-</Card>
+  <Card title="telegram-bot" icon="message">
+    Sends real-time push notifications to a Telegram chat for payment and refund events. See [Telegram Notifications](/notifications/telegram) for setup.
+  </Card>
 </CardGroup>
 
 ## Install from marketplace
 
 <Steps>
-<Step>
-
-Navigate to **System > Addons** and click **Browse Marketplace**.
-
-</Step>
-<Step>
-
-Browse available addons. Each listing shows a description, version, and compatibility.
-
-</Step>
-<Step>
-
-Click **Install** on the addon you want. OwnPay downloads and installs it automatically.
-
-</Step>
-<Step>
-
-Activate the addon and configure it for your brands.
-
-</Step>
+  <Step>
+    Navigate to **System \> Addons** and click **Browse Marketplace**.
+  </Step>
+  <Step>
+    Browse available addons. Each listing shows a description, version, and compatibility.
+  </Step>
+  <Step>
+    Click **Install** on the addon you want. OwnPay downloads and installs it automatically.
+  </Step>
+  <Step>
+    Activate the addon and configure it for your brands.
+  </Step>
 </Steps>
 
 ## Upload an addon
@@ -69,14 +58,14 @@ Click **Settings** on any addon row to open its configuration panel. Here you ca
 ## Addon lifecycle
 
 | Action | Effect |
-|--------|--------|
+| --- | --- |
 | **Activate** | Enables the addon for selected brands |
 | **Deactivate** | Disables the addon without removing configuration |
 | **Update** | Applies a newer version when available |
 | **Uninstall** | Removes the addon, its files, and all stored settings |
 
 <Warning>
-Uninstalling the mail-gateway addon will stop all email delivery. Uninstalling the telegram-bot addon will stop all Telegram notifications. Make sure you have an alternative notification channel before uninstalling.
+  Uninstalling the mail-gateway addon will stop all email delivery. Uninstalling the telegram-bot addon will stop all Telegram notifications. Make sure you have an alternative notification channel before uninstalling.
 </Warning>
 
 ## Related Pages

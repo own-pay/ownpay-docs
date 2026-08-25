@@ -1,34 +1,35 @@
 ---
-title: "Disputes"
+title: Disputes
 description: "Track chargebacks and disputes through their full lifecycle, respond with evidence, and understand the financial impact of dispute outcomes."
 keywords: "disputes, chargebacks, dispute response, evidence upload, dispute lifecycle, financial disputes"
-sidebarTitle: "Disputes"
-icon: "alert-circle"
+sidebarTitle: Disputes
+icon: alert-circle
 ---
 
 A dispute (also called a chargeback) occurs when a customer contacts their bank or card issuer to reverse a completed payment. OwnPay tracks each dispute through its full lifecycle and records the financial impact on your ledger.
 
 ## Dispute lifecycle
 
-<Mermaid>
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
-stateDiagram-v2
-    [*] --> Open: Chargeback received
-    Open --> Under_Review: Evidence requested
-    Under_Review --> Won: Dispute resolved in your favor
-    Under_Review --> Lost: Dispute resolved against you
-    Under_Review --> Closed: Customer withdrew
-    Won --> [*]
-    Lost --> [*]
-    Closed --> [*]
+<Mermaid chart={`
+  %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+  stateDiagram-v2
+      [*] --> Open: Chargeback received
+      Open --> Under_Review: Evidence requested
+      Under_Review --> Won: Dispute resolved in your favor
+      Under_Review --> Lost: Dispute resolved against you
+      Under_Review --> Closed: Customer withdrew
+      Won --> [*]
+      Lost --> [*]
+      Closed --> [*]
+`}>
 </Mermaid>
 
 ## Viewing disputes
 
-Navigate to **Reports > Disputes**. The table lists all disputes with these columns:
+Navigate to **Reports \> Disputes**. The table lists all disputes with these columns:
 
 | Column | Description |
-|--------|-------------|
+| --- | --- |
 | **Transaction ID** | The original payment that was disputed |
 | **Amount** | The disputed amount |
 | **Status** | Open, Under Review, Won, Lost, or Closed |
@@ -39,58 +40,44 @@ Navigate to **Reports > Disputes**. The table lists all disputes with these colu
 ## Responding to a dispute
 
 <Steps>
-<Step>
-
-Click the dispute row to open its detail view.
-
-</Step>
-<Step>
-
-Review the customer's dispute reason and the original transaction details.
-
-</Step>
-<Step>
-
-Under the **Evidence** section, upload supporting documents - delivery receipts, service logs, communication records, or any proof of fulfillment.
-
-</Step>
-<Step>
-
-Add internal **notes** for your team. These notes are private and not sent to the bank.
-
-</Step>
-<Step>
-
-Click **Submit Response** before the deadline expires.
-
-</Step>
+  <Step>
+    Click the dispute row to open its detail view.
+  </Step>
+  <Step>
+    Review the customer's dispute reason and the original transaction details.
+  </Step>
+  <Step>
+    Under the **Evidence** section, upload supporting documents - delivery receipts, service logs, communication records, or any proof of fulfillment.
+  </Step>
+  <Step>
+    Add internal **notes** for your team. These notes are private and not sent to the bank.
+  </Step>
+  <Step>
+    Click **Submit Response** before the deadline expires.
+  </Step>
 </Steps>
 
 <Warning>
-Missing a dispute deadline almost always results in an automatic loss. Set up [webhook notifications](/notifications/webhooks) for the `dispute.opened` event so your team is alerted immediately.
+  Missing a dispute deadline almost always results in an automatic loss. Set up [webhook notifications](/notifications/webhooks) for the `dispute.opened` event so your team is alerted immediately.
 </Warning>
 
 ## Dispute outcomes
 
 <Columns>
-<Column>
+  <Column>
+    ### Won
 
-### Won
+    - Disputed amount is returned to your ledger balance
+    - No additional fee from the gateway (varies by provider)
+    - Transaction status reverts to completed
+  </Column>
+  <Column>
+    ### Lost
 
-- Disputed amount is returned to your ledger balance
-- No additional fee from the gateway (varies by provider)
-- Transaction status reverts to completed
-
-</Column>
-<Column>
-
-### Lost
-
-- Disputed amount is debited from your ledger
-- A **dispute fee** (charged by the card network) is also debited
-- The transaction is permanently marked as disputed
-
-</Column>
+    - Disputed amount is debited from your ledger
+    - A **dispute fee** (charged by the card network) is also debited
+    - The transaction is permanently marked as disputed
+  </Column>
 </Columns>
 
 ## Prevention best practices

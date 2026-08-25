@@ -1,9 +1,9 @@
 ---
-title: "Dashboard"
+title: Dashboard
 description: "View key business metrics at a glance - total revenue, transaction count, success rate, and active brands - with filterable charts and quick navigation to detailed reports."
 keywords: "dashboard, metrics, revenue, transaction count, success rate, KPI, analytics"
-sidebarTitle: "Dashboard"
-icon: "layout-dashboard"
+sidebarTitle: Dashboard
+icon: layout-dashboard
 ---
 
 The Dashboard is the first page you see after logging in. It provides a real-time overview of your payment operations across all brands, with filterable date ranges and visual charts.
@@ -13,26 +13,21 @@ The Dashboard is the first page you see after logging in. It provides a real-tim
 Four summary cards appear at the top of the page:
 
 <CardGroup>
-<Card title="Total Revenue" icon="dollar">
+  <Card title="Total Revenue" icon="dollar">
+    The sum of all successfully completed payments in the selected period. Amounts use `bcmath` precision and display in each brand's configured currency.
+  </Card>
 
-The sum of all successfully completed payments in the selected period. Amounts use `bcmath` precision and display in each brand's configured currency.
+  <Card title="Transaction Count" icon="hash">
+    The total number of payment attempts, broken down by completed and failed.
+  </Card>
 
-</Card>
-<Card title="Transaction Count" icon="hash">
+  <Card title="Success Rate" icon="check">
+    The percentage of payments that completed successfully versus total attempts.
+  </Card>
 
-The total number of payment attempts, broken down by completed and failed.
-
-</Card>
-<Card title="Success Rate" icon="check">
-
-The percentage of payments that completed successfully versus total attempts.
-
-</Card>
-<Card title="Active Brands" icon="building">
-
-The number of brands that processed at least one transaction in the selected period.
-
-</Card>
+  <Card title="Active Brands" icon="building">
+    The number of brands that processed at least one transaction in the selected period.
+  </Card>
 </CardGroup>
 
 ## Date range filters
@@ -46,7 +41,7 @@ Use the date picker at the top of the page to set a custom reporting window. Pre
 - **This year**
 
 <Tip>
-All metrics and charts update instantly when you change the date range. No page reload is needed.
+  All metrics and charts update instantly when you change the date range. No page reload is needed.
 </Tip>
 
 ## Charts and visualizations
@@ -62,25 +57,21 @@ Below the summary cards, the dashboard displays:
 The bottom of the dashboard provides shortcut cards to commonly used sections:
 
 <CardGroup>
-<Card title="Transactions" href="/payments/transactions">
+  <Card title="Transactions" href="/payments/transactions">
+    View and search all payment records.
+  </Card>
 
-View and search all payment records.
+  <Card title="Audit Log" href="/reports/audit-log">
+    Review staff actions for compliance.
+  </Card>
 
-</Card>
-<Card title="Audit Log" href="/reports/audit-log">
-
-Review staff actions for compliance.
-
-</Card>
-<Card title="Balance Verification" href="/reports/balance-verification">
-
-Reconcile ledger balances.
-
-</Card>
+  <Card title="Balance Verification" href="/reports/balance-verification">
+    Reconcile ledger balances.
+  </Card>
 </CardGroup>
 
 <Note>
-Dashboard data is cached in Redis for 60 seconds. If you need absolutely real-time figures, navigate to the specific report page instead.
+  Dashboard data is cached in Redis for 60 seconds. If you need absolutely real-time figures, navigate to the specific report page instead.
 </Note>
 
 ## Related Pages

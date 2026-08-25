@@ -1,9 +1,9 @@
 ---
-title: "Ledger - Double-Entry Bookkeeping for Payments"
+title: Ledger - Double-Entry Bookkeeping for Payments
 description: "OwnPay records every payment, fee, and transfer as balanced debit-credit pairs using double-entry bookkeeping with bcmath precision and brand isolation."
 keywords: "double-entry ledger, payment accounting, bookkeeping, journal entries, financial reconciliation, bcmath, T-account"
-sidebarTitle: "Ledger"
-icon: "book-open"
+sidebarTitle: Ledger
+icon: book-open
 ---
 
 import LlmsDirective from "/snippets/llms-directive.mdx";
@@ -16,30 +16,29 @@ Every time money moves in OwnPay - a customer pays, a gateway deducts fees, a re
 
 ## How double-entry works in OwnPay
 
-When a $100 payment completes through Stripe (with a $2.90 gateway fee), OwnPay creates four ledger entries across three accounts:
+When a \$100 payment completes through Stripe (with a \$2.90 gateway fee), OwnPay creates four ledger entries across three accounts:
 
-<Mermaid
-  chart={`
-    %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
-    graph LR
-      subgraph "Cash Account (Asset)"
-        C1[Debit $97.10]
-      end
-      subgraph "Gateway Fee Expense"
-        G1[Debit $2.90]
-      end
-      subgraph "Customer Receivable (Asset)"
-        R1[Credit $100.00]
-      end
-      R1 -->|"payment completed"| C1
-      R1 -->|"payment completed"| G1
-      style C1 fill:#e8f5e9,stroke:#2e7d32
-      style G1 fill:#fce4ec,stroke:#c62828
-      style R1 fill:#e3f2fd,stroke:#1565c0
-  `}
-/>
+<Mermaid chart={`
+  %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+  graph LR
+    subgraph "Cash Account (Asset)"
+      C1[Debit $97.10]
+    end
+    subgraph "Gateway Fee Expense"
+      G1[Debit $2.90]
+    end
+    subgraph "Customer Receivable (Asset)"
+      R1[Credit $100.00]
+    end
+    R1 -->|"payment completed"| C1
+    R1 -->|"payment completed"| G1
+    style C1 fill:#e8f5e9,stroke:#2e7d32
+    style G1 fill:#fce4ec,stroke:#c62828
+    style R1 fill:#e3f2fd,stroke:#1565c0
+`}>
+</Mermaid>
 
-The net effect: **$100.00 credit = $97.10 debit + $2.90 debit**. The books balance to zero.
+The net effect: **\$100.00 credit = \$97.10 debit \+ \$2.90 debit**. The books balance to zero.
 
 ## Account types
 

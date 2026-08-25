@@ -1,9 +1,9 @@
 ---
-title: "Performance and Scaling"
+title: Performance and Scaling
 description: "Optimize OwnPay performance with Redis caching, database tuning, PHP-FPM configuration, Nginx optimization, queue workers, and scaling strategies."
 keywords: "performance, scaling, Redis, PHP-FPM, Nginx, database optimization, queue workers, CDN"
-sidebarTitle: "Performance"
-icon: "gauge"
+sidebarTitle: Performance
+icon: gauge
 ---
 
 OwnPay is designed to run well on modest hardware, but as your transaction volume grows you can make targeted optimizations at each layer of the stack. This guide covers the most impactful changes.
@@ -15,31 +15,6 @@ OwnPay is designed to run well on modest hardware, but as your transaction volum
 The single biggest performance improvement for most deployments is switching from file-based cache and sessions to Redis. Redis eliminates disk I/O for session reads, cache lookups, and rate limit tracking.
 
 <Steps>
-
-### Step 1: Install Redis
-
-```bash
-sudo apt install redis-server
-sudo systemctl enable redis-server
-```
-
-### Step 2: Configure OwnPay to use Redis
-
-```ini
-# .env
-CACHE_DRIVER=redis
-QUEUE_DRIVER=redis
-SESSION_DRIVER=redis
-REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
-REDIS_DB=0
-REDIS_PREFIX=op:
-```
-
-### Step 3: Verify
-
-Clear all caches from the admin panel under **Settings > Cache**, then monitor response times. Cache hit rates should exceed 95% within minutes.
-
 </Steps>
 
 <Tip>
@@ -69,7 +44,7 @@ long_query_time            = 2
   Set `innodb_buffer_pool_size` to roughly 70% of available RAM dedicated to MySQL. On a server with 4 GB RAM and Redis, 1 GB is a reasonable starting point.
 </Note>
 
-You can optimize tables from the admin panel under **Settings > Database**. This runs `OPTIMIZE TABLE` on all `op_` tables to reclaim fragmented space.
+You can optimize tables from the admin panel under **Settings \> Database**. This runs `OPTIMIZE TABLE` on all `op_` tables to reclaim fragmented space.
 
 ---
 
@@ -157,12 +132,12 @@ php /var/www/ownpay/public/index.php queue:work --daemon
 ## Scaling considerations
 
 | Volume | Architecture | Key change |
-|:---|:---|:---|
+| :-- | :-- | :-- |
 | Up to 1,000 payments/day | Single server, file cache | Default installation is sufficient |
 | 1,000 - 8,000 payments/day | Single server, Redis | Switch to Redis for cache, sessions, and queues |
 | 8,000 - 50,000 payments/day | Single server, tuned | Increase PHP-FPM workers, InnoDB buffer pool, add OPcache JIT |
-| 50,000+ payments/day | Separate app + database servers | Move MySQL to a dedicated host with 5 GB+ buffer pool |
-| 100,000+ payments/day | Horizontal scaling | Multiple app servers behind a load balancer, Redis Cluster, read replicas |
+| 50,000\+ payments/day | Separate app \+ database servers | Move MySQL to a dedicated host with 5 GB\+ buffer pool |
+| 100,000\+ payments/day | Horizontal scaling | Multiple app servers behind a load balancer, Redis Cluster, read replicas |
 
 <Note>
   OwnPay's PHP application is stateless when using Redis for sessions. This makes horizontal scaling straightforward - add more app servers behind your load balancer with no code changes.
@@ -175,7 +150,7 @@ php /var/www/ownpay/public/index.php queue:work --daemon
 Monitor these key metrics to know when to scale:
 
 | Metric | Healthy range | Where to check |
-|:---|:---|:---|
+| :-- | :-- | :-- |
 | PHP-FPM active workers | Below 80% of `pm.max_children` | `/fpm-status` endpoint |
 | OPcache hit rate | Above 95% | `opcache_get_status()` in a PHP info page |
 | Slow queries | Zero per minute | MySQL slow query log |

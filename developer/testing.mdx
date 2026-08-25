@@ -1,9 +1,9 @@
 ---
-title: "Testing Payments"
+title: Testing Payments
 description: "How to test payments without real money using test card numbers, sandbox gateways, and simulated webhooks."
 keywords: "test payments, test cards, sandbox mode, Stripe test cards, bKash test, Nagad test, webhook simulation, debug mode"
-sidebarTitle: "Testing"
-icon: "flask-conical"
+sidebarTitle: Testing
+icon: flask-conical
 ---
 
 You can test your entire payment flow without processing real transactions. OwnPay supports test card numbers, sandbox gateways, and webhook simulation.
@@ -13,7 +13,7 @@ You can test your entire payment flow without processing real transactions. OwnP
 Use these cards with any Stripe-based gateway configured in test mode:
 
 | Card number | Brand | Outcome |
-|---|---|---|
+| --- | --- | --- |
 | `4242 4242 4242 4242` | Visa | Success |
 | `4000 0025 0000 3155` | Visa | 3D Secure required |
 | `4000 0000 0000 0002` | Visa | Decline |
@@ -23,7 +23,7 @@ Use these cards with any Stripe-based gateway configured in test mode:
 | `3782 822463 10005` | Amex | Success |
 
 <Info>
-Use any future expiry date, any CVC, and any postal code with these test cards.
+  Use any future expiry date, any CVC, and any postal code with these test cards.
 </Info>
 
 ## Gateway sandbox configuration
@@ -31,7 +31,7 @@ Use any future expiry date, any CVC, and any postal code with these test cards.
 Each gateway has a sandbox or test mode you activate from the admin panel. The table below shows where to find test credentials:
 
 | Gateway | Sandbox activation | Where to get test credentials |
-|---|---|---|
+| --- | --- | --- |
 | Stripe | Toggle **Test Mode** in gateway settings | [Stripe Dashboard → Developers → Test mode](https://dashboard.stripe.com/test/apikeys) |
 | PayPal | Use sandbox endpoint URL | [PayPal Developer → Sandbox → Apps](https://developer.paypal.com/developer/applications/sandbox) |
 | bKash | Use sandbox URL and token | Contact bKash merchant support for sandbox access |
@@ -93,7 +93,7 @@ curl -X POST https://your-domain.com/api/v1/payments/pay_abc123/refunds \
 ```
 
 <Note>
-Refunds in test mode are instant and do not move real money.
+  Refunds in test mode are instant and do not move real money.
 </Note>
 
 For deeper debugging including log inspection and request tracing, see [Debug mode](/resources/debug-mode).

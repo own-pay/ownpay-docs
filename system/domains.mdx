@@ -1,9 +1,9 @@
 ---
-title: "Domains"
+title: Domains
 description: "Add and verify custom domains for each brand, configure DNS records, and enable automatic SSL certificate provisioning."
 keywords: "custom domains, DNS, SSL, domain verification, CNAME, domain setup, multi-domain"
-sidebarTitle: "Domains"
-icon: "globe"
+sidebarTitle: Domains
+icon: globe
 ---
 
 Each brand in OwnPay can have one or more custom domains. Customers are redirected to these domains during checkout, giving you a fully branded payment experience.
@@ -11,26 +11,18 @@ Each brand in OwnPay can have one or more custom domains. Customers are redirect
 ## Add a domain
 
 <Steps>
-<Step>
-
-Navigate to **System > Domains** and click **Add Domain**.
-
-</Step>
-<Step>
-
-Select the **Brand** this domain belongs to.
-
-</Step>
-<Step>
-
-Enter the domain name (e.g., `pay.yourmerchant.com`).
-
-</Step>
-<Step>
-
-Click **Save**. OwnPay displays the DNS records you need to configure.
-
-</Step>
+  <Step>
+    Navigate to **System \> Domains** and click **Add Domain**.
+  </Step>
+  <Step>
+    Select the **Brand** this domain belongs to.
+  </Step>
+  <Step>
+    Enter the domain name (e.g., `pay.yourmerchant.com`).
+  </Step>
+  <Step>
+    Click **Save**. OwnPay displays the DNS records you need to configure.
+  </Step>
 </Steps>
 
 ## Configure DNS
@@ -38,30 +30,26 @@ Click **Save**. OwnPay displays the DNS records you need to configure.
 OwnPay shows you the exact DNS records to add at your domain registrar:
 
 <Columns>
-<Column>
+  <Column>
+    ### CNAME method (recommended)
 
-### CNAME method (recommended)
+    | Type | Name | Value |
+    | --- | --- | --- |
+    | CNAME | `pay` | `your-ownpay-instance.com` |
+  </Column>
+  <Column>
+    ### A record method
 
-| Type | Name | Value |
-|------|------|-------|
-| CNAME | `pay` | `your-ownpay-instance.com` |
+    | Type | Name | Value |
+    | --- | --- | --- |
+    | A | `pay` | `203.0.113.10` |
 
-</Column>
-<Column>
-
-### A record method
-
-| Type | Name | Value |
-|------|------|-------|
-| A | `pay` | `203.0.113.10` |
-
-Replace the IP with your server's actual address.
-
-</Column>
+    Replace the IP with your server's actual address.
+  </Column>
 </Columns>
 
 <Tip>
-The CNAME method is preferred because it automatically follows IP changes if you migrate servers.
+  The CNAME method is preferred because it automatically follows IP changes if you migrate servers.
 </Tip>
 
 ## Verify a domain
@@ -69,16 +57,16 @@ The CNAME method is preferred because it automatically follows IP changes if you
 After setting your DNS records, click **Verify** next to the domain in the list. OwnPay performs a DNS lookup to confirm the records are correct.
 
 <Info>
-DNS propagation can take up to 48 hours, though most registrars propagate within minutes. If verification fails immediately, wait and retry.
+  DNS propagation can take up to 48 hours, though most registrars propagate within minutes. If verification fails immediately, wait and retry.
 </Info>
 
 ## SSL auto-provisioning
 
 Once a domain is verified, OwnPay automatically requests a free SSL certificate via Let's Encrypt (or your configured ACME provider). The certificate is renewed automatically before expiry.
 
-<Callout type="warning">
-SSL provisioning requires port **80** to be reachable from the internet for the HTTP-01 challenge. If your server is behind a firewall or reverse proxy, ensure port 80 traffic reaches OwnPay.
-</Callout>
+<Warning>
+  SSL provisioning requires port **80** to be reachable from the internet for the HTTP-01 challenge. If your server is behind a firewall or reverse proxy, ensure port 80 traffic reaches OwnPay.
+</Warning>
 
 ## Multiple domains per brand
 
@@ -87,7 +75,7 @@ You can assign multiple domains to a single brand. The first verified domain bec
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
-|---------|-------|-----|
+| --- | --- | --- |
 | Verification fails | DNS not propagated | Wait and retry, or check with `dig` or `nslookup` |
 | SSL provisioning fails | Port 80 blocked | Open port 80 or configure your reverse proxy to forward ACME challenges |
 | Domain shows "mixed content" | Hard-coded HTTP links | Ensure your Application URL in Settings uses `https://` |

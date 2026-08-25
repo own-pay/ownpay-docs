@@ -1,9 +1,9 @@
 ---
-title: "Common Errors"
+title: Common Errors
 description: "Diagnose and fix common OwnPay errors organized by category including installation, payment, webhook, SMS, plugin, and system errors with symptoms, causes, and resolutions."
 keywords: "troubleshooting, errors, installation errors, payment errors, webhook errors, SMS errors, plugin errors, system errors"
-sidebarTitle: "Common Errors"
-icon: "alert-circle"
+sidebarTitle: Common Errors
+icon: alert-circle
 ---
 
 Solutions to the most frequently encountered OwnPay issues, organized by category. Each entry includes the symptom, root cause, and resolution.
@@ -19,6 +19,7 @@ Solutions to the most frequently encountered OwnPay issues, organized by categor
 **Cause:** MySQL is not running, the credentials in `.env` are incorrect, or the database user lacks permission.
 
 **Resolution:**
+
 1. Verify MySQL is running: `sudo systemctl status mysql`
 2. Test the connection manually: `mysql -u db_user -p -h db_host db_name`
 3. Check that `DB_HOST`, `DB_USER`, `DB_PASS`, and `DB_NAME` in `.env` match your MySQL configuration
@@ -32,6 +33,7 @@ See [Installation](/installation) for the full setup guide.
 **Cause:** The web server user does not have write permissions on the `storage/` directory.
 
 **Resolution:**
+
 ```bash
 sudo chown -R www-data:www-data /var/www/ownpay/storage
 sudo chmod -R 775 /var/www/ownpay/storage
@@ -44,6 +46,7 @@ sudo chmod -R 775 /var/www/ownpay/storage
 **Cause:** PHP 8.3 is active but required extensions are not enabled.
 
 **Resolution:** Install the required extensions:
+
 ```bash
 sudo apt install php8.3-bcmath php8.3-mbstring php8.3-openssl php8.3-curl php8.3-zip php8.3-mysql
 sudo systemctl restart php8.3-fpm
@@ -68,6 +71,7 @@ sudo systemctl restart php8.3-fpm
 **Cause:** The upstream gateway took too long to respond, or the callback from the gateway was blocked by a firewall or failed to reach your server.
 
 **Resolution:**
+
 1. Check the gateway's dashboard to confirm the payment was captured
 2. If confirmed, manually update the transaction status in the admin panel
 3. Verify the gateway callback URL is reachable: `curl -v https://your-domain.com/webhook/{gateway-slug}`
@@ -80,7 +84,8 @@ sudo systemctl restart php8.3-fpm
 **Cause:** The API key or secret configured for the gateway is incorrect, expired, or belongs to the wrong environment (test vs live).
 
 **Resolution:**
-1. Go to **Gateways > Payment Gateways** and re-enter the credentials from your gateway dashboard
+
+1. Go to **Gateways \> Payment Gateways** and re-enter the credentials from your gateway dashboard
 2. Make sure you are using live keys in production and test keys in sandbox mode
 3. Some gateways require IP whitelisting - add your server's outbound IP to the gateway's allowed list
 
@@ -90,7 +95,7 @@ sudo systemctl restart php8.3-fpm
 
 **Cause:** The payment intent currency is not in the gateway's supported currency list.
 
-**Resolution:** OwnPay auto-converts currencies when a gateway does not support the intent currency. If conversion fails, check that exchange rates are configured in **Settings > Currencies** and the target currency is supported by the gateway.
+**Resolution:** OwnPay auto-converts currencies when a gateway does not support the intent currency. If conversion fails, check that exchange rates are configured in **Settings \> Currencies** and the target currency is supported by the gateway.
 
 ### Amount validation error
 
@@ -106,7 +111,7 @@ sudo systemctl restart php8.3-fpm
 
 **Cause:** The payment intent exceeded its configured expiry time.
 
-**Resolution:** Create a new payment intent. You can increase the default expiry in **Settings > Payment**.
+**Resolution:** Create a new payment intent. You can increase the default expiry in **Settings \> Payment**.
 
 ---
 
@@ -127,9 +132,10 @@ sudo systemctl restart php8.3-fpm
 **Cause:** The target URL is unreachable, returns a non-2xx status, or times out.
 
 **Resolution:**
+
 1. Verify the URL is publicly accessible and returns 200 for valid payloads
 2. Check your server's outbound connectivity: `curl -X POST -d '{}' https://your-webhook-url.com`
-3. Review the specific error in **Developer > Webhook Delivery Logs**
+3. Review the specific error in **Developer \> Webhook Delivery Logs**
 
 ### Retry exhausted / dead letter queue
 
@@ -137,7 +143,7 @@ sudo systemctl restart php8.3-fpm
 
 **Cause:** The delivery failed after all retry attempts with exponential backoff.
 
-**Resolution:** Fix the receiving endpoint, then go to **Developer > Webhook Delivery Logs**, find the failed delivery, and click **Replay**.
+**Resolution:** Fix the receiving endpoint, then go to **Developer \> Webhook Delivery Logs**, find the failed delivery, and click **Replay**.
 
 ---
 
@@ -150,6 +156,7 @@ sudo systemctl restart php8.3-fpm
 **Cause:** The companion app is not forwarding SMS, or the forwarding permission was revoked.
 
 **Resolution:**
+
 1. Open the companion app and verify SMS forwarding is enabled
 2. Check that the device shows as "online" in **Devices** in the admin panel
 3. Re-pair the device if the JWT has expired
@@ -161,7 +168,8 @@ sudo systemctl restart php8.3-fpm
 **Cause:** The SMS template regex for this gateway does not match the actual SMS format from the provider.
 
 **Resolution:**
-1. Go to **SMS Verification > Templates** and find the gateway's template
+
+1. Go to **SMS Verification \> Templates** and find the gateway's template
 2. Click **Test** and paste a sample SMS body to debug the regex
 3. Update the regex to match the current SMS format (providers sometimes change their format)
 
@@ -200,6 +208,7 @@ sudo systemctl restart php8.3-fpm
 **Cause:** The plugin's migration SQL has a syntax error or references a table that does not exist.
 
 **Resolution:**
+
 1. Check the exact error in `storage/logs/`
 2. Fix the migration SQL in the plugin's `database/` directory
 3. Uninstall and re-install the plugin
@@ -215,6 +224,7 @@ sudo systemctl restart php8.3-fpm
 **Cause:** Redis is down or the file cache directory is not writable.
 
 **Resolution:**
+
 1. If using Redis: `sudo systemctl status redis` and check `REDIS_HOST`/`REDIS_PORT` in `.env`
 2. If using file cache: verify `storage/cache/` is writable
 3. Temporarily switch to file cache in `.env`: `CACHE_DRIVER=file`
@@ -226,6 +236,7 @@ sudo systemctl restart php8.3-fpm
 **Cause:** The cron job is not running, or the queue worker encountered a fatal error.
 
 **Resolution:**
+
 1. Verify cron is configured: `crontab -l` should contain the queue worker entry
 2. Check for errors: `tail -50 storage/logs/queue.log`
 3. Manually trigger a run: `php /var/www/ownpay/public/index.php cron/run`
@@ -237,6 +248,7 @@ sudo systemctl restart php8.3-fpm
 **Cause:** The update process did not complete successfully and did not exit maintenance mode.
 
 **Resolution:**
+
 1. Check for pending migrations: look at the latest entries in `storage/logs/`
 2. If the update is stuck, manually disable maintenance mode by setting `APP_MAINTENANCE=false` in `.env`
 3. Visit the admin panel and check if the schema version matches the code version
@@ -250,6 +262,7 @@ If your issue is not covered here:
 1. Search [GitHub Issues](https://github.com/own-pay/OwnPay/issues) for known problems
 2. Enable [debug mode](/resources/debug-mode) temporarily to get detailed error output
 3. Open a [GitHub Issue](https://github.com/own-pay/OwnPay/issues/new) with:
+
    - OwnPay version: `php public/index.php --version`
    - PHP version: `php -v`
    - The full error message and stack trace

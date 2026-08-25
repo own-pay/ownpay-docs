@@ -1,9 +1,9 @@
 ---
-title: "Debug Mode"
+title: Debug Mode
 description: "Learn how to enable and use OwnPay's debug mode for detailed error output, SQL query logging, and troubleshooting development issues."
 keywords: "debug mode, troubleshooting, APP_DEBUG, stack traces, SQL logging, development"
-sidebarTitle: "Debug Mode"
-icon: "bug"
+sidebarTitle: Debug Mode
+icon: bug
 ---
 
 Debug mode gives you detailed error information that is invaluable during development and troubleshooting. It reveals stack traces, SQL queries, and the full middleware pipeline for every request.
@@ -31,7 +31,7 @@ No server restart is needed - the change takes effect on the next request.
 When `APP_DEBUG=true`, OwnPay provides additional information in several areas:
 
 | Area | What you see | Production behavior |
-|:---|:---|:---|
+| :-- | :-- | :-- |
 | Error pages | Full stack trace, file paths, line numbers, and code context | Generic "Something went wrong" page |
 | SQL queries | Every query logged with parameters and execution time | Only errors logged |
 | Middleware | The complete middleware pipeline for the current route | Not displayed |
@@ -45,7 +45,7 @@ When `APP_DEBUG=true`, OwnPay provides additional information in several areas:
 Regardless of `APP_DEBUG`, OwnPay writes logs to `storage/logs/`. Log levels follow PSR-3:
 
 | Level | When used |
-|:---|:---|
+| :-- | :-- |
 | `DEBUG` | Verbose information (only written when `APP_DEBUG=true`) |
 | `INFO` | General operational information (cron runs, migrations) |
 | `WARNING` | Degraded but functional (webhook retry, slow query) |
@@ -64,11 +64,11 @@ Regardless of `APP_DEBUG`, OwnPay writes logs to `storage/logs/`. Log levels fol
 1. Enable debug mode and attempt the payment again
 2. Check `storage/logs/` for the most recent entries
 3. Look for gateway-specific errors (timeout, auth failure, invalid response)
-4. Verify the gateway credentials are correct in **Gateways > Payment Gateways**
+4. Verify the gateway credentials are correct in **Gateways \> Payment Gateways**
 
 ### Webhook not arriving
 
-1. Check **Developer > Webhook Delivery Logs** for the delivery status and response code
+1. Check **Developer \> Webhook Delivery Logs** for the delivery status and response code
 2. If status is `failed`, review the error message
 3. Test endpoint reachability: `curl -X POST -d '{}' https://your-endpoint.com/webhooks/ownpay`
 4. If using Cloudflare or a WAF, check that it is not blocking the request
@@ -99,7 +99,7 @@ APP_DEBUG=false
 
 Clear the application cache to ensure no debug information lingers in compiled templates:
 
-1. Go to **Settings > Cache** in the admin panel
+1. Go to **Settings \> Cache** in the admin panel
 2. Click **Clear All Caches**
 
 ---

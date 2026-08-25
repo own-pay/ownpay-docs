@@ -1,9 +1,9 @@
 ---
-title: "Integration Plugin Development"
+title: Integration Plugin Development
 description: "Build integration plugins for third-party platforms like QuickBooks, HubSpot, and Slack using payment hooks and outbound API calls."
 keywords: "integration plugin, CRM integration, ERP integration, Slack notifications, QuickBooks sync, HubSpot integration, third-party plugin"
-sidebarTitle: "Integration Dev"
-icon: "plug"
+sidebarTitle: Integration Dev
+icon: plug
 ---
 
 Integration plugins connect OwnPay to external platforms: CRMs, ERPs, accounting software, analytics dashboards, and notification services. They do not process payments - they react to payment events and push data outbound.
@@ -11,7 +11,7 @@ Integration plugins connect OwnPay to external platforms: CRMs, ERPs, accounting
 ## Common use cases
 
 | Use case | Example | Trigger |
-|---|---|---|
+| --- | --- | --- |
 | Accounting sync | QuickBooks, Xero | `payment.completed`, `refund.issued` |
 | CRM push | HubSpot, Salesforce | `customer.created`, `payment.completed` |
 | Notifications | Slack, Discord, Telegram | `payment.completed`, `payment.failed` |

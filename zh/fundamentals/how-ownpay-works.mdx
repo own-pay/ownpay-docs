@@ -1,39 +1,38 @@
 ---
-title: "OwnPay 工作原理"
-description: "OwnPay 的大局架构 —— 客户、结账、支付路由器、网关、回调和 Webhook 如何连接以端到端处理支付。"
+title: OwnPay 工作原理
+description: OwnPay 的大局架构 —— 客户、结账、支付路由器、网关、回调和 Webhook 如何连接以端到端处理支付。
 keywords: "OwnPay 架构, 支付编排器, 工作原理, 支付路由, 网关路由, 支付流程, 多品牌架构"
-sidebarTitle: "OwnPay 工作原理"
-icon: "brain"
+sidebarTitle: OwnPay 工作原理
+icon: brain
 ---
 
-OwnPay 位于您的业务和 123+ 个支付提供商之间。当客户点击"支付"时，OwnPay 将支付路由到正确的网关，将结果记录在复式记账账本中，并向您的应用发送 Webhook —— 所有这些都在您控制的基础设施上完成。
+OwnPay 位于您的业务和 123\+ 个支付提供商之间。当客户点击"支付"时，OwnPay 将支付路由到正确的网关，将结果记录在复式记账账本中，并向您的应用发送 Webhook —— 所有这些都在您控制的基础设施上完成。
 
 ## 整体概览
 
-<Mermaid
-  chart={`
-    %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
-    sequenceDiagram
-      participant C as 客户
-      participant CO as OwnPay 结账
-      participant R as OwnPay 路由器
-      participant G as 支付网关
-      participant M as 商户应用
+<Mermaid chart={`
+  %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+  sequenceDiagram
+    participant C as 客户
+    participant CO as OwnPay 结账
+    participant R as OwnPay 路由器
+    participant G as 支付网关
+    participant M as 商户应用
 
-      C->>CO: 点击"支付"（支付链接 / API）
-      CO->>R: 创建支付意图
-      R->>R: 选择网关（品牌配置）
-      R->>CO: 返回结账 URL
-      CO->>C: 重定向到结账页面
-      C->>G: 输入支付详情
-      G->>G: 向银行/处理器授权
-      G-->>CO: 回调返回结果
-      CO->>R: 更新交易状态
-      R->>R: 写入账本分录（借方/贷方）
-      R-->>C: 显示成功/失败页面
-      R->>M: Webhook 通知（HMAC-SHA256）
-  `}
-/>
+    C->>CO: 点击"支付"（支付链接 / API）
+    CO->>R: 创建支付意图
+    R->>R: 选择网关（品牌配置）
+    R->>CO: 返回结账 URL
+    CO->>C: 重定向到结账页面
+    C->>G: 输入支付详情
+    G->>G: 向银行/处理器授权
+    G-->>CO: 回调返回结果
+    CO->>R: 更新交易状态
+    R->>R: 写入账本分录（借方/贷方）
+    R-->>C: 显示成功/失败页面
+    R->>M: Webhook 通知（HMAC-SHA256）
+`}>
+</Mermaid>
 
 无论支付来自托管结账页面、支付链接还是 Merchant API，此流程都是相同的。
 
@@ -43,18 +42,23 @@ OwnPay 位于您的业务和 123+ 个支付提供商之间。当客户点击"支
   <Card title="品牌" icon="store" href="/fundamentals/brands">
     隔离的商户租户 —— 每个品牌拥有自己的网关、域名、员工、API 密钥和账本。
   </Card>
+
   <Card title="支付流程" icon="arrow-right-circle" href="/fundamentals/payment-flow">
     交易从创建到处理再到完成、失败或过期的完整生命周期。
   </Card>
+
   <Card title="网关" icon="wallet" href="/fundamentals/gateways">
-    基于 123+ 个支付提供商的插件化集成，支持加密凭据存储和按品牌分配。
+    基于 123\+ 个支付提供商的插件化集成，支持加密凭据存储和按品牌分配。
   </Card>
+
   <Card title="账本" icon="book-open" href="/fundamentals/ledger">
     复式记账，将每笔资金流动记录为每个品牌平衡的借贷方分录。
   </Card>
+
   <Card title="插件" icon="puzzle" href="/fundamentals/plugins">
     可扩展架构，包含四种插件类型 —— 网关、插件、主题和集成 —— 使用钩子和事件。
   </Card>
+
   <Card title="域名" icon="globe" href="/fundamentals/domains">
     每个品牌的白标自定义域名，支持自动 DNS 验证和 SSL 证书配置。
   </Card>
@@ -63,10 +67,10 @@ OwnPay 位于您的业务和 123+ 个支付提供商之间。当客户点击"支
 ## OwnPay 的独特之处
 
 - **自托管，完全数据主权** —— 您的服务器、您的数据库、您的规则。客户个人身份信息使用 AES-256-GCM 静态加密。没有第三方能看到您的数据。
-- **内置 123+ 网关** —— 国际处理器（Stripe、PayPal）与区域领导者（bKash、Nagad、GCash、Razorpay、SSLCommerz）并存，每个版本都有新增。
+- **内置 123\+ 网关** —— 国际处理器（Stripe、PayPal）与区域领导者（bKash、Nagad、GCash、Razorpay、SSLCommerz）并存，每个版本都有新增。
 - **OwnPay 零交易手续费** —— 采用 AGPL-3.0 许可证。您只需支付网关自身的处理费用。
 - **AGPL-3.0 许可，永久免费** —— 无功能限制，无许可层级，无电话回传遥测。完整源代码在 [GitHub]({{github}})。
-- **插件可扩展** —— 无需修改核心代码即可添加网关、主题、插件和集成。拥有 60+ 个钩子和完整的事件系统。
+- **插件可扩展** —— 无需修改核心代码即可添加网关、主题、插件和集成。拥有 60\+ 个钩子和完整的事件系统。
 - **复式记账账本** —— 会计级别的财务追踪，具有 `bcmath` 驱动的精度、品牌隔离和内置对账功能。
 
 ## OwnPay 适用于谁？
@@ -83,7 +87,8 @@ OwnPay 位于您的业务和 123+ 个支付提供商之间。当客户点击"支
 <Columns>
   <Column>
     **运行时**
-    - PHP 8.3+（自定义框架，非 Laravel）
+
+    - PHP 8.3\+（自定义框架，非 Laravel）
     - Twig 3 用于服务端模板
     - 前端使用原生 JavaScript
     - `bcmath` 用于所有货币计算
@@ -91,13 +96,15 @@ OwnPay 位于您的业务和 123+ 个支付提供商之间。当客户点击"支
   </Column>
   <Column>
     **基础设施**
-    - MySQL 8+（架构、交易、账本）
+
+    - MySQL 8\+（架构、交易、账本）
     - Redis（缓存、会话、队列）
     - Nginx 或 Apache 配合 PHP-FPM
     - Docker Compose 支持
   </Column>
   <Column>
     **集成**
+
     - 3 个 REST API 层（Merchant / Mobile / Admin）
     - HMAC-SHA256 Webhook 签名
     - Android 伴侣应用用于短信验证

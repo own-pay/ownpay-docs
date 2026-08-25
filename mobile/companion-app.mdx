@@ -1,24 +1,24 @@
 ---
-title: "Companion App"
+title: Companion App
 description: "Install and pair the Android companion app to forward incoming payment confirmation SMS (bKash, Nagad, Rocket, etc.), send heartbeats, and receive push commands from your OwnPay instance."
 keywords: "companion app, Android app, SMS forwarding, payment SMS, heartbeat, device pairing, mobile app"
-sidebarTitle: "Companion App"
-icon: "smartphone"
+sidebarTitle: Companion App
+icon: smartphone
 ---
 
 The OwnPay Companion App is an Android application that bridges your Android phone with your self-hosted OwnPay instance. Its **sole SMS-related purpose** is forwarding **incoming payment confirmation SMS** (e.g., mobile money receipts from bKash, Nagad, Rocket, Upay) to OwnPay for automatic transaction verification.
 
 <Warning>
-**The companion app ONLY reads INCOMING SMS messages that contain payment transaction confirmations.**
+  **The companion app ONLY reads INCOMING SMS messages that contain payment transaction confirmations.**
 
-- It does **NOT** read, forward, or process outgoing, sent, or draft SMS.
-- It does **NOT** read or process OTP messages, verification codes, or 2FA codes from other services.
-- It does **NOT** read or process personal messages, promotional SMS, or any other non-payment SMS.
-- It applies a privacy filter on-device: only SMS that match known payment receipt patterns are forwarded to your OwnPay server. All other SMS are silently ignored and never leave the device.
+  - It does **NOT** read, forward, or process outgoing, sent, or draft SMS.
+  - It does **NOT** read or process OTP messages, verification codes, or 2FA codes from other services.
+  - It does **NOT** read or process personal messages, promotional SMS, or any other non-payment SMS.
+  - It applies a privacy filter on-device: only SMS that match known payment receipt patterns are forwarded to your OwnPay server. All other SMS are silently ignored and never leave the device.
 </Warning>
 
 <Info>
-The companion app is not available on Google Play. Download the APK directly from the [OwnPay GitHub releases]({{github}}) page.
+  The companion app is not available on Google Play. Download the APK directly from the [OwnPay GitHub releases]({{github}}) page.
 </Info>
 
 ## What the app does
@@ -29,32 +29,24 @@ The companion app is not available on Google Play. Download the APK directly fro
 - **Receives push commands** - Accepts remote instructions from the admin panel
 
 <Note>
-The app has no access to outgoing, sent, or draft messages. It cannot read OTP codes, personal conversations, or any SMS other than incoming payment confirmations.
+  The app has no access to outgoing, sent, or draft messages. It cannot read OTP codes, personal conversations, or any SMS other than incoming payment confirmations.
 </Note>
 
 ## Install and pair
 
 <Steps>
-<Step>
-
-Download the latest `ownpay-companion-v{{version}}.apk` from the GitHub releases page and install it on your Android device. You may need to enable **Install from unknown sources** in your device settings.
-
-</Step>
-<Step>
-
-Open the app and enter your OwnPay instance URL (e.g., `https://pay.yourdomain.com`) and the **Mobile API key** generated from [Devices](/mobile/devices).
-
-</Step>
-<Step>
-
-Tap **Pair Device**. The app sends a registration request and displays a confirmation screen with the assigned device name.
-
-</Step>
-<Step>
-
-Back in the OwnPay admin panel, go to **Mobile > Devices** and confirm the device appears with an **Online** status.
-
-</Step>
+  <Step>
+    Download the latest `ownpay-companion-v{{version}}.apk` from the GitHub releases page and install it on your Android device. You may need to enable **Install from unknown sources** in your device settings.
+  </Step>
+  <Step>
+    Open the app and enter your OwnPay instance URL (e.g., `https://pay.yourdomain.com`) and the **Mobile API key** generated from [Devices](/mobile/devices).
+  </Step>
+  <Step>
+    Tap **Pair Device**. The app sends a registration request and displays a confirmation screen with the assigned device name.
+  </Step>
+  <Step>
+    Back in the OwnPay admin panel, go to **Mobile \> Devices** and confirm the device appears with an **Online** status.
+  </Step>
 </Steps>
 
 ## Permission requirements
@@ -62,13 +54,13 @@ Back in the OwnPay admin panel, go to **Mobile > Devices** and confirm the devic
 The companion app requires the following Android permissions:
 
 | Permission | Purpose |
-|------------|---------|
+| --- | --- |
 | **Read SMS** (`RECEIVE_SMS`, `READ_SMS`) | Receive **incoming** payment confirmation SMS only. Outgoing/sent/draft SMS are never accessed. On-device filter blocks all non-payment SMS before forwarding. |
 | **Foreground Service** (`FOREGROUND_SERVICE`) | Maintain a persistent connection for heartbeats and push commands |
 | **Battery optimization exemption** | Prevent the OS from killing the background service |
 
 <Warning>
-Without the battery optimization exemption, Android may aggressively terminate the companion app's background service, causing missed SMS and heartbeat timeouts. Always whitelist the app in your device's battery settings.
+  Without the battery optimization exemption, Android may aggressively terminate the companion app's background service, causing missed SMS and heartbeat timeouts. Always whitelist the app in your device's battery settings.
 </Warning>
 
 ## Heartbeat mechanism
@@ -78,11 +70,11 @@ The app sends a heartbeat to your OwnPay instance every **60 seconds**. If OwnPa
 ## Troubleshooting pairing
 
 | Symptom | Cause | Fix |
-|---------|-------|-----|
+| --- | --- | --- |
 | `Connection refused` error | Instance URL is incorrect or unreachable | Verify the URL includes `https://` and the server is accessible from the device's network |
 | `Invalid API key` | Wrong or expired mobile API key | Regenerate the key from the Devices page and re-enter it in the app |
-| Device shows Offline | Battery optimization killing the service | Go to Android Settings > Apps > OwnPay > Battery > Unrestricted |
-| SMS not forwarding | SMS permission not granted | Open Android Settings > Apps > OwnPay > Permissions > SMS > Allow |
+| Device shows Offline | Battery optimization killing the service | Go to Android Settings \> Apps \> OwnPay \> Battery \> Unrestricted |
+| SMS not forwarding | SMS permission not granted | Open Android Settings \> Apps \> OwnPay \> Permissions \> SMS \> Allow |
 
 ## Related Pages
 

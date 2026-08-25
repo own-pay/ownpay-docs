@@ -1,9 +1,9 @@
 ---
-title: "Security and Compliance"
+title: Security and Compliance
 description: "Understand OwnPay's security architecture including AES-256-GCM encryption, HMAC-SHA256 webhooks, CSRF protection, rate limiting, and compliance considerations for PCI DSS and GDPR."
 keywords: "security, compliance, AES-256-GCM, HMAC-SHA256, PCI DSS, GDPR, encryption, rate limiting, CSRF, XSS, SQL injection"
-sidebarTitle: "Security"
-icon: "shield-check"
+sidebarTitle: Security
+icon: shield-check
 ---
 
 OwnPay handles financial transactions, so security is not an afterthought - it is baked into every layer of the architecture. This page explains the technical mechanisms OwnPay uses to protect your data and your customers' data.
@@ -17,6 +17,7 @@ OwnPay encrypts sensitive data before writing it to MySQL using **AES-256-GCM** 
 <Columns>
   <Column>
     **What gets encrypted:**
+
     - Gateway API keys and credentials in `op_gateway_configs`
     - Customer names, emails, and phone numbers in `op_customers`
     - TOTP secrets for two-factor authentication
@@ -24,6 +25,7 @@ OwnPay encrypts sensitive data before writing it to MySQL using **AES-256-GCM** 
   </Column>
   <Column>
     **How it works:**
+
     - Each encryption operation generates a random 12-byte IV and produces a 16-byte auth tag
     - The IV, auth tag, and ciphertext are stored together in a single base64-encoded string
     - Decryption verifies the auth tag before returning plaintext, detecting tampering
@@ -121,7 +123,7 @@ Uploaded files (logos, favicons, dispute evidence) are validated before storage:
 The `SecurityHeadersMiddleware` adds the following headers to every response:
 
 | Header | Value | Purpose |
-|:---|:---|:---|
+| :-- | :-- | :-- |
 | `Content-Security-Policy` | Dynamic with nonce | Blocks unauthorized inline scripts and external resources |
 | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Forces HTTPS on all future requests |
 | `X-Frame-Options` | `DENY` | Prevents clickjacking |

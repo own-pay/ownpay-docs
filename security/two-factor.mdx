@@ -1,9 +1,9 @@
 ---
-title: "Two-Factor Authentication"
-description: "Enable TOTP-based two-factor authentication using Google Authenticator or Authy to add a second layer of security to your admin account."
+title: Two-Factor Authentication
+description: Enable TOTP-based two-factor authentication using Google Authenticator or Authy to add a second layer of security to your admin account.
 keywords: "2FA, two-factor, TOTP, Google Authenticator, Authy, backup codes, MFA"
-sidebarTitle: "Two-Factor Authentication"
-icon: "shield"
+sidebarTitle: Two-Factor Authentication
+icon: shield
 ---
 
 Two-factor authentication (2FA) adds a second verification step to the login process. After entering your email and password, you must provide a time-based one-time password (TOTP) from an authenticator app.
@@ -16,46 +16,34 @@ Two-factor authentication (2FA) adds a second verification step to the login pro
 - **Bitwarden** (built-in TOTP)
 
 <Info>
-OwnPay uses standard TOTP (RFC 6238). Any authenticator app that supports this standard will work.
+  OwnPay uses standard TOTP (RFC 6238). Any authenticator app that supports this standard will work.
 </Info>
 
 ## Enable 2FA
 
 <Steps>
-<Step>
-
-Go to **My Account** (click your avatar in the top-right corner).
-
-</Step>
-<Step>
-
-Click **Enable 2FA** in the Security section.
-
-</Step>
-<Step>
-
-A QR code appears. Scan it with your authenticator app.
-
-</Step>
-<Step>
-
-The app displays a 6-digit code. Enter it in the **Verification Code** field.
-
-</Step>
-<Step>
-
-**Save your backup codes**. OwnPay generates a set of single-use recovery codes. Store them in a secure location.
-
-</Step>
-<Step>
-
-Click **Confirm**. 2FA is now active on your account.
-
-</Step>
+  <Step>
+    Go to **My Account** (click your avatar in the top-right corner).
+  </Step>
+  <Step>
+    Click **Enable 2FA** in the Security section.
+  </Step>
+  <Step>
+    A QR code appears. Scan it with your authenticator app.
+  </Step>
+  <Step>
+    The app displays a 6-digit code. Enter it in the **Verification Code** field.
+  </Step>
+  <Step>
+    **Save your backup codes**. OwnPay generates a set of single-use recovery codes. Store them in a secure location.
+  </Step>
+  <Step>
+    Click **Confirm**. 2FA is now active on your account.
+  </Step>
 </Steps>
 
 <Warning>
-Backup codes are shown only once. If you lose your authenticator device and do not have backup codes, you will need the super-admin to manually disable 2FA on your account.
+  Backup codes are shown only once. If you lose your authenticator device and do not have backup codes, you will need the super-admin to manually disable 2FA on your account.
 </Warning>
 
 ## Using 2FA at login
@@ -73,7 +61,7 @@ If you lose access to your authenticator app:
 
 ## 2FA enforcement per role
 
-Super-admins can enforce 2FA for specific roles. When enforced, staff in those roles cannot disable 2FA and must set it up before accessing the dashboard. Configure this in **Settings > Security > Enforce 2FA for roles**.
+Super-admins can enforce 2FA for specific roles. When enforced, staff in those roles cannot disable 2FA and must set it up before accessing the dashboard. Configure this in **Settings \> Security \> Enforce 2FA for roles**.
 
 ## Related Pages
 

@@ -1,19 +1,19 @@
 ---
-title: "SMS Templates"
-description: "Create and manage regex-based SMS templates that match incoming payment confirmation SMS from mobile money wallets and banks for automatic payment completion."
+title: SMS Templates
+description: Create and manage regex-based SMS templates that match incoming payment confirmation SMS from mobile money wallets and banks for automatic payment completion.
 keywords: "SMS templates, regex patterns, payment confirmation, SMS matching, field mappings, SMS logs"
-sidebarTitle: "SMS Templates"
-icon: "file-code"
+sidebarTitle: SMS Templates
+icon: file-code
 ---
 
 SMS templates define how OwnPay matches incoming **payment confirmation SMS** from the [companion app](/mobile/companion-app) to pending transactions. Each template binds a **gateway** to a **regex pattern** that extracts the payment amount and transaction ID from the SMS text.
 
 <Note>
-The companion app's on-device privacy filter ensures only incoming payment receipt SMS (e.g., bKash/Nagad/Rocket confirmations) are forwarded. OTP messages, personal SMS, and all other non-payment SMS are never sent to the server, so templates only ever process payment confirmation messages.
+  The companion app's on-device privacy filter ensures only incoming payment receipt SMS (e.g., bKash/Nagad/Rocket confirmations) are forwarded. OTP messages, personal SMS, and all other non-payment SMS are never sent to the server, so templates only ever process payment confirmation messages.
 </Note>
 
 <Info>
-For the full end-to-end auto-verification flow, see [SMS Verification](/gateways/sms-verification).
+  For the full end-to-end auto-verification flow, see [SMS Verification](/gateways/sms-verification).
 </Info>
 
 ## Template structure
@@ -21,7 +21,7 @@ For the full end-to-end auto-verification flow, see [SMS Verification](/gateways
 Each SMS template has these fields:
 
 | Field | Description |
-|-------|-------------|
+| --- | --- |
 | **Gateway Slug** | The payment gateway this template applies to (e.g., `bkash`, `nagad`, `citybank`) |
 | **Regex Pattern** | A PCRE-compatible regular expression that captures the payment amount and/or transaction ID from the confirmation SMS |
 | **Code Field Mapping** | Which capture group contains the extracted value (default: group 1) |
@@ -31,37 +31,27 @@ Each SMS template has these fields:
 ## Creating a template
 
 <Steps>
-<Step>
+  <Step>
+    Navigate to **Mobile \> SMS Templates** and click **Add Template**.
+  </Step>
+  <Step>
+    Select the **Gateway** from the dropdown. This ensures the template only matches SMS for transactions on that gateway.
+  </Step>
+  <Step>
+    Enter a **Regex Pattern** that captures the payment details. For example, a bKash payment confirmation SMS might look like:
 
-Navigate to **Mobile > SMS Templates** and click **Add Template**.
+    ```text
+    Tk 500.00 received from 017XXXX1234. TrxID: CN4A7B9D2E. Balance: Tk 1,230.50
+    ```
 
-</Step>
-<Step>
-
-Select the **Gateway** from the dropdown. This ensures the template only matches SMS for transactions on that gateway.
-
-</Step>
-<Step>
-
-Enter a **Regex Pattern** that captures the payment details. For example, a bKash payment confirmation SMS might look like:
-
-```
-Tk 500.00 received from 017XXXX1234. TrxID: CN4A7B9D2E. Balance: Tk 1,230.50
-```
-
-You would use a pattern like: `Tk ([\d,.]+) received.*TrxID: (\w+)` to capture the amount and transaction ID.
-
-</Step>
-<Step>
-
-Set the **Code Field Mapping** to the capture group index that contains the extracted value (usually `1`).
-
-</Step>
-<Step>
-
-Click **Save** to activate the template.
-
-</Step>
+    You would use a pattern like: `Tk ([\d,.]+) received.*TrxID: (\w+)` to capture the amount and transaction ID.
+  </Step>
+  <Step>
+    Set the **Code Field Mapping** to the capture group index that contains the extracted value (usually `1`).
+  </Step>
+  <Step>
+    Click **Save** to activate the template.
+  </Step>
 </Steps>
 
 ## Testing regex patterns
@@ -69,7 +59,7 @@ Click **Save** to activate the template.
 Use the built-in **Regex Tester** at the bottom of the template form. Paste a sample SMS message into the test input, and the tester highlights which capture groups match in real time.
 
 <Tip>
-Always test your regex against multiple real SMS samples before going live. Banks occasionally change their message format, which can break existing templates.
+  Always test your regex against multiple real SMS samples before going live. Banks occasionally change their message format, which can break existing templates.
 </Tip>
 
 ## SMS logs

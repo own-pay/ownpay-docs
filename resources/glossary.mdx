@@ -1,9 +1,9 @@
 ---
-title: "Glossary"
+title: Glossary
 description: "Definitions of OwnPay and payment industry terms used throughout the documentation, codebase, and ecosystem."
 keywords: "glossary, payment terms, terminology, OwnPay vocabulary, ledger, gateway, webhook"
-sidebarTitle: "Glossary"
-icon: "book"
+sidebarTitle: Glossary
+icon: book
 ---
 
 This glossary defines terms and concepts used throughout the OwnPay documentation, codebase, and ecosystem.
@@ -12,138 +12,111 @@ This glossary defines terms and concepts used throughout the OwnPay documentatio
 
 ### A
 
-**AES-256-GCM**
-An authenticated encryption algorithm used by OwnPay to encrypt sensitive data (customer PII, gateway credentials, TOTP secrets) at rest in the database. The GCM mode provides both confidentiality and integrity verification.
+**AES-256-GCM** An authenticated encryption algorithm used by OwnPay to encrypt sensitive data (customer PII, gateway credentials, TOTP secrets) at rest in the database. The GCM mode provides both confidentiality and integrity verification.
 
-**Addon**
-A type of plugin that extends OwnPay's core functionality. Addons can add admin dashboard screens, register API endpoints, create database tables, or run background jobs.
+**Addon** A type of plugin that extends OwnPay's core functionality. Addons can add admin dashboard screens, register API endpoints, create database tables, or run background jobs.
 
 ---
 
 ### B
 
-**bcmath**
-A PHP extension for arbitrary-precision arithmetic. OwnPay uses bcmath string operations for all monetary calculations (amounts, fees, exchange rates) to avoid floating-point precision loss. Money is always a string, never a float.
+**bcmath** A PHP extension for arbitrary-precision arithmetic. OwnPay uses bcmath string operations for all monetary calculations (amounts, fees, exchange rates) to avoid floating-point precision loss. Money is always a string, never a float.
 
-**Brand**
-An isolated business entity (store) within a single OwnPay installation. Each brand has its own domain, gateways, customers, ledger, and staff, scoped by `merchant_id` in the database.
+**Brand** An isolated business entity (store) within a single OwnPay installation. Each brand has its own domain, gateways, customers, ledger, and staff, scoped by `merchant_id` in the database.
 
 ---
 
 ### C
 
-**Companion App**
-The Android application that pairs with your OwnPay server to forward incoming SMS messages for automatic payment verification on manual and mobile financial service gateways.
+**Companion App** The Android application that pairs with your OwnPay server to forward incoming SMS messages for automatic payment verification on manual and mobile financial service gateways.
 
 ---
 
 ### D
 
-**Dispute / Chargeback**
-A customer-initiated challenge to a completed transaction through their bank or card network. OwnPay tracks disputes through a lifecycle: `open → under_review → won / lost → closed`.
+**Dispute / Chargeback** A customer-initiated challenge to a completed transaction through their bank or card network. OwnPay tracks disputes through a lifecycle: `open → under_review → won / lost → closed`.
 
-**Double-Entry Bookkeeping**
-An accounting method where every financial event is recorded as balanced debit and credit entries across ledger accounts. OwnPay's ledger engine follows GAAP directionality: assets and expenses increase on debit, while liabilities, equity, and revenue increase on credit.
+**Double-Entry Bookkeeping** An accounting method where every financial event is recorded as balanced debit and credit entries across ledger accounts. OwnPay's ledger engine follows GAAP directionality: assets and expenses increase on debit, while liabilities, equity, and revenue increase on credit.
 
 ---
 
 ### G
 
-**Gateway**
-An external payment processor (Stripe, PayPal, bKash, etc.) that OwnPay communicates with via a plugin adapter. Each gateway implements `GatewayAdapterInterface` with methods for initiating, verifying, and refunding payments.
+**Gateway** An external payment processor (Stripe, PayPal, bKash, etc.) that OwnPay communicates with via a plugin adapter. Each gateway implements `GatewayAdapterInterface` with methods for initiating, verifying, and refunding payments.
 
-**Gateway Adapter**
-A PHP class implementing `GatewayAdapterInterface` that translates OwnPay's internal payment flow into the API calls required by a specific payment provider.
+**Gateway Adapter** A PHP class implementing `GatewayAdapterInterface` that translates OwnPay's internal payment flow into the API calls required by a specific payment provider.
 
 ---
 
 ### H
 
-**HMAC-SHA256**
-A message authentication code algorithm used to sign outbound webhook deliveries. The signature is computed over `{timestamp}.{raw_body}` using the merchant's webhook secret, ensuring authenticity and integrity.
+**HMAC-SHA256** A message authentication code algorithm used to sign outbound webhook deliveries. The signature is computed over `{timestamp}.{raw_body}` using the merchant's webhook secret, ensuring authenticity and integrity.
 
-**Hook (Action)**
-A point in OwnPay's execution flow where plugins can register callbacks via `doAction()` to react to events (e.g., `payment.completed`, `customer.created`). Actions do not return a value.
+**Hook (Action)** A point in OwnPay's execution flow where plugins can register callbacks via `doAction()` to react to events (e.g., `payment.completed`, `customer.created`). Actions do not return a value.
 
-**Hook (Filter)**
-A point where plugins can modify data in-flight via `applyFilter()`. For example, the `payment.amount` filter allows a plugin to add a convenience fee before the payment is processed. Filters must return the (possibly modified) value.
+**Hook (Filter)** A point where plugins can modify data in-flight via `applyFilter()`. For example, the `payment.amount` filter allows a plugin to add a convenience fee before the payment is processed. Filters must return the (possibly modified) value.
 
 ---
 
 ### I
 
-**Invoice**
-A numbered, line-item document created within OwnPay with auto-calculated subtotal, tax, discount, and total. Customers can pay invoices via a public URL at `/invoice/{token}`.
+**Invoice** A numbered, line-item document created within OwnPay with auto-calculated subtotal, tax, discount, and total. Customers can pay invoices via a public URL at `/invoice/{token}`.
 
 ---
 
 ### L
 
-**Ledger**
-OwnPay's financial accounting engine. Every payment, refund, and fee is recorded as balanced debit/credit pairs across ledger accounts, ensuring mathematical integrity at all times.
+**Ledger** OwnPay's financial accounting engine. Every payment, refund, and fee is recorded as balanced debit/credit pairs across ledger accounts, ensuring mathematical integrity at all times.
 
 ---
 
 ### M
 
-**Manual Gateway**
-A payment method that is not processed by an automated external API (e.g., bank transfer, cash on delivery, mobile money verified by SMS). Transactions on manual gateways require explicit verification by an admin or by the companion app's SMS parser.
+**Manual Gateway** A payment method that is not processed by an automated external API (e.g., bank transfer, cash on delivery, mobile money verified by SMS). Transactions on manual gateways require explicit verification by an admin or by the companion app's SMS parser.
 
 ---
 
 ### P
 
-**Payment Intent**
-A database object representing a customer's intent to pay. It stores the amount, currency, gateway selection, and lifecycle state (`pending → processing → completed / failed / expired`).
+**Payment Intent** A database object representing a customer's intent to pay. It stores the amount, currency, gateway selection, and lifecycle state (`pending → processing → completed / failed / expired`).
 
-**Payment Link**
-A shareable URL (`/pay/{slug}`) that allows customers to initiate payments without pre-creating an intent via the API. Links can have fixed or variable amounts, custom fields, usage limits, and expiration dates.
+**Payment Link** A shareable URL (`/pay/{slug}`) that allows customers to initiate payments without pre-creating an intent via the API. Links can have fixed or variable amounts, custom fields, usage limits, and expiration dates.
 
-**PII (Personally Identifiable Information)**
-Data that can identify a specific individual, such as names, email addresses, and phone numbers. OwnPay encrypts PII at rest with AES-256-GCM and masks it in logs and audit entries.
+**PII (Personally Identifiable Information)** Data that can identify a specific individual, such as names, email addresses, and phone numbers. OwnPay encrypts PII at rest with AES-256-GCM and masks it in logs and audit entries.
 
-**Plugin**
-A self-contained package under `modules/` that extends OwnPay. Three types exist: Gateway (payment provider adapter), Theme (checkout appearance), and Addon (functionality extension). Each plugin has a `manifest.json` and is scanned by the sandbox before loading.
+**Plugin** A self-contained package under `modules/` that extends OwnPay. Three types exist: Gateway (payment provider adapter), Theme (checkout appearance), and Addon (functionality extension). Each plugin has a `manifest.json` and is scanned by the sandbox before loading.
 
 ---
 
 ### R
 
-**Rate Limiting**
-A throttling mechanism that limits the number of requests a client can make within a time window. OwnPay uses a sliding window algorithm with per-IP and per-API-key tracking. Exceeded limits return HTTP 429 with a `Retry-After` header.
+**Rate Limiting** A throttling mechanism that limits the number of requests a client can make within a time window. OwnPay uses a sliding window algorithm with per-IP and per-API-key tracking. Exceeded limits return HTTP 429 with a `Retry-After` header.
 
-**Refund**
-The return of funds to a customer for a previously completed transaction. Refunds are routed to the original gateway and recorded as balanced ledger entries.
+**Refund** The return of funds to a customer for a previously completed transaction. Refunds are routed to the original gateway and recorded as balanced ledger entries.
 
 ---
 
 ### S
 
-**Sandbox**
-A test environment provided by payment gateways where you can process payments using test credentials and card numbers without real money. OwnPay gateways can be configured in test mode by using the gateway's sandbox/test API keys.
+**Sandbox** A test environment provided by payment gateways where you can process payments using test credentials and card numbers without real money. OwnPay gateways can be configured in test mode by using the gateway's sandbox/test API keys.
 
-**SMS Auto-Verification**
-A feature where the companion app forwards incoming SMS from payment providers to the OwnPay server, which parses the SMS and automatically matches it to a pending transaction, confirming the payment without manual intervention.
+**SMS Auto-Verification** A feature where the companion app forwards incoming SMS from payment providers to the OwnPay server, which parses the SMS and automatically matches it to a pending transaction, confirming the payment without manual intervention.
 
 ---
 
 ### T
 
-**Tenant**
-Synonym for brand. Refers to the data isolation boundary enforced by `merchant_id` in the database. Each tenant's data (customers, transactions, ledger, settings) is invisible to other tenants.
+**Tenant** Synonym for brand. Refers to the data isolation boundary enforced by `merchant_id` in the database. Each tenant's data (customers, transactions, ledger, settings) is invisible to other tenants.
 
-**Transaction**
-A permanent, immutable record created when a payment intent is confirmed. It stores the OwnPay transaction ID, the gateway's transaction ID, amounts, fees, currency, status, and metadata.
+**Transaction** A permanent, immutable record created when a payment intent is confirmed. It stores the OwnPay transaction ID, the gateway's transaction ID, amounts, fees, currency, status, and metadata.
 
 ---
 
 ### W
 
-**Webhook**
-An HTTP POST callback sent by OwnPay to a merchant-configured URL when a payment event occurs (completed, failed, refunded, etc.). Each delivery is signed with HMAC-SHA256 for verification, retried with exponential backoff on failure, and moved to a dead letter queue after exhausting retries.
+**Webhook** An HTTP POST callback sent by OwnPay to a merchant-configured URL when a payment event occurs (completed, failed, refunded, etc.). Each delivery is signed with HMAC-SHA256 for verification, retried with exponential backoff on failure, and moved to a dead letter queue after exhausting retries.
 
-**White-Label**
-The ability to present OwnPay's checkout under a brand's own domain, logo, colors, and name with no visible reference to OwnPay. Customers interact with `pay.yourbrand.com` and see only the brand's identity.
+**White-Label** The ability to present OwnPay's checkout under a brand's own domain, logo, colors, and name with no visible reference to OwnPay. Customers interact with `pay.yourbrand.com` and see only the brand's identity.
 
 ---
 

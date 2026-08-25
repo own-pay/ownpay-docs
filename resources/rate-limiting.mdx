@@ -1,9 +1,9 @@
 ---
-title: "Rate Limiting"
+title: Rate Limiting
 description: "Canonical reference for OwnPay's sliding window rate limiting including tiers, response headers, 429 error format, configuration, and IP whitelisting."
 keywords: "rate limiting, 429, throttle, X-RateLimit, API throttle, sliding window"
-sidebarTitle: "Rate Limiting"
-icon: "timer"
+sidebarTitle: Rate Limiting
+icon: timer
 ---
 
 OwnPay uses a **sliding window** rate limiter to protect against brute-force attacks, abuse, and accidental API floods. Limits are enforced per IP address for unauthenticated endpoints and per API key for authenticated endpoints.
@@ -13,7 +13,7 @@ OwnPay uses a **sliding window** rate limiter to protect against brute-force att
 ## Rate limit tiers
 
 | Endpoint type | Limit | Auth method | Notes |
-|:---|:---|:---|:---|
+| :-- | :-- | :-- | :-- |
 | Merchant API (`/api/v1/*`) | 60 requests/minute | Bearer API key | Per key, not per IP |
 | Admin API (`/api/admin/v1/*`) | 60 requests/minute | Bearer API key (admin scope) | Per key |
 | Login attempts | 10 attempts/5 minutes | Web form (email/password) | Per IP, strict bucket |
@@ -33,7 +33,7 @@ OwnPay uses a **sliding window** rate limiter to protect against brute-force att
 Every API response includes headers that tell you your current limit status:
 
 | Header | Description |
-|:---|:---|
+| :-- | :-- |
 | `X-RateLimit-Limit` | Maximum requests allowed in the current window |
 | `X-RateLimit-Remaining` | Requests remaining in the current window |
 | `X-RateLimit-Reset` | Unix timestamp when the window resets |
@@ -94,7 +94,7 @@ RATE_LIMIT_BURST=20
 ```
 
 | Variable | Default | Description |
-|:---|:---|:---|
+| :-- | :-- | :-- |
 | `RATE_LIMIT_PER_MINUTE` | 60 | API requests per minute per key |
 | `RATE_LIMIT_LOGIN_PER_5MIN` | 10 | Login attempts per 5 minutes per IP |
 | `RATE_LIMIT_GLOBAL_PER_MINUTE` | 120 | Global requests per minute per IP |

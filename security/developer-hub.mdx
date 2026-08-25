@@ -1,9 +1,9 @@
 ---
-title: "Developer Hub"
+title: Developer Hub
 description: "Access webhook endpoint management, delivery logs, test tools, and API request logs from the central developer tools section."
 keywords: "developer hub, webhook logs, API logs, test webhook, developer tools, webhook management"
-sidebarTitle: "Developer Hub"
-icon: "terminal"
+sidebarTitle: Developer Hub
+icon: terminal
 ---
 
 The Developer Hub is your central workspace for integrating OwnPay with external systems. It provides tools for managing webhooks, testing endpoints, and reviewing API activity.
@@ -17,7 +17,7 @@ The Webhooks tab in the Developer Hub lets you create, edit, and delete webhook 
 Every webhook delivery attempt is logged here, whether successful or failed.
 
 | Column | Description |
-|--------|-------------|
+| --- | --- |
 | **Endpoint** | The target URL |
 | **Event** | The event type that triggered the delivery |
 | **Status** | Success (2xx), Failed (non-2xx), or Pending (retry scheduled) |
@@ -27,7 +27,7 @@ Every webhook delivery attempt is logged here, whether successful or failed.
 Click any log row to view the full request payload, response body, and response headers.
 
 <Info>
-Delivery logs are retained for 30 days. For permanent records, implement server-side logging on your webhook endpoint.
+  Delivery logs are retained for 30 days. For permanent records, implement server-side logging on your webhook endpoint.
 </Info>
 
 ## Test webhook
@@ -45,7 +45,7 @@ The test delivery also appears in the delivery logs for debugging.
 The API Logs tab records every request made to your OwnPay API endpoints (all three layers).
 
 | Column | Description |
-|--------|-------------|
+| --- | --- |
 | **API Layer** | Admin, Merchant, or Mobile |
 | **Endpoint** | The requested URI |
 | **Method** | GET, POST, PUT, DELETE |
@@ -56,7 +56,7 @@ The API Logs tab records every request made to your OwnPay API endpoints (all th
 Use the search and filter controls to find specific requests by endpoint, status code, or date range.
 
 <Tip>
-API logs are useful for debugging integration issues. If a third-party integration reports unexpected responses, check the API logs to see exactly what OwnPay returned.
+  API logs are useful for debugging integration issues. If a third-party integration reports unexpected responses, check the API logs to see exactly what OwnPay returned.
 </Tip>
 
 ## Related Pages

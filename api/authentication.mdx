@@ -1,9 +1,9 @@
 ---
-title: "API Authentication"
+title: API Authentication
 description: "Canonical reference for OwnPay API authentication using Bearer tokens, API key scopes, and the super admin override header."
 keywords: "API authentication, Bearer token, API key, key scopes, super admin, REST API auth, op_live"
-sidebarTitle: "Authentication"
-icon: "lock-keyhole"
+sidebarTitle: Authentication
+icon: lock-keyhole
 ---
 
 OwnPay authenticates every API request via a Bearer token in the `Authorization` header. You generate API keys from the admin panel - see [API keys](/security/api-keys) for the full key management guide.
@@ -17,7 +17,7 @@ OwnPay authenticates every API request via a Bearer token in the `Authorization`
 5. Copy the key immediately - it is shown only once
 
 <Warning>
-Store API keys in environment variables. Never commit them to version control.
+  Store API keys in environment variables. Never commit them to version control.
 </Warning>
 
 ## Header format
@@ -35,13 +35,13 @@ The key prefix `op_live_` identifies a live key. Test-mode keys use the `op_test
 API keys carry one of three scopes, which determine which endpoints the key can access:
 
 | Scope | Can read | Can write | Can manage | Typical use |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `read` | Yes | No | No | Dashboards, reporting bots |
 | `write` | Yes | Yes | No | Payment creation, checkout flows |
 | `admin` | Yes | Yes | Yes | Full platform management |
 
 <Info>
-The scope is set when you generate the key and cannot be changed afterward. Create separate keys for separate applications.
+  The scope is set when you generate the key and cannot be changed afterward. Create separate keys for separate applications.
 </Info>
 
 ## Super admin operations
@@ -72,7 +72,7 @@ If the key is missing, invalid, expired, or lacks the required scope, the API re
 Common auth error codes:
 
 | Code | HTTP status | Meaning |
-|---|---|---|
+| --- | --- | --- |
 | `invalid_api_key` | 401 | Key not found or malformed |
 | `expired_api_key` | 401 | Key has passed its expiration date |
 | `revoked_api_key` | 401 | Key was manually revoked |
@@ -81,6 +81,7 @@ Common auth error codes:
 ## Code examples
 
 <CodeGroup>
+
 ```bash cURL
 curl -X GET https://your-domain.com/api/v1/payments/pay_abc123 \
   -H "Authorization: Bearer op_live_abc123.def456"
@@ -124,6 +125,7 @@ resp = requests.get(
 )
 data = resp.json()
 ```
+
 </CodeGroup>
 
 ## Best practices

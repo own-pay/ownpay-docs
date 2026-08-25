@@ -1,9 +1,9 @@
 ---
-title: "Gateway Plugin Development - Build Custom Payment Gateways"
+title: Gateway Plugin Development - Build Custom Payment Gateways
 description: "Build a payment gateway plugin for OwnPay covering the adapter contract, redirect flow, IPN handling, refunds, and gateway installation."
 keywords: "gateway plugin, payment gateway development, custom gateway, IPN handling, gateway adapter"
-sidebarTitle: "Gateway Dev"
-icon: "workflow"
+sidebarTitle: Gateway Dev
+icon: workflow
 ---
 
 This guide covers everything required to build, install, and maintain a payment gateway plugin for OwnPay. Every example is derived from the live Stripe gateway implementation at `modules/gateways/stripe/`.
@@ -193,6 +193,7 @@ Called to start a payment session. `$params` has this guaranteed shape:
 ```
 
 Return one of:
+
 - `['redirect_url' => 'https://gateway.example.com/pay/SESSION_ID']`
 - `['form_html' => '<form>...</form>']`
 - `['session_id' => 'SESSION_ID']`
@@ -212,7 +213,7 @@ Use `hash_equals()` for all HMAC comparisons. Include replay protection by rejec
 ### `supports(string $feature): bool`
 
 | Feature | What it enables |
-|---|---|
+| --- | --- |
 | `refund` | Refund button shown on completed transactions |
 | `recurring` | Subscription/recurring billing UI |
 | `partial` | Partial refund amount input |
@@ -242,7 +243,7 @@ If your gateway loads external JavaScript, declare the required domains in `csp`
 ## Installation and activation
 
 1. Package your plugin directory as a ZIP
-2. Upload via Admin > Gateways > "Install Plugin"
+2. Upload via Admin \> Gateways \> "Install Plugin"
 3. Activate via the gateway list
 4. Configure credentials via the gateway settings form
 

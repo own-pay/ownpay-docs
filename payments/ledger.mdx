@@ -1,9 +1,9 @@
 ---
-title: "Ledger UI"
+title: Ledger UI
 description: "How to use the ledger page to view journal entries, filter by account type and date, and check balance summaries in OwnPay."
 keywords: "ledger, double-entry, journal entries, balance summary, ledger UI"
-sidebarTitle: "Ledger"
-icon: "book-open"
+sidebarTitle: Ledger
+icon: book-open
 ---
 
 The Ledger page gives you a searchable view of all double-entry journal entries for the currently selected brand. For the conceptual explanation of how the double-entry system works, read [Ledger fundamentals](/fundamentals/ledger).
@@ -19,7 +19,7 @@ The Ledger page gives you a searchable view of all double-entry journal entries 
 Use the toolbar above the table to narrow the view:
 
 | Filter | Description |
-|---|---|
+| --- | --- |
 | **Account type** | Select a specific ledger account (e.g. Merchant Payable, Gateway Settlement) |
 | **Date range** | Pick a From and To date to view entries within a period |
 | **Brand selector** | Switch to a different brand’s ledger (if you have multi-brand access) |
@@ -38,7 +38,7 @@ The balance reflects:
 Pending transactions and awaiting-verification payments do **not** appear in the ledger. Entries are only posted when a transaction reaches **Completed** status.
 
 <Warning>
-Do not edit the `op_ledger_entries` or `op_ledger_accounts` database tables directly. Manual changes break the double-entry balance constraint and will cause validation errors.
+  Do not edit the `op_ledger_entries` or `op_ledger_accounts` database tables directly. Manual changes break the double-entry balance constraint and will cause validation errors.
 </Warning>
 
 ## Related Pages

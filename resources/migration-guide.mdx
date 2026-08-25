@@ -1,9 +1,9 @@
 ---
-title: "Migration Guide"
+title: Migration Guide
 description: "Safely upgrade OwnPay between versions with pre-migration checklists, the auto-migration process, post-migration verification, and rollback procedures."
 keywords: "migration, upgrade, version upgrade, database migration, rollback, breaking changes"
-sidebarTitle: "Migration Guide"
-icon: "arrow-right-left"
+sidebarTitle: Migration Guide
+icon: arrow-right-left
 ---
 
 Upgrading OwnPay between versions involves database schema changes, file updates, and cache clearing. This guide walks you through the process from preparation to verification.
@@ -13,7 +13,7 @@ Upgrading OwnPay between versions involves database schema changes, file updates
 ## Version history
 
 | From | To | Key changes |
-|:---|:---|:---|
+| :-- | :-- | :-- |
 | v0.1.0 | v0.2.0 | New tables: `op_disputes`, `op_fee_rules`. New columns on `op_transactions`, `op_gateways`. CSP origin tracking per gateway. |
 
 <Note>
@@ -27,37 +27,6 @@ Upgrading OwnPay between versions involves database schema changes, file updates
 Complete every item before starting an upgrade. Skipping any of these steps risks data loss or a broken installation.
 
 <Steps>
-
-### Back up your database
-
-```bash
-mysqldump --single-transaction -u ownpay_user -p ownpay_db > /backups/pre-migration.sql
-```
-
-### Back up your files
-
-```bash
-tar -czf /backups/pre-migration-files.tar.gz \
-  --exclude='vendor' --exclude='node_modules' \
-  -C /var/www ownpay/
-cp /var/www/ownpay/.env /backups/pre-migration-env.txt
-```
-
-### Verify PHP and MySQL versions
-
-```bash
-php -v    # Must be 8.3+
-mysql -V  # Must be MySQL 8.0+ or MariaDB 10.4+
-```
-
-### Review the changelog
-
-Read the [Changelog](/resources/changelog) for the target version. Pay attention to breaking changes and any manual steps required.
-
-### Test on staging (recommended)
-
-If possible, restore your backup to a staging environment and run the upgrade there first. Verify checkout, admin panel, and API functionality before touching production.
-
 </Steps>
 
 ---
@@ -100,27 +69,6 @@ This `SHOW COLUMNS / ALTER TABLE` pattern means migrations are **idempotent** - 
 ### Running the upgrade
 
 <Steps>
-
-### Via the admin panel
-
-1. Navigate to **System > System Update**
-2. The panel shows the available version and its changelog
-3. Click **Update Now**
-4. OwnPay enters maintenance mode, backs up automatically, downloads, verifies, extracts, and migrates
-
-### Via the self-update CLI
-
-```bash
-php /var/www/ownpay/public/index.php update:run
-```
-
-### Via manual file replacement
-
-1. Download the release ZIP from [GitHub](https://github.com/own-pay/OwnPay/releases)
-2. Extract it over your installation (preserving `.env` and `storage/`)
-3. Run `composer install --no-dev` if needed
-4. Visit any URL - the auto-migration runs on the next request
-
 </Steps>
 
 ---
@@ -130,25 +78,6 @@ php /var/www/ownpay/public/index.php update:run
 After the migration completes, verify everything is working correctly.
 
 <Steps>
-
-### Clear all caches
-
-Go to **Settings > Cache** and click **Clear All Caches**. This forces Twig to recompile templates and refreshes any cached settings.
-
-### Verify the admin panel
-
-1. Log in and check the dashboard loads without errors
-2. Navigate to Brands, Transactions, and Gateways pages
-3. Verify your brand's custom domain still resolves correctly
-
-### Test a checkout
-
-Create a test payment intent through the API or a payment link, and complete a test transaction. Verify the transaction appears in the admin panel with the correct status.
-
-### Check the audit log
-
-Navigate to **Reports > Audit Log** and look for migration-related entries. This confirms the migration ran and which schema changes were applied.
-
 </Steps>
 
 ---
@@ -158,30 +87,6 @@ Navigate to **Reports > Audit Log** and look for migration-related entries. This
 If something goes wrong after an upgrade, restore from your pre-migration backups.
 
 <Steps>
-
-### Stop services
-
-```bash
-sudo systemctl stop php8.3-fpm nginx
-```
-
-### Restore database and files
-
-```bash
-mysql -u ownpay_user -p ownpay_db < /backups/pre-migration.sql
-tar -xzf /backups/pre-migration-files.tar.gz -C /var/www/
-cp /backups/pre-migration-env.txt /var/www/ownpay/.env
-chown -R www-data:www-data /var/www/ownpay
-```
-
-### Restart and verify
-
-```bash
-sudo systemctl start php8.3-fpm nginx
-```
-
-Visit the admin panel and confirm the previous version is running: `php /var/www/ownpay/public/index.php --version`.
-
 </Steps>
 
 <Warning>

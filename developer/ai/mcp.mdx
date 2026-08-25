@@ -1,9 +1,9 @@
 ---
-title: "OwnPay MCP Server - Connect AI Tools to Live Documentation"
+title: OwnPay MCP Server - Connect AI Tools to Live Documentation
 description: "Connect AI tools like Claude, Cursor, and Windsurf to the OwnPay docs via the Model Context Protocol server for real-time content access."
-keywords: [MCP server, Model Context Protocol, AI tools, Claude, Cursor, ChatGPT, OwnPay docs, Windsurf]
-sidebarTitle: "MCP Server"
-icon: "brain-circuit"
+keywords: ["MCP server","Model Context Protocol","AI tools","Claude","Cursor","ChatGPT","OwnPay docs","Windsurf"]
+sidebarTitle: MCP Server
+icon: brain-circuit
 ---
 
 The OwnPay documentation hosts a public **Model Context Protocol (MCP) server** that lets AI assistants and coding agents search and retrieve content directly from the live documentation. Instead of relying on static training data or general web searches, your AI tools get accurate, real-time specifications from the actual docs.
@@ -29,36 +29,38 @@ Follow these steps to add the OwnPay MCP server to your preferred environment:
 <Tabs>
   <Tab title="Cursor">
     To connect the OwnPay MCP server to Cursor:
-    
+
     <Steps>
       <Step title="Open MCP Settings">
         1. Open Cursor's settings.
-        2. Navigate to **Features** > **MCP**.
-        3. Click **+ Add New MCP Server**.
+        2. Navigate to **Features** \> **MCP**.
+        3. Click **\+ Add New MCP Server**.
       </Step>
       <Step title="Configure the Server">
         Enter the following details in the dialog:
+
         - **Name:** `ownpay-docs`
         - **Type:** `sse`
         - **URL:** `{{mcpUrl}}`
       </Step>
       <Step title="Verify Connection">
-        In Cursor's chat pane, ask: *"What tools do you have available?"* It should list `ownpay-docs` with the search and query tools active.
+        In Cursor's chat pane, ask: _"What tools do you have available?"_ It should list `ownpay-docs` with the search and query tools active.
       </Step>
     </Steps>
   </Tab>
-
   <Tab title="Claude Desktop">
     To add the server to the Claude Desktop application:
-    
+
     <Steps>
       <Step title="Open Configuration File">
         Open your Claude Desktop configuration file:
+
         - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
         - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
       </Step>
       <Step title="Add the Server Config">
         Insert the following snippet inside the `mcpServers` object:
+
         ```json
         {
           "mcpServers": {
@@ -79,16 +81,16 @@ Follow these steps to add the OwnPay MCP server to your preferred environment:
       </Step>
     </Steps>
   </Tab>
-
   <Tab title="Windsurf">
     To connect the server to Windsurf's Cascade assistant:
-    
+
     <Steps>
       <Step title="Open configuration file">
         Open the global Windsurf MCP configuration file at `~/.codeium/windsurf/mcp_config.json`.
       </Step>
       <Step title="Add the Server Configuration">
         Insert the configuration block:
+
         ```json
         {
           "mcpServers": {
@@ -104,31 +106,31 @@ Follow these steps to add the OwnPay MCP server to your preferred environment:
       </Step>
     </Steps>
   </Tab>
-
   <Tab title="VS Code (Cline/Roo Code)">
     If you are using VS Code with extensions like Cline or Roo Code:
-    
+
     <Steps>
       <Step title="Open settings">
         Navigate to the extension's MCP configuration settings.
       </Step>
       <Step title="Add the HTTP/SSE entry">
         Add a new HTTP server entry mapping:
+
         - **Name:** `ownpay-docs`
         - **Type:** `sse`
         - **URL:** `{{mcpUrl}}`
       </Step>
     </Steps>
   </Tab>
-
   <Tab title="Claude Code">
     To add the server via the Claude Code command-line interface:
-    
+
     ```bash
     claude mcp add --transport http ownpay-docs {{mcpUrl}}
     ```
-    
+
     Verify the addition using:
+
     ```bash
     claude mcp list
     ```
@@ -182,7 +184,7 @@ The MCP server supports automatic discovery. Systems that implement automated cl
 To maintain service stability, public endpoints enforce the following hourly request rates:
 
 | Scope | Limit |
-|---|---|
+| --- | --- |
 | Per User IP | 5,000 requests/hour |
 | Search per Site | 10,000 requests/hour |
 | Query Docs Filesystem per Site | 10,000 requests/hour |
@@ -192,11 +194,12 @@ To maintain service stability, public endpoints enforce the following hourly req
 ## 5. Example Queries
 
 Once configured, test the AI's integration with queries like:
-- *"How do I register a custom webhook event filter?"*
-- *"Show me how to build a Twig template for a custom checkout theme"*
-- *"What is the payload layout for `payment.transaction.completed`? "*
-- *"How does the immutable double-entry ledger track merchant settlements?"*
-- *"Create a cURL request to initiate a white-label checkout session"*
+
+- _"How do I register a custom webhook event filter?"_
+- _"Show me how to build a Twig template for a custom checkout theme"_
+- _"What is the payload layout for `payment.transaction.completed`? "_
+- _"How does the immutable double-entry ledger track merchant settlements?"_
+- _"Create a cURL request to initiate a white-label checkout session"_
 
 ---
 

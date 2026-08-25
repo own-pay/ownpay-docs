@@ -1,9 +1,9 @@
 ---
-title: "Event System"
+title: Event System
 description: "Built-in events dispatched by OwnPay core, how to listen in plugins, and the distinction between events and hooks."
 keywords: "event system, payment events, event listeners, event dispatcher, events vs hooks"
-sidebarTitle: "Events"
-icon: "radio"
+sidebarTitle: Events
+icon: radio
 ---
 
 OwnPay dispatches internal events through the `EventManager` that plugins can listen to. Events are distinct from hooks and serve a different architectural purpose.
@@ -11,7 +11,7 @@ OwnPay dispatches internal events through the `EventManager` that plugins can li
 ## Events vs hooks
 
 | Aspect | Events | Hooks |
-|---|---|---|
+| --- | --- | --- |
 | Direction | Core fires → plugins listen | Core fires or transforms → plugins participate |
 | Return value | Ignored | Filters must return a value |
 | Queuing | Can be queued for async handling | Always synchronous |
@@ -19,7 +19,7 @@ OwnPay dispatches internal events through the `EventManager` that plugins can li
 | API | `$events->addListener()` | `$events->addAction()` / `$events->addFilter()` |
 
 <Tip>
-Use events when you need async processing (e.g. sending an email after a payment). Use hooks when you need to modify data in-flight.
+  Use events when you need async processing (e.g. sending an email after a payment). Use hooks when you need to modify data in-flight.
 </Tip>
 
 ## Listening to events in plugins
@@ -39,7 +39,7 @@ public function register(EventManager $events, Container $container): void
 ## Built-in events
 
 | Event class | Dispatched when | Key properties |
-|---|---|---|
+| --- | --- | --- |
 | `PaymentCompleted` | Transaction settled | `transaction: array` |
 | `PaymentFailed` | Transaction declined | `transaction: array`, `reason: string` |
 | `PaymentExpired` | Intent timed out | `intent: array` |
@@ -69,7 +69,7 @@ $events->addListener(PaymentCompleted::class, SendReceiptListener::class, queued
 ```
 
 <Info>
-Queued listeners require Redis to be configured. The listener class must implement `__invoke(PaymentCompleted $event)`.
+  Queued listeners require Redis to be configured. The listener class must implement `__invoke(PaymentCompleted $event)`.
 </Info>
 
 ## Error handling

@@ -1,9 +1,9 @@
 ---
-title: "API Integration Quick Start"
+title: API Integration Quick Start
 description: "Build a simple payment form that creates a payment, redirects to checkout, and verifies the result - the fastest path to accepting payments with OwnPay."
 keywords: "API quickstart, payment integration, create payment, checkout URL, payment verification, developer tutorial"
-sidebarTitle: "Quickstart"
-icon: "zap"
+sidebarTitle: Quickstart
+icon: zap
 ---
 
 In this quick start you will build a simple payment flow: create a payment intent, redirect the customer to the OwnPay checkout page, and verify the payment status. By the end you will have a working integration in under 10 minutes.
@@ -15,155 +15,22 @@ In this quick start you will build a simple payment flow: create a payment inten
 - Your preferred language (PHP, Node.js, or cURL)
 
 <Steps>
-
-### Get your API key
-
-1. Log in to your OwnPay admin panel
-2. Navigate to **Developers → API Keys**
-3. Click **Generate API Key** and select **Write** scope
-4. Copy the key and store it in an environment variable:
-
-```bash
-export OWNPAY_API_KEY="op_live_abc123.def456"
-export OWNPAY_BASE_URL="https://your-domain.com/api/v1"
-```
-
-<Warning>
-Never commit API keys to version control. Always use environment variables or a secrets manager.
-</Warning>
-
-### Create a payment intent
-
-Send a `POST` request to `/payments` with the amount, currency, and an optional description. Amounts are **strings** because OwnPay uses bcmath for monetary precision.
-
-<CodeGroup>
-```bash cURL
-curl -X POST https://your-domain.com/api/v1/payments \
-  -H "Authorization: Bearer $OWNPAY_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": "50.00",
-    "currency": "USD",
-    "customer_email": "customer@example.com",
-    "description": "Order #1042"
-  }'
-```
-
-```php PHP
-$client = new \OwnPay\SDK\Client(
-    apiKey: $_ENV['OWNPAY_API_KEY'],
-    baseUrl: $_ENV['OWNPAY_BASE_URL']
-);
-
-$payment = $client->payments()->create([
-    'amount'         => '50.00',
-    'currency'       => 'USD',
-    'customer_email' => 'customer@example.com',
-    'description'    => 'Order #1042',
-]);
-```
-
-```javascript Node.js
-import OwnPay from 'ownpay';
-
-const client = new OwnPay({
-  apiKey: process.env.OWNPAY_API_KEY,
-  baseUrl: process.env.OWNPAY_BASE_URL,
-});
-
-const payment = await client.payments.create({
-  amount: '50.00',
-  currency: 'USD',
-  customer_email: 'customer@example.com',
-  description: 'Order #1042',
-});
-```
-</CodeGroup>
-
-OwnPay responds with the payment object:
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": "pay_abc123",
-    "amount": "50.00",
-    "currency": "USD",
-    "status": "pending",
-    "checkout_url": "https://your-domain.com/checkout/pay_abc123",
-    "customer_email": "customer@example.com"
-  }
-}
-```
-
-### Redirect the customer to checkout
-
-Take the `checkout_url` from the response and redirect your customer there:
-
-```php
-header('Location: ' . $payment['data']['checkout_url']);
-exit;
-```
-
-```javascript
-// Express.js example
-res.redirect(payment.data.checkout_url);
-```
-
-The customer sees the OwnPay-hosted checkout page where they choose a payment method and complete the payment.
-
-### Handle the return redirect
-
-After payment, OwnPay redirects the customer back to your `return_url` (configured per brand). You should **never trust the redirect alone** - always verify the payment status via the API.
-
-```php
-$payment = $client->payments()->get($_GET['payment_id']);
-
-if ($payment['data']['status'] === 'completed') {
-    // Fulfill the order
-    fulfillOrder($_GET['order_id']);
-}
-```
-
-### Verify payment status via API
-
-Even if you use webhooks (next step), you should also verify on return as a fallback:
-
-<CodeGroup>
-```bash cURL
-curl https://your-domain.com/api/v1/payments/pay_abc123 \
-  -H "Authorization: Bearer $OWNPAY_API_KEY"
-```
-
-```php PHP
-$payment = $client->payments()->get('pay_abc123');
-echo $payment['data']['status']; // "completed" | "pending" | "failed"
-```
-
-```javascript Node.js
-const payment = await client.payments.get('pay_abc123');
-console.log(payment.data.status);
-```
-</CodeGroup>
-
-### Set up webhooks (optional)
-
-For production you should receive server-to-server notifications instead of relying on customer redirects. Follow the full [Webhook integration tutorial](/developer/webhook-integration) to build an endpoint that receives and verifies `payment.completed` events.
-
 </Steps>
 
 ## What's next
 
 <CardGroup cols={3}>
-<Card title="SDKs" icon="code" href="/developer/integration/php">
-Full SDK reference for PHP, Laravel, and Node.js.
-</Card>
-<Card title="Webhook guide" icon="shield-check" href="/developer/webhook-integration">
-End-to-end webhook receiver with signature verification.
-</Card>
-<Card title="Testing" icon="flask-conical" href="/developer/testing">
-Test cards, sandbox mode, and webhook simulation.
-</Card>
+  <Card title="SDKs" icon="code" href="/developer/integration/php">
+    Full SDK reference for PHP, Laravel, and Node.js.
+  </Card>
+
+  <Card title="Webhook guide" icon="shield-check" href="/developer/webhook-integration">
+    End-to-end webhook receiver with signature verification.
+  </Card>
+
+  <Card title="Testing" icon="flask-conical" href="/developer/testing">
+    Test cards, sandbox mode, and webhook simulation.
+  </Card>
 </CardGroup>
 
 ## Related pages

@@ -2,29 +2,29 @@
 title: "OwnPay Architecture: PHP Core, Middleware, and Plugins"
 description: "Developer-oriented tour of OwnPay's custom PHP core, multi-brand middleware, plugin loader, queue workers, and repository directory layout."
 keywords: "OwnPay architecture, PHP payment platform, multi-brand middleware, plugin loader, queue workers"
-sidebarTitle: "Architecture"
-icon: "building"
+sidebarTitle: Architecture
+icon: building
 ---
 
 A developer's guide to how **OwnPay** is built - for contributors and integrators.
 
-OwnPay is a **self-hosted, single-owner, multi-brand payment orchestrator** written in modern PHP (8.3+). One administrator runs the platform and creates multiple **brands** (stores); each brand has its own domain, gateways, customers, and ledgers, all isolated inside a single MySQL database by a `merchant_id` column. It is **not** a multi-tenant SaaS - there is no public sign-up.
+OwnPay is a **self-hosted, single-owner, multi-brand payment orchestrator** written in modern PHP (8.3\+). One administrator runs the platform and creates multiple **brands** (stores); each brand has its own domain, gateways, customers, and ledgers, all isolated inside a single MySQL database by a `merchant_id` column. It is **not** a multi-tenant SaaS - there is no public sign-up.
 
-> Looking to run it locally first? See **[LOCAL_SETUP.md](/resources/local-setup)**.
+> Looking to run it locally first? See [**LOCAL\_SETUP.md**](/resources/local-setup).
 
 ---
 
 ## 1. Tech stack at a glance
 
 | Layer | Choice |
-|-------|--------|
-| Language | PHP 8.3+ (`declare(strict_types=1)` everywhere) |
-| Persistence | MySQL 8 / MariaDB 10.4+ (PDO, prepared statements only) |
-| Templating | Twig 3+ |
+| --- | --- |
+| Language | PHP 8.3\+ (`declare(strict_types=1)` everywhere) |
+| Persistence | MySQL 8 / MariaDB 10.4\+ (PDO, prepared statements only) |
+| Templating | Twig 3\+ |
 | Front controller | Single entry point `public/index.php` |
 | DI | Custom PSR-11 container (`src/Container.php`) with reflection autowiring |
 | Auth (mobile/API) | `firebase/php-jwt` |
-| Frontend | Server-rendered Twig + vanilla CSS/JS (no SPA build step) |
+| Frontend | Server-rendered Twig \+ vanilla CSS/JS (no SPA build step) |
 | Dependencies | Intentionally minimal - see `composer.json` |
 | Static analysis | PHPStan **level 9** |
 | Tests | PHPUnit |
@@ -55,10 +55,10 @@ flowchart TD
 1. Load `.env` (`vlucas/phpdotenv`).
 2. Build the DI container from `config/services.php`.
 3. Set the timezone.
-4. **Boot plugins** (`PluginLoader::boot()`) - *before* middleware, so a plugin can inject middleware via the `system.middleware.pipeline` filter.
+4. **Boot plugins** (`PluginLoader::boot()`) - _before_ middleware, so a plugin can inject middleware via the `system.middleware.pipeline` filter.
 5. Load the middleware pipeline from `config/middleware.php` and apply the plugin filter. Security-critical admin middleware is then re-asserted and cannot be removed by a plugin.
 6. Fire the `system.boot` action.
-7. Load routes from `config/routes/web.php` + `config/routes/api.php` (+ plugin routes).
+7. Load routes from `config/routes/web.php` \+ `config/routes/api.php` (\+ plugin routes).
 8. Match the request, run its middleware group, dispatch the controller.
 9. Send the response.
 10. Fire `system.shutdown`.
@@ -100,9 +100,11 @@ ownpay/
 ## 4. Core subsystems
 
 ### 4.1 Dependency Injection (`src/Container.php`)
+
 PSR-11 compliant. Services are bound explicitly in `config/services.php`; anything unbound is resolved by reflection (constructor autowiring). Supports shared singletons and transient bindings.
 
 ### 4.2 Repositories & brand isolation
+
 Data access lives in `src/Repository/` on top of `BaseRepository`. Brand isolation is enforced **at the query level** by the `TenantScope` trait:
 
 ```php
@@ -116,19 +118,23 @@ $all = $this->invoiceRepo->forAllTenants()->paginate();
 Every scoped entity table carries a `merchant_id` column. **Never** run a scoped query without `forTenant()` (or a deliberate `forAllTenants()`).
 
 ### 4.3 Double-entry ledger
+
 Money movements are recorded as balanced debits/credits across `op_ledger_accounts`, `op_ledger_transactions`, and `op_ledger_entries`. Balances follow standard accounting directionality (assets/expenses increase on debit; liabilities/equity/revenue increase on credit). All monetary math uses **bcmath strings**, never floats.
 
 ### 4.4 Events & plugins
+
 `EventManager` provides WordPress-style **actions** (`doAction`) and **filters** (`applyFilter`). Plugins live in `modules/` and register callbacks on these hooks. See the [Hooks Reference](https://learn.ownpay.org/hooks-reference) and [Plugin Developer Guide](https://learn.ownpay.org/plugin-developer-guide).
 
 Plugins are discovered via `manifest.json`, run through a **static code scanner** (`PluginSandbox`) that denies dangerous calls (`exec`, `shell_exec`, `passthru`, `eval`, `system`, raw PDO/reflection), and only then loaded.
 
-### 4.5 White-label custom domains *(industry first)*
-OwnPay is the **first self-hosted payment platform** to support per-brand custom-domain checkout on a single installation. A brand maps its own domain (e.g. `pay.yourbrand.com`), which is DNS-verified (TXT ownership + A-record routing), then fully activated. From that point, every customer-facing URL uses the brand's domain - customers see the brand's logo, name, and colors; there is no trace of OwnPay.
+### 4.5 White-label custom domains _(industry first)_
+
+OwnPay is the **first self-hosted payment platform** to support per-brand custom-domain checkout on a single installation. A brand maps its own domain (e.g. `pay.yourbrand.com`), which is DNS-verified (TXT ownership \+ A-record routing), then fully activated. From that point, every customer-facing URL uses the brand's domain - customers see the brand's logo, name, and colors; there is no trace of OwnPay.
 
 `DomainMiddleware` resolves `HTTP_HOST` against the `op_domains` table, injects the `merchant_id`, and blocks `/admin/*` on custom domains. **Always** build customer-facing and gateway URLs through `DomainUrlService` (`buildCheckoutUrl()`, `buildCallbackUrl()`) - never hardcode a host.
 
 ### 4.6 Payment gateways
+
 Gateways are plugins implementing `GatewayAdapterInterface` (`src/Gateway/`):
 
 ```php
@@ -156,10 +162,12 @@ flowchart LR
 ```
 
 ### 4.7 Configuration & settings
+
 Runtime settings live in `op_system_settings` (group/key/value, with an optional `merchant_id` for per-brand overrides). Access them through `EnvironmentService` / `SettingsRepository`; `EnvironmentService::get()` falls back to OS environment variables when no stored value exists. There is no separate config store.
 
 ### 4.8 Self-update
-`src/Update/UpdateService.php` performs an atomic, rollback-safe update: fetch manifest → back up → enter maintenance → download (GitHub release asset) → **verify SHA-256 + RSA signature** → extract (with zip-slip guards) → run migrations → health-check → exit maintenance. The same release zip also works as a fresh-install archive.
+
+`src/Update/UpdateService.php` performs an atomic, rollback-safe update: fetch manifest → back up → enter maintenance → download (GitHub release asset) → **verify SHA-256 \+ RSA signature** → extract (with zip-slip guards) → run migrations → health-check → exit maintenance. The same release zip also works as a fresh-install archive.
 
 ---
 
@@ -184,12 +192,12 @@ OwnPay treats all external input as adversarial. Highlights a contributor must r
 Three independent API layers, each with its own middleware group and auth:
 
 | Layer | Prefix | Auth | Defined in |
-|-------|--------|------|------------|
+| --- | --- | --- | --- |
 | Merchant REST | `/api/v1/*` | Bearer API key (read/write scopes) | `config/routes/api.php` |
 | Mobile companion | `/api/mobile/v1/*` | JWT (after device pairing) | same |
 | Admin API | `/api/admin/v1/*` | Bearer API key with `admin` scope (per-merchant) | same |
 
-Formal API schema: **[docs.ownpay.org](https://docs.ownpay.org)**. Integration examples & guides: **[learn.ownpay.org](https://learn.ownpay.org)**.
+Formal API schema: [**docs.ownpay.org**](https://docs.ownpay.org). Integration examples & guides: [**learn.ownpay.org**](https://learn.ownpay.org).
 
 ---
 

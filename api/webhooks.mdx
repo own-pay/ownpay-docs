@@ -1,9 +1,9 @@
 ---
-title: "Webhooks"
+title: Webhooks
 description: "Canonical reference for OwnPay webhook payload format, event types, HMAC-SHA256 signature verification with code examples, replay attack prevention, and retry schedules."
 keywords: "webhooks, webhook verification, HMAC-SHA256, webhook signature, payment events, webhook retry, idempotency"
-sidebarTitle: "Webhooks"
-icon: "webhook"
+sidebarTitle: Webhooks
+icon: webhook
 ---
 
 OwnPay sends HTTP POST requests to your server when payment events occur. This page is the canonical reference for webhook verification - every other page that mentions webhooks links here.
@@ -44,7 +44,7 @@ The request body contains the event name, a timestamp, and the event data:
 ## Event types
 
 | Event | Description |
-|---|---|
+| --- | --- |
 | `payment.completed` | Payment fully confirmed and settled |
 | `payment.failed` | Payment attempt declined or errored |
 | `payment.expired` | Customer did not pay within the timeout window |
@@ -57,7 +57,7 @@ The request body contains the event name, a timestamp, and the event data:
 ## Signature verification
 
 <Warning>
-Always verify the webhook signature before processing any event. Skipping verification lets attackers forge events.
+  Always verify the webhook signature before processing any event. Skipping verification lets attackers forge events.
 </Warning>
 
 ### How verification works
@@ -172,17 +172,17 @@ OwnPay considers delivery successful when your endpoint returns any **HTTP 2xx**
 ## Retry schedule
 
 | Attempt | Delay after failure |
-|---|---|
+| --- | --- |
 | 1 | Immediate |
 | 2 | 1 minute |
 | 3 | 5 minutes |
 | 4 | 30 minutes |
 | 5 | 2 hours |
 | 6 | 6 hours |
-| 7+ | Dead-lettered (logged, no more retries) |
+| 7\+ | Dead-lettered (logged, no more retries) |
 
 <Note>
-You can inspect and replay failed deliveries from **Developers → Webhooks → Delivery Log**.
+  You can inspect and replay failed deliveries from **Developers → Webhooks → Delivery Log**.
 </Note>
 
 ## Related pages

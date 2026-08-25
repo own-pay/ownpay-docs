@@ -1,9 +1,9 @@
 ---
-title: "Plugin System"
+title: Plugin System
 description: "Overview of OwnPay's plugin architecture covering four plugin types, the sandbox, capabilities, and the hook system for extending core behavior."
 keywords: "plugin system, plugin architecture, gateway plugins, addon plugins, theme plugins, integration plugins, plugin sandbox"
-sidebarTitle: "Overview"
-icon: "puzzle"
+sidebarTitle: Overview
+icon: puzzle
 ---
 
 Plugins extend OwnPay without modifying core code. Write a plugin to add payment gateways, build custom features, redesign the checkout, or integrate with external platforms.
@@ -11,42 +11,34 @@ Plugins extend OwnPay without modifying core code. Write a plugin to add payment
 ## Four plugin types
 
 <Columns>
-<Column>
+  <Column>
+    ### Gateway plugins
 
-### Gateway plugins
+    Add new payment methods: Stripe, PayPal, bKash, bank transfer, crypto. Implement the `GatewayInterface` to handle payment processing, verification, refunds, and webhooks.
 
-Add new payment methods: Stripe, PayPal, bKash, bank transfer, crypto. Implement the `GatewayInterface` to handle payment processing, verification, refunds, and webhooks.
+    [Build a gateway](/developer/plugin-types/gateway)
+  </Column>
+  <Column>
+    ### Addon plugins
 
-[Build a gateway](/developer/plugin-types/gateway)
+    Extend functionality without payment processing: reporting dashboards, subscription management, CRM sync, email customization, scheduled jobs.
 
-</Column>
-<Column>
+    [Build an addon](/developer/plugin-types/addon)
+  </Column>
+  <Column>
+    ### Theme plugins
 
-### Addon plugins
+    Customize the checkout experience: Twig templates, CSS, JavaScript, branding overrides.
 
-Extend functionality without payment processing: reporting dashboards, subscription management, CRM sync, email customization, scheduled jobs.
+    [Build a theme](/developer/plugin-types/theme)
+  </Column>
+  <Column>
+    ### Integration plugins
 
-[Build an addon](/developer/plugin-types/addon)
+    Connect external platforms: QuickBooks sync, HubSpot push, Slack notifications, ERP integration.
 
-</Column>
-<Column>
-
-### Theme plugins
-
-Customize the checkout experience: Twig templates, CSS, JavaScript, branding overrides.
-
-[Build a theme](/developer/plugin-types/theme)
-
-</Column>
-<Column>
-
-### Integration plugins
-
-Connect external platforms: QuickBooks sync, HubSpot push, Slack notifications, ERP integration.
-
-[Build an integration](/developer/plugin-types/integration)
-
-</Column>
+    [Build an integration](/developer/plugin-types/integration)
+  </Column>
 </Columns>
 
 ## Plugin sandbox
@@ -59,7 +51,7 @@ Every plugin runs inside a sandbox that enforces security constraints:
 - Outbound HTTP via the plugin HTTP client with configurable allow-lists
 
 <Info>
-The sandbox is enforced at the PHP level. A plugin that attempts a restricted operation receives a `PluginSandboxException`.
+  The sandbox is enforced at the PHP level. A plugin that attempts a restricted operation receives a `PluginSandboxException`.
 </Info>
 
 ## Capabilities
@@ -67,7 +59,7 @@ The sandbox is enforced at the PHP level. A plugin that attempts a restricted op
 Plugins declare capabilities in their `manifest.json`. Capabilities are permission gates that determine what system resources a plugin can access:
 
 | Capability | What it enables |
----|---|
+| --- | --- |
 | `payment_process` | Process payments and refunds |
 | `webhook_receive` | Register webhook endpoints |
 | `admin_page` | Add pages to the admin panel |
@@ -96,27 +88,11 @@ $events->addFilter('payment.fee.calculate', function (string $fee, array $ctx): 
 });
 ```
 
-See the full [Hooks](/developer/plugins/hooks) catalog with 60+ hook points.
+See the full [Hooks](/developer/plugins/hooks) catalog with 60\+ hook points.
 
 ## Documentation tree
 
-<Tree>
-- [Plugin System Overview](/developer/plugins/overview) (this page)
-- [Directory Structure](/developer/plugins/directory-structure)
-- [Manifest Reference](/developer/plugins/manifest)
-- [Hooks Reference](/developer/plugins/hooks)
-- [Events Reference](/developer/plugins/events)
-- [Capabilities Reference](/developer/plugins/capabilities)
-- [Plugin Lifecycle](/developer/plugins/lifecycle)
-- Gateway Development
-  - [Gateway Plugin](/developer/plugin-types/gateway)
-- Addon Development
-  - [Addon Plugin](/developer/plugin-types/addon)
-- Theme Development
-  - [Theme Plugin](/developer/plugin-types/theme)
-- Integration Development
-  - [Integration Plugin](/developer/plugin-types/integration)
-</Tree>
+<Tree />
 
 ## Related pages
 

@@ -1,9 +1,9 @@
 ---
-title: "Features and Capabilities"
+title: Features and Capabilities
 description: "Complete reference of every OwnPay capability including brands, gateways, ledger, SMS verification, custom domains, plugins, RBAC, and reporting."
 keywords: "OwnPay features, payment capabilities, multi-brand, gateways, ledger, SMS verification, plugins"
-sidebarTitle: "Features"
-icon: "star"
+sidebarTitle: Features
+icon: star
 ---
 
 Complete reference of every capability built into OwnPay. For architectural deep-dives, see [ARCHITECTURE.md](/resources/architecture). For the REST API schema, see [docs.ownpay.org](https://docs.ownpay.org). For guides and tutorials, see [learn.ownpay.org](https://learn.ownpay.org).
@@ -33,7 +33,7 @@ Here is exactly what it means:
 ## 1. Multi-Brand Management
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Unlimited brands | Create any number of brands, each with name, slug, email, logo, timezone, and currency |
 | Brand switching | Super-admin switches brand context from a single dashboard |
 | Brand isolation | All data strictly scoped per brand by `merchant_id`; no cross-brand access possible |
@@ -45,7 +45,7 @@ Here is exactly what it means:
 ## 2. Custom Domain & White-Label Pipeline
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Custom domain mapping | Register any domain against a brand in `op_domains` |
 | DNS TXT verification | `_ownpay-verification.{domain}` TXT record proves domain ownership |
 | A-record check | Confirms domain routes to the OwnPay server before activation |
@@ -60,7 +60,7 @@ Here is exactly what it means:
 ## 3. Brand Theming & Customization
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Logo & favicon | Per-brand logo and favicon (uploaded via admin) |
 | Primary & accent colors | Per-brand hex color values applied to the checkout UI |
 | Custom CSS | Inject arbitrary CSS into checkout pages per brand |
@@ -75,7 +75,7 @@ Here is exactly what it means:
 ## 4. Payment Gateway System
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | 123 built-in gateways | Covers global cards (Stripe, Adyen, Braintree, Authorize.net, Square, Worldpay, Cybersource, Checkout.com, Shift4, NMI, Moneris), wallets (Apple Pay, Google Pay, Alipay, PayPal), mobile financial services (bKash, Nagad, M-Pesa, MTN MoMo, GCash, Dana, GrabPay, PhonePe), buy-now-pay-later (Klarna), crypto (Coinbase Commerce, BTCPay, Bitpay), regional platforms (Razorpay, Cashfree, CCAvenue, PayU, Flutterwave, Paystack, MyFatoorah, Midtrans, Xendit, Rapyd, dLocal, Mercado Pago, Tap, Toss, Trustly, Przelewy24, Neteller, Skrill, Wise, GoCardless, 2checkout, Amazon Pay, and more) |
 | Plugin-based architecture | Every gateway lives in `modules/gateways/{slug}/`; add providers without touching core |
 | Manual gateways | Custom offline methods (bank transfer, cash, mobile money) with configurable fields |
@@ -90,7 +90,7 @@ Here is exactly what it means:
 ## 5. Payment Processing
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Payment intents | Atomic payment requests with a unique token, amount, currency, expiry, and metadata |
 | Intent lifecycle | `pending → processing → completed / failed / cancelled / expired` |
 | Token-based checkout | Checkout URL contains only a secure token; amount and gateway details never exposed in URL |
@@ -106,8 +106,8 @@ Here is exactly what it means:
 ## 6. Transaction Management
 
 | Feature | Description |
-|:---|:---|
-| Immutable transaction record | Every payment creates a permanent record with OwnPay trx_id, gateway trx_id, amounts, fees, and status |
+| :-- | :-- |
+| Immutable transaction record | Every payment creates a permanent record with OwnPay trx\_id, gateway trx\_id, amounts, fees, and status |
 | 13 statuses | `pending`, `created`, `processing`, `callback_processing`, `completed`, `failed`, `cancelled`, `expired`, `refunded`, `disputed`, `awaiting_verification`, `pending_review` |
 | Admin status override | Super-admin can manually adjust transaction status with full audit trail |
 | Transaction filters | Filter by status, gateway, date range, amount, customer |
@@ -119,7 +119,7 @@ Here is exactly what it means:
 ## 7. Refunds
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Partial refunds | Issue any amount up to the original transaction value |
 | Full refunds | One-click full refund routed to the original gateway |
 | Refund lifecycle | `pending → completed / failed` |
@@ -133,7 +133,7 @@ Here is exactly what it means:
 ## 8. Invoicing
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Numbered invoices | Line-item invoices (description, quantity, unit price) with auto-calculated subtotal, tax, discount, and total |
 | Customer linking | Optional customer reference on each invoice |
 | Invoice checkout | Customer pays via public URL at `/invoice/{token}` |
@@ -145,7 +145,7 @@ Here is exactly what it means:
 ## 9. Payment Links
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Reusable shareable links | Create URLs for recurring or product payments |
 | Custom slug | Memorable URL path (e.g., `/pay/annual-subscription`) |
 | Fixed or variable amount | Set exact amount or let customer choose within min/max bounds |
@@ -159,7 +159,7 @@ Here is exactly what it means:
 ## 10. Customer Management
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Customer records | UUID, encrypted name, email, phone, metadata |
 | PII encryption | Customer fields encrypted AES-256-GCM at rest; email and phone stored as hash for lookup |
 | Brand isolation | Each customer belongs to exactly one brand; no cross-brand access |
@@ -172,9 +172,9 @@ Here is exactly what it means:
 ## 11. Double-Entry Ledger & Accounting
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | GAAP double-entry | Every financial event posts balanced debit/credit pairs |
-| Standard directionality | Assets & Expenses debit (+); Liabilities, Equity & Revenue credit (+) |
+| Standard directionality | Assets & Expenses debit (\+); Liabilities, Equity & Revenue credit (\+) |
 | Account types | Asset, Liability, Equity, Revenue, Expense |
 | Multi-currency accounts | Separate ledger accounts per currency per brand |
 | Automatic posting | Payments, refunds, and fees auto-posted on completion |
@@ -188,7 +188,7 @@ Here is exactly what it means:
 ## 12. Fee Rules
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Flat fees | Fixed amount per transaction |
 | Percentage fees | Percentage of transaction value |
 | Tiered fees | Different rates per amount bracket |
@@ -201,9 +201,9 @@ Here is exactly what it means:
 ## 13. Currency & Exchange Rates
 
 | Feature | Description |
-|:---|:---|
-| 180+ currencies | Enable/disable world currencies per brand |
-| Exchange rate table | `op_exchange_rates`: base, target, rate, source, updated_at |
+| :-- | :-- |
+| 180\+ currencies | Enable/disable world currencies per brand |
+| Exchange rate table | `op_exchange_rates`: base, target, rate, source, updated\_at |
 | Manual rate entry | Admin sets rates manually |
 | Auto-sync | `CurrencyUpdateJob` fetches live rates on a schedule |
 
@@ -212,7 +212,7 @@ Here is exactly what it means:
 ## 14. Webhooks
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Merchant webhook endpoints | Register URLs to receive real-time payment events |
 | Event subscriptions | Subscribe each webhook endpoint to specific event types |
 | HMAC-SHA256 signing | Each delivery signed with merchant's secret; receiver validates |
@@ -228,7 +228,7 @@ Here is exactly what it means:
 ## 15. Disputes & Chargebacks
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Dispute lifecycle | `open → under_review → won / lost → closed` |
 | Evidence upload | Attach documents and screenshots as dispute evidence |
 | Resolution tracking | Who resolved it, when, and the outcome |
@@ -240,7 +240,7 @@ Here is exactly what it means:
 ## 16. Audit & Compliance
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Immutable audit log | Every action logged with actor, entity, old/new values, IP, and timestamp |
 | Cryptographic signing | Each log entry signed to detect post-creation tampering |
 | Integrity scanner | Admin can run a scan to detect any modified log entries |
@@ -252,7 +252,7 @@ Here is exactly what it means:
 ## 17. Authentication & Access Control
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Email/password login | Standard credential-based admin login |
 | Configurable login slug | Admin login URL slug configurable for obscurity |
 | Two-factor authentication | TOTP (RFC 6238) via authenticator app; per-staff enable/disable |
@@ -270,8 +270,8 @@ Here is exactly what it means:
 ## 18. Mobile Companion App API
 
 | Feature | Description |
-|:---|:---|
-| OTP device pairing | Admin generates OTP; device exchanges it for JWT + AES session key |
+| :-- | :-- |
+| OTP device pairing | Admin generates OTP; device exchanges it for JWT \+ AES session key |
 | Multiple devices | Staff can pair phone and tablet simultaneously |
 | Device management | View, revoke, or bulk-revoke paired devices from admin |
 | Heartbeat | Devices send periodic heartbeat; server tracks online/offline status |
@@ -286,11 +286,11 @@ Here is exactly what it means:
 ## 19. SMS-Based Payment Verification
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Mobile SMS forwarding | Paired mobile device forwards incoming SMS to `POST /api/mobile/v1/sms` |
 | Regex parser | Per-gateway regex template extracts amount, sender, and trx ID from SMS body |
 | Heuristic parser | Fallback AI-pattern parser when regex doesn't match |
-| Smart analyzer | Combines regex + heuristic with confidence scoring |
+| Smart analyzer | Combines regex \+ heuristic with confidence scoring |
 | Transaction matching | Parsed SMS auto-linked to pending transaction by amount and timestamp |
 | Payment confirmation | Matched SMS marks the pending manual gateway payment as complete |
 | SMS log | `op_sms_data` stores all parsed SMS with match status |
@@ -302,7 +302,7 @@ Here is exactly what it means:
 ## 20. Plugin System
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Plugin types | Gateway, Theme, Addon |
 | Manifest-based discovery | Each plugin declares metadata, capabilities, and hooks in `manifest.json` |
 | Static code audit | Source scanned for dangerous calls (`exec`, `shell_exec`, `eval`, `passthru`, raw PDO) before loading |
@@ -319,7 +319,7 @@ Here is exactly what it means:
 ## 21. Event Hook System
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Actions (`doAction`) | Fire events; plugins and addons listen and react |
 | Filters (`applyFilter`) | Transform values in-flight (e.g., modify payment amount, alter checkout output) |
 | Built-in events | `system.boot`, `system.shutdown`, `payment.intent.created`, `payment.intent.expired`, `payment.completed`, `payment.failed`, `refund.created`, `dispute.created`, `customer.created`, `domain.mapped`, `domain.verified`, `domain.removed` |
@@ -332,7 +332,7 @@ Full hook reference: [learn.ownpay.org/hooks-reference](https://learn.ownpay.org
 ## 22. Scheduled Jobs (Cron)
 
 | Job | Purpose |
-|:---|:---|
+| :-- | :-- |
 | `WebhookRetryJob` | Retry failed outbound webhook deliveries with exponential backoff |
 | `QueueWorkerJob` | Process background job queue (emails, exports, bulk operations) |
 | `BalanceVerificationJob` | Cross-check ledger balances against gateway-reported balances |
@@ -350,7 +350,7 @@ Triggered by `GET /cron/{secret}`. Individual jobs can also be run manually from
 ## 23. Background Job Queue
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Async processing | Push long-running tasks to queue (emails, exports, webhook sends) |
 | Storage backends | File-based (default) or Redis |
 | Retry with backoff | Configurable max attempts with exponential delay between retries |
@@ -362,7 +362,7 @@ Triggered by `GET /cron/{secret}`. Individual jobs can also be run manually from
 ## 24. Internationalization (i18n)
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Full admin panel i18n | Every admin UI string is translatable |
 | Full checkout i18n | Customer-facing checkout pages fully translatable |
 | Dot-notation keys | Flat JSON format (`menu.dashboard`, `common.actions.save`) |
@@ -379,7 +379,7 @@ Triggered by `GET /cron/{secret}`. Individual jobs can also be run manually from
 ## 25. Security
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | AES-256-GCM encryption | Customer PII and gateway credentials encrypted at rest |
 | Argon2id passwords | Staff and admin passwords hashed with Argon2id |
 | bcrypt fallback | Legacy bcrypt support for upgrade compatibility |
@@ -395,30 +395,30 @@ Triggered by `GET /cron/{secret}`. Individual jobs can also be run manually from
 | Hash-based PII search | Email/phone stored as hash; lookups never require decryption |
 | Log sanitization | `LogSanitizer` strips passwords, tokens, and card data from all log output |
 | SQL injection prevention | Prepared statements with parameter binding throughout |
-| XSS prevention | Twig autoescaping always on; `|raw` only on trusted content |
+| XSS prevention | Twig autoescaping always on; \` | raw\` only on trusted content |
 
 ---
 
 ## 26. Self-Update Engine
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Version tracking | Current version in config; `op_update_history` logs all applied updates |
 | Update manifest | Polls update server for available release metadata |
-| Pre-update backup | Automatic database + file backup before applying any update |
-| SHA-256 + RSA verification | Download verified by checksum and RSA signature before extraction |
+| Pre-update backup | Automatic database \+ file backup before applying any update |
+| SHA-256 \+ RSA verification | Download verified by checksum and RSA signature before extraction |
 | Zip-slip guard | Extraction blocks path traversal attacks in release archives |
 | Schema migrations | DB changes in the release applied automatically |
 | Rollback | Restores from backup if verification fails |
 | Maintenance mode | System enters maintenance during update; exits automatically on success |
-| Manual + auto modes | Admin triggers manually or enables auto-update via cron |
+| Manual \+ auto modes | Admin triggers manually or enables auto-update via cron |
 
 ---
 
 ## 27. System Settings
 
 | Category | Settings |
-|:---|:---|
+| :-- | :-- |
 | General | App name, timezone, base currency, maintenance mode |
 | Branding | Logo, favicon, company name, footer text, support email |
 | Theme | Primary color, accent color, custom CSS, custom JS |
@@ -436,7 +436,7 @@ Triggered by `GET /cron/{secret}`. Individual jobs can also be run manually from
 ## 28. Developer Tools
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Developer hub | Admin UI at `/admin/developer` for API and webhook tooling |
 | Webhook tester | Send test payloads to merchant webhook endpoints from admin |
 | API key management | Generate, list, and revoke API keys |
@@ -451,7 +451,7 @@ Triggered by `GET /cron/{secret}`. Individual jobs can also be run manually from
 ## 29. Installation
 
 | Feature | Description |
-|:---|:---|
+| :-- | :-- |
 | Web-based installer | Multi-step `/install` wizard - no CLI or SSH required |
 | Database connection test | Tests connection before importing schema |
 | Schema import | Creates all 48 tables automatically |
@@ -467,32 +467,32 @@ Triggered by `GET /cron/{secret}`. Individual jobs can also be run manually from
 Three independent API layers, each with distinct authentication:
 
 | Layer | Prefix | Auth |
-|:---|:---|:---|
+| :-- | :-- | :-- |
 | Merchant API | `/api/v1/*` | Bearer API key (read / write scopes) |
 | Mobile Companion API | `/api/mobile/v1/*` | JWT (after device pairing) |
 | Admin API | `/api/admin/v1/*` | Bearer API key (admin scope) |
 
-Full API schema and request/response examples: **[docs.ownpay.org](https://docs.ownpay.org)**
+Full API schema and request/response examples: [**docs.ownpay.org**](https://docs.ownpay.org)
 
 ---
 
 ## Platform at a Glance
 
 | Metric | Value |
-|:---|:---|
+| :-- | :-- |
 | Built-in payment gateways | 123 |
 | Database tables | 48 |
-| REST API endpoints | 37+ |
-| Web routes | 120+ |
+| REST API endpoints | 37\+ |
+| Web routes | 120\+ |
 | Scheduled jobs | 9 |
 | Middleware components | 16 |
-| Supported currencies | 180+ |
-| PHP required | 8.3+ |
+| Supported currencies | 180\+ |
+| PHP required | 8.3\+ |
 | License | AGPL-3.0 |
 
 ---
 
-*For contribution guidelines, see [CONTRIBUTING.md](/resources/contributing). For security reporting, see [SECURITY.md](https://github.com/own-pay/OwnPay/blob/main/SECURITY.md). For architecture details, see [ARCHITECTURE.md](/resources/architecture).*
+_For contribution guidelines, see [CONTRIBUTING.md](/resources/contributing). For security reporting, see [SECURITY.md](https://github.com/own-pay/OwnPay/blob/main/SECURITY.md). For architecture details, see [ARCHITECTURE.md](/resources/architecture)._
 
 ## Related Pages
 

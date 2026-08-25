@@ -1,9 +1,9 @@
 ---
-title: "Hooks Reference"
+title: Hooks Reference
 description: "Comprehensive catalog of WordPress-style action and filter hooks organized by domain: payment, gateway, checkout, system, admin, and plugin lifecycle."
 keywords: "hooks reference, action hooks, filter hooks, EventManager, payment hooks, gateway hooks, checkout hooks, system hooks"
-sidebarTitle: "Hooks"
-icon: "anchor"
+sidebarTitle: Hooks
+icon: anchor
 ---
 
 The hook system is the primary way plugins interact with OwnPay core. It uses WordPress-style **actions** (fire-and-forget) and **filters** (data pipeline) implemented by `OwnPay\Event\EventManager`.
@@ -35,7 +35,7 @@ Callbacks execute in ascending priority order (lower number = runs earlier). Def
 ## When to use actions vs filters
 
 | Use an action when you want to... | Use a filter when you want to... |
-|---|---|
+| --- | --- |
 | React to an event (payment completed) | Modify data before it is saved |
 | Send a notification | Change a template path |
 | Write to an external API | Add or remove items from a list |
@@ -46,7 +46,7 @@ Callbacks execute in ascending priority order (lower number = runs earlier). Def
 ### Payment hooks
 
 | Hook | Type | Parameters | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `payment.intent.created` | Action | `array $intent` | Checkout intent generated |
 | `payment.intent.expired` | Action | `array $intent` | Intent timed out without payment |
 | `payment.transaction.created` | Action | `array $transaction` | Transaction entered as `pending` |
@@ -60,19 +60,19 @@ Callbacks execute in ascending priority order (lower number = runs earlier). Def
 ### Gateway hooks
 
 | Hook | Type | Parameters | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `gateway.capture.before` | Filter | `array $params`, `string $slug`, `int $merchantId` → `array` | Modify params sent to gateway adapter |
 | `gateway.capture.after` | Action | `array $response`, `string $slug` | After gateway returns a response |
 | `gateway.webhook.{slug}` | Action | `array $payload`, `string $slug` | Incoming webhook for a specific gateway slug |
 
 <Note>
-The `{slug}` in `gateway.webhook.{slug}` is replaced with the gateway plugin's slug (e.g. `gateway.webhook.gateway-stripe`).
+  The `{slug}` in `gateway.webhook.{slug}` is replaced with the gateway plugin's slug (e.g. `gateway.webhook.gateway-stripe`).
 </Note>
 
 ### Checkout hooks
 
 | Hook | Type | Parameters | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `checkout.before` | Action | `array $transaction` | Before checkout layout renders |
 | `checkout.render` | Filter | `array $data` → `array` | Filter Twig view context variables |
 | `checkout.template` | Filter | `string $templatePath` → `string` | Override layout template path |
@@ -86,7 +86,7 @@ The `{slug}` in `gateway.webhook.{slug}` is replaced with the gateway plugin's s
 ### System hooks
 
 | Hook | Type | Parameters | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `system.boot` | Action | None | Early bootstrap |
 | `system.shutdown` | Action | None | Graceful shutdown |
 | `system.request` | Filter | `Request $request` → `Request` | Filter inbound HTTP requests |
@@ -96,14 +96,14 @@ The `{slug}` in `gateway.webhook.{slug}` is replaced with the gateway plugin's s
 ### Admin hooks
 
 | Hook | Type | Parameters | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `admin.middleware` | Filter | `array $middleware` → `array` | Add admin-specific middleware |
 | `admin.menu` | Action | None | Add items to the admin sidebar |
 
 ### Plugin lifecycle hooks
 
 | Hook | Type | Parameters | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `plugin.installed` | Action | `string $slug`, `array $manifest` | After ZIP extraction |
 | `plugin.activated` | Action | `string $slug`, `int $migrationsCount`, `int $brandId` | Activation complete |
 | `plugin.deactivated` | Action | `string $slug`, `int $brandId` | Plugin suspended |

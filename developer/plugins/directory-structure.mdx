@@ -1,41 +1,14 @@
 ---
-title: "Plugin Directory Structure"
-description: "Standard directory layout for OwnPay plugins showing every file and folder with explanations of each component."
+title: Plugin Directory Structure
+description: Standard directory layout for OwnPay plugins showing every file and folder with explanations of each component.
 keywords: "plugin structure, plugin files, plugin directory, Plugin.php, manifest.json, plugin migrations, plugin views"
-sidebarTitle: "Directory structure"
-icon: "folder-tree"
+sidebarTitle: Directory structure
+icon: folder-tree
 ---
 
 Every OwnPay plugin follows this standard directory layout. The plugin loader expects this structure when scanning the `plugins/` directory.
 
-<Tree>
-my-plugin/
-├── manifest.json              # Plugin metadata and capabilities
-├── Plugin.php                 # Entry point - implements PluginInterface
-├── composer.json              # PHP dependencies (optional)
-├── config/
-│   └── settings.php           # Default configuration values
-├── src/
-│   ├── MyService.php          # Plugin business logic
-│   └── MyController.php       # Optional custom controllers
-├── resources/
-│   ├── views/
-│   │   ├── settings.twig      # Admin settings page template
-│   │   └── dashboard.twig     # Custom admin pages
-│   └── lang/
-│       └── en.json             # Language strings (optional)
-├── assets/
-│   ├── css/
-│   │   └── plugin.css          # Stylesheets
-│   └── js/
-│       └── plugin.js           # JavaScript files
-├── migrations/
-│   ├── 001_create_my_table.php
-│   └── 002_add_index.php
-└── routes/
-    ├── api.php                 # Custom API route definitions
-    └── web.php                 # Web route definitions
-</Tree>
+<Tree />
 
 ## Core files
 

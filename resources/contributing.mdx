@@ -1,9 +1,9 @@
 ---
-title: "Contributing to OwnPay"
+title: Contributing to OwnPay
 description: "How to contribute to OwnPay by forking the repository, setting up a dev environment, following coding standards, opening pull requests, and filing issues."
 keywords: "contributing, open source, pull requests, development setup, coding standards"
-sidebarTitle: "Contributing"
-icon: "git-pull-request"
+sidebarTitle: Contributing
+icon: git-pull-request
 ---
 
 First off - **thank you** for considering a contribution to OwnPay! Whether it's a bug report, a new payment gateway, a translation, a documentation fix, or a feature, every contribution helps make self-hosted, open-source payment infrastructure better for everyone.
@@ -14,7 +14,7 @@ This guide explains how to get involved effectively.
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by our [Code of Conduct](/resources/code-of-conduct). By participating, you are expected to uphold it. Please report unacceptable behavior to **[{{supportEmail}}](mailto:{{supportEmail}})**.
+This project and everyone participating in it is governed by our [Code of Conduct](/resources/code-of-conduct). By participating, you are expected to uphold it. Please report unacceptable behavior to {{supportEmail}}.
 
 ---
 
@@ -34,7 +34,7 @@ This project and everyone participating in it is governed by our [Code of Conduc
 ## Getting set up
 
 1. **Fork** the repository and clone your fork.
-2. Follow **[LOCAL_SETUP.md](/resources/local-setup)** to get a local instance running (~2 minutes).
+2. Follow [**LOCAL\_SETUP.md**](/resources/local-setup) to get a local instance running (~2 minutes).
 3. Create a feature branch from `dev` (the integration branch PRs target):
 
    ```bash
@@ -42,7 +42,7 @@ This project and everyone participating in it is governed by our [Code of Conduc
    git checkout -b feat/short-description
    ```
 
-**Requirements:** PHP 8.3+ (`bcmath`, `json`, `mbstring`, `openssl`, `pdo_mysql`, `curl`), Composer 2, MySQL 8 / MariaDB 10.4+.
+**Requirements:** PHP 8.3\+ (`bcmath`, `json`, `mbstring`, `openssl`, `pdo_mysql`, `curl`), Composer 2, MySQL 8 / MariaDB 10.4\+.
 
 ---
 
@@ -57,7 +57,6 @@ This project and everyone participating in it is governed by our [Code of Conduc
    composer analyse    # PHPStan - must stay clean at level 9
    composer lint       # Twig + JS + CSS linting
    ```
-
 4. Commit with a clear message and a **DCO sign-off** (see below).
 5. Push to your fork and open a Pull Request against `dev`.
 
@@ -78,7 +77,7 @@ OwnPay maintains a high quality bar. Please match the existing code and these ru
 - **Prepared statements only.** No string-interpolated SQL, ever.
 - **Escape output.** Twig autoescaping stays on; never `|raw` untrusted data.
 - **Keep it lean.** No new heavyweight dependencies without discussion.
-- **Comments explain *why*, not *what*.** Document non-obvious decisions.
+- **Comments explain _why_, not _what_.** Document non-obvious decisions.
 
 ---
 
@@ -96,7 +95,7 @@ Gateways and add-ons are plugins under `modules/`:
 
 ## Commit messages and DCO sign-off
 
-We use the **[Developer Certificate of Origin](https://developercertificate.org/)** (DCO). Add a sign-off line to every commit:
+We use the [**Developer Certificate of Origin**](https://developercertificate.org/) (DCO). Add a sign-off line to every commit:
 
 ```bash
 git commit -s -m "feat(gateway): add Acme Pay adapter"
@@ -112,7 +111,7 @@ OwnPay is licensed under **AGPL-3.0**. By submitting a contribution, you agree t
 
 ---
 
-Questions about contributing? Reach out at **[{{supportEmail}}](mailto:{{supportEmail}})** or open a [discussion](https://github.com/own-pay/OwnPay/discussions).
+Questions about contributing? Reach out at {{supportEmail}} or open a [discussion](https://github.com/own-pay/OwnPay/discussions).
 
 ---
 

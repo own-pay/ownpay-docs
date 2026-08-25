@@ -1,22 +1,22 @@
 ---
-title: "Customer Experience"
+title: Customer Experience
 description: "Understand what your customers see during checkout - URL structure, payment method selection, success and failure pages, branding, and mobile responsiveness."
 keywords: "checkout, customer experience, payment page, success page, failure page, white-label, mobile checkout"
-sidebarTitle: "Customer Experience"
-icon: "shopping-bag"
+sidebarTitle: Customer Experience
+icon: shopping-bag
 ---
 
 The checkout experience is what your customers interact with when making a payment. It is fully white-label - your brand's logo, colors, and theme are applied, and OwnPay's name never appears to the end customer.
 
 <Info>
-For the technical flow behind the scenes, see [Payment Flow](/fundamentals/payment-flow).
+  For the technical flow behind the scenes, see [Payment Flow](/fundamentals/payment-flow).
 </Info>
 
 ## Checkout URL structure
 
 When you create a payment link or invoice, OwnPay generates a URL on your brand's custom domain:
 
-```
+```text
 https://pay.yourbrand.com/checkout/{transaction_id}
 ```
 
@@ -27,27 +27,21 @@ The `{transaction_id}` is a unique, non-sequential identifier. Customers can boo
 The checkout page presents three stages:
 
 <Columns>
-<Column>
+  <Column>
+    ### Payment method selection
 
-### Payment method selection
+    The customer sees a list of available payment methods based on the currency and gateways configured for the brand. Methods are displayed as cards or buttons with gateway logos.
+  </Column>
+  <Column>
+    ### Payment form
 
-The customer sees a list of available payment methods based on the currency and gateways configured for the brand. Methods are displayed as cards or buttons with gateway logos.
+    After selecting a method, the customer enters required details. For bank redirects, they are sent to the bank's page. For manual methods, they see instructions (e.g., bank account number, mobile number).
+  </Column>
+  <Column>
+    ### Result page
 
-</Column>
-<Column>
-
-### Payment form
-
-After selecting a method, the customer enters required details. For bank redirects, they are sent to the bank's page. For manual methods, they see instructions (e.g., bank account number, mobile number).
-
-</Column>
-<Column>
-
-### Result page
-
-After payment, the customer lands on a **success** or **failure** page with a clear status message, transaction reference, and any next steps.
-
-</Column>
+    After payment, the customer lands on a **success** or **failure** page with a clear status message, transaction reference, and any next steps.
+  </Column>
 </Columns>
 
 ## Success and failure pages
@@ -61,7 +55,7 @@ After payment, the customer lands on a **success** or **failure** page with a cl
 After the payment is completed or fails, OwnPay can automatically redirect the customer back to your website. Set the `return_url` and `cancel_url` parameters when creating the payment. Redirects use a `POST` request with the transaction details in the body.
 
 <Tip>
-Always verify payment status server-side using the [API](/api/overview) or [webhooks](/notifications/webhooks) rather than trusting redirect parameters alone.
+  Always verify payment status server-side using the [API](/api/overview) or [webhooks](/notifications/webhooks) rather than trusting redirect parameters alone.
 </Tip>
 
 ## Branding on checkout
