@@ -1,9 +1,9 @@
 ---
-title: Internationalization - Multi-Language Checkout and Locale
+title: "Internationalization - Multi-Language Checkout and Locale"
 description: "How OwnPay's translation architecture handles locale resolution, PHP i18n helpers, Twig templating, and per-brand multi-language checkout pages."
 keywords: "translation API, PHP i18n, Twig translations, localized payment checkout, multi-language payment gateway, internationalization"
-sidebarTitle: i18n
-icon: languages
+sidebarTitle: "i18n"
+icon: "language"
 ---
 
 OwnPay has an internationalization (i18n) and localization architecture that delivers a localized administrative panel and white-labeled, customer-facing checkout interfaces. This guide covers the translation system, locale resolution flow, usage in PHP code and Twig templates, and how you can contribute or manage translation catalogs.
@@ -33,7 +33,6 @@ graph TD
 ### 1.1 Translation Storage
 
 - **Database Table (`op_languages`)**: Stores language profiles and translation catalogs. Contains the following columns:
-
   - `code` (VARCHAR): The ISO 639-1 language code (for example, `en`, `bn`, `es`).
   - `name` (VARCHAR): The human-readable name of the language (for example, `English`, `Bengali`, `Spanish`).
   - `status` (ENUM): The state of the language (`active`, `inactive`). Only active languages can be resolved by the system.
@@ -154,7 +153,6 @@ Admin views utilize the base translations loaded during runtime. You can bind tr
 Checkout views (for example `templates/checkout/checkout.twig`) represent white-labeled interfaces where merchants can customize standard messaging.
 
 - The customer-facing templates access translation and branding strings through the `lang` view variable:
-
   ```twig
   <p class="st-subtitle">
       {{ lang.success_msg ?? 'Your transaction has been processed successfully.' }}

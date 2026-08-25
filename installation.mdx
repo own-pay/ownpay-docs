@@ -2,8 +2,8 @@
 title: "Install OwnPay on Shared Hosting, VPS, or Docker"
 description: "Deploy OwnPay on shared hosting, VPS, or Docker. Prerequisite checks, step-by-step setup, and post-installation verification."
 keywords: "install payment gateway, cPanel payment processing, self-hosted payments setup, Docker payment platform, PHP payment gateway install, VPS payment gateway"
-sidebarTitle: Installation
-icon: feather
+sidebarTitle: "Installation"
+icon: "feather"
 ---
 
 import LlmsDirective from "/snippets/llms-directive.mdx";
@@ -44,7 +44,7 @@ OwnPay includes a **built-in web installer** that checks your server configurati
 ## Choose your deployment method
 
 <Tabs>
-  <Tab title="Shared Hosting" icon="globe">
+  <Tab title="Shared Hosting" icon="world">
     Works with cPanel, Plesk, DirectAdmin, and most shared hosting providers (Hostinger, Namecheap, SiteGround, etc.).
 
     <Steps>
@@ -209,13 +209,13 @@ After the installer finishes, confirm everything is working:
 ## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title="500 internal server error" icon="triangle-exclamation">
+  <Accordion title="500 internal server error" icon="alert-triangle">
     - Set `APP_DEBUG=true` in `.env` to see the actual error message.
     - Check `storage/logs/` for stack traces.
     - Ensure the web server can read `storage/` and `public/assets/uploads/`.
   </Accordion>
 
-  <Accordion title="Blank page / white screen" icon="window-restore">
+  <Accordion title="Blank page / white screen" icon="app-window">
     - Verify all required PHP extensions are loaded (`php -m`).
     - Confirm `memory_limit` is at least `512M` in `php.ini`.
   </Accordion>

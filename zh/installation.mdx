@@ -1,9 +1,7 @@
 ---
-title: 在共享主机、VPS 或 Docker 上安装 OwnPay
-description: 在共享主机、VPS 或 Docker 上部署 OwnPay。包含前提条件检查、分步设置和安装后验证。
-keywords: "安装支付网关, cPanel 支付处理, 自托管支付设置, Docker 支付平台, PHP 支付网关安装, VPS 支付网关"
-sidebarTitle: 安装
-icon: feather
+title: "在共享主机、VPS 或 Docker 上安装 OwnPay"
+sidebarTitle: "安装"
+description: "在共享主机、VPS 或 Docker 上部署 OwnPay。包含前提条件检查、分步设置和安装后验证。"
 ---
 
 OwnPay 包含一个**内置的 Web 安装器**，会检查您的服务器配置、创建数据库架构并引导您创建主管理员账户。只需上传文件、访问域名，向导会处理其余工作 —— 无需命令行经验。
@@ -38,7 +36,7 @@ OwnPay 包含一个**内置的 Web 安装器**，会检查您的服务器配置�
 ## 选择您的部署方式
 
 <Tabs>
-  <Tab title="共享主机" icon="globe">
+  <Tab title="共享主机" icon="world">
     适用于 cPanel、Plesk、DirectAdmin 和大多数共享主机提供商（Hostinger、Namecheap、SiteGround 等）。
 
     <Steps>
@@ -203,13 +201,13 @@ OwnPay 包含一个**内置的 Web 安装器**，会检查您的服务器配置�
 ## 故障排除
 
 <AccordionGroup>
-  <Accordion title="500 内部服务器错误" icon="triangle-exclamation">
+  <Accordion title="500 内部服务器错误" icon="alert-triangle">
     - 在 `.env` 中设置 `APP_DEBUG=true` 以查看实际错误消息。
     - 检查 `storage/logs/` 中的堆栈跟踪。
     - 确保 Web 服务器可以读取 `storage/` 和 `public/assets/uploads/`。
   </Accordion>
 
-  <Accordion title="空白页面 / 白屏" icon="window-restore">
+  <Accordion title="空白页面 / 白屏" icon="app-window">
     - 验证所有必需的 PHP 扩展已加载（`php -m`）。
     - 确认 `php.ini` 中 `memory_limit` 至少为 `512M`。
   </Accordion>

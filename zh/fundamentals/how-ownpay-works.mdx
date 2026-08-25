@@ -1,9 +1,7 @@
 ---
-title: OwnPay 工作原理
-description: OwnPay 的大局架构 —— 客户、结账、支付路由器、网关、回调和 Webhook 如何连接以端到端处理支付。
-keywords: "OwnPay 架构, 支付编排器, 工作原理, 支付路由, 网关路由, 支付流程, 多品牌架构"
-sidebarTitle: OwnPay 工作原理
-icon: brain
+title: "OwnPay 工作原理"
+sidebarTitle: "OwnPay 工作原理"
+description: "OwnPay 的大局架构 —— 客户、结账、支付路由器、网关、回调和 Webhook 如何连接以端到端处理支付。"
 ---
 
 OwnPay 位于您的业务和 123\+ 个支付提供商之间。当客户点击"支付"时，OwnPay 将支付路由到正确的网关，将结果记录在复式记账账本中，并向您的应用发送 Webhook —— 所有这些都在您控制的基础设施上完成。
@@ -11,26 +9,26 @@ OwnPay 位于您的业务和 123\+ 个支付提供商之间。当客户点击"�
 ## 整体概览
 
 <Mermaid chart={`
-  %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
-  sequenceDiagram
-    participant C as 客户
-    participant CO as OwnPay 结账
-    participant R as OwnPay 路由器
-    participant G as 支付网关
-    participant M as 商户应用
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+sequenceDiagram
+participant C as 客户
+participant CO as OwnPay 结账
+participant R as OwnPay 路由器
+participant G as 支付网关
+participant M as 商户应用
 
-    C->>CO: 点击"支付"（支付链接 / API）
-    CO->>R: 创建支付意图
-    R->>R: 选择网关（品牌配置）
-    R->>CO: 返回结账 URL
-    CO->>C: 重定向到结账页面
-    C->>G: 输入支付详情
-    G->>G: 向银行/处理器授权
-    G-->>CO: 回调返回结果
-    CO->>R: 更新交易状态
-    R->>R: 写入账本分录（借方/贷方）
-    R-->>C: 显示成功/失败页面
-    R->>M: Webhook 通知（HMAC-SHA256）
+C->>CO: 点击"支付"（支付链接 / API）
+CO->>R: 创建支付意图
+R->>R: 选择网关（品牌配置）
+R->>CO: 返回结账 URL
+CO->>C: 重定向到结账页面
+C->>G: 输入支付详情
+G->>G: 向银行/处理器授权
+G-->>CO: 回调返回结果
+CO->>R: 更新交易状态
+R->>R: 写入账本分录（借方/贷方）
+R-->>C: 显示成功/失败页面
+R->>M: Webhook 通知（HMAC-SHA256）
 `}>
 </Mermaid>
 
@@ -39,11 +37,11 @@ OwnPay 位于您的业务和 123\+ 个支付提供商之间。当客户点击"�
 ## 核心概念一览
 
 <CardGroup cols={3}>
-  <Card title="品牌" icon="store" href="/fundamentals/brands">
+  <Card title="品牌" icon="building-store" href="/fundamentals/brands">
     隔离的商户租户 —— 每个品牌拥有自己的网关、域名、员工、API 密钥和账本。
   </Card>
 
-  <Card title="支付流程" icon="arrow-right-circle" href="/fundamentals/payment-flow">
+  <Card title="支付流程" icon="circle-arrow-right" href="/fundamentals/payment-flow">
     交易从创建到处理再到完成、失败或过期的完整生命周期。
   </Card>
 
@@ -51,7 +49,7 @@ OwnPay 位于您的业务和 123\+ 个支付提供商之间。当客户点击"�
     基于 123\+ 个支付提供商的插件化集成，支持加密凭据存储和按品牌分配。
   </Card>
 
-  <Card title="账本" icon="book-open" href="/fundamentals/ledger">
+  <Card title="账本" icon="book" href="/fundamentals/ledger">
     复式记账，将每笔资金流动记录为每个品牌平衡的借贷方分录。
   </Card>
 

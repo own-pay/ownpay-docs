@@ -1,9 +1,9 @@
 ---
-title: How OwnPay Works
+title: "How OwnPay Works"
 description: "The big-picture architecture of OwnPay - how customers, checkout, the payment router, gateways, callbacks, and webhooks connect to process a payment end to end."
 keywords: "OwnPay architecture, payment orchestrator, how it works, payment router, gateway routing, payment flow, multi-brand architecture"
-sidebarTitle: How OwnPay Works
-icon: brain
+sidebarTitle: "How OwnPay Works"
+icon: "brain"
 ---
 
 import LlmsDirective from "/snippets/llms-directive.mdx";
@@ -17,26 +17,26 @@ OwnPay sits between your business and 123\+ payment providers. When a customer c
 ## The big picture
 
 <Mermaid chart={`
-  %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
-  sequenceDiagram
-    participant C as Customer
-    participant CO as OwnPay Checkout
-    participant R as OwnPay Router
-    participant G as Payment Gateway
-    participant M as Merchant App
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+sequenceDiagram
+participant C as Customer
+participant CO as OwnPay Checkout
+participant R as OwnPay Router
+participant G as Payment Gateway
+participant M as Merchant App
 
-    C->>CO: Clicks "Pay" (payment link / API)
-    CO->>R: Create payment intent
-    R->>R: Select gateway (brand config)
-    R->>CO: Return checkout URL
-    CO->>C: Redirect to checkout page
-    C->>G: Enter payment details
-    G->>G: Authorize with bank/processor
-    G-->>CO: Callback with result
-    CO->>R: Update transaction status
-    R->>R: Write ledger entries (debit/credit)
-    R-->>C: Show success/failure page
-    R->>M: Webhook notification (HMAC-SHA256)
+C->>CO: Clicks "Pay" (payment link / API)
+CO->>R: Create payment intent
+R->>R: Select gateway (brand config)
+R->>CO: Return checkout URL
+CO->>C: Redirect to checkout page
+C->>G: Enter payment details
+G->>G: Authorize with bank/processor
+G-->>CO: Callback with result
+CO->>R: Update transaction status
+R->>R: Write ledger entries (debit/credit)
+R-->>C: Show success/failure page
+R->>M: Webhook notification (HMAC-SHA256)
 `}>
 </Mermaid>
 
@@ -45,11 +45,11 @@ This sequence plays out the same way whether the payment comes from a hosted che
 ## Key concepts at a glance
 
 <CardGroup cols={3}>
-  <Card title="Brands" icon="store" href="/fundamentals/brands">
+  <Card title="Brands" icon="building-store" href="/fundamentals/brands">
     Isolated merchant tenants - each brand has its own gateways, domain, staff, API keys, and ledger.
   </Card>
 
-  <Card title="Payment flow" icon="arrow-right-circle" href="/fundamentals/payment-flow">
+  <Card title="Payment flow" icon="circle-arrow-right" href="/fundamentals/payment-flow">
     The lifecycle of a transaction from creation through processing to completion, failure, or expiry.
   </Card>
 
@@ -57,7 +57,7 @@ This sequence plays out the same way whether the payment comes from a hosted che
     Plugin-based integrations with 123\+ payment providers, with encrypted credential storage and per-brand assignment.
   </Card>
 
-  <Card title="Ledger" icon="book-open" href="/fundamentals/ledger">
+  <Card title="Ledger" icon="book" href="/fundamentals/ledger">
     Double-entry bookkeeping that records every money movement as balanced debit-credit pairs per brand.
   </Card>
 
@@ -65,7 +65,7 @@ This sequence plays out the same way whether the payment comes from a hosted che
     Extensible architecture with four plugin types - gateway, addon, theme, and integration - using hooks and events.
   </Card>
 
-  <Card title="Domains" icon="globe" href="/fundamentals/domains">
+  <Card title="Domains" icon="world" href="/fundamentals/domains">
     White-label custom domains per brand with automated DNS verification and SSL certificate provisioning.
   </Card>
 </CardGroup>

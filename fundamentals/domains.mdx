@@ -1,9 +1,9 @@
 ---
-title: Custom Domains - White-Label Checkout URLs
+title: "Custom Domains - White-Label Checkout URLs"
 description: "Serve each brand's checkout on its own domain (for example, pay.yourbrand.com) with automated DNS verification, SSL certificate provisioning, and tenant isolation."
 keywords: "custom domains, SSL provisioning, DNS verification, brand domains, checkout isolation, white-label domain"
-sidebarTitle: Domains
-icon: globe
+sidebarTitle: "Domains"
+icon: "world"
 ---
 
 import LlmsDirective from "/snippets/llms-directive.mdx";
@@ -19,24 +19,24 @@ OwnPay is a white-label payment engine. Your customers should see **your** brand
 When a request arrives, OwnPay's `DomainMiddleware` inspects the `HTTP_HOST` header and resolves it against the `op_domains` table. If it matches a brand's custom domain, OwnPay injects that brand's `merchant_id` into the request context and loads its visual identity.
 
 <Mermaid chart={`
-  %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
-  sequenceDiagram
-    participant C as Customer Browser
-    participant DNS as DNS Resolver
-    participant N as Nginx
-    participant DM as DomainMiddleware
-    participant BT as BrandThemeService
-    participant CO as Checkout Page
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+sequenceDiagram
+participant C as Customer Browser
+participant DNS as DNS Resolver
+participant N as Nginx
+participant DM as DomainMiddleware
+participant BT as BrandThemeService
+participant CO as Checkout Page
 
-    C->>DNS: Resolve pay.acme.com
-    DNS-->>C: A record -> OwnPay server IP
-    C->>N: GET /pay/inv_123 (Host: pay.acme.com)
-    N->>DM: Forward request
-    DM->>DM: Look up op_domains by HTTP_HOST
-    DM->>DM: Inject merchant_id, domain_type
-    DM->>BT: Load brand logo, colors, CSS
-    BT-->>CO: Return brand assets
-    CO-->>C: Render branded checkout page
+C->>DNS: Resolve pay.acme.com
+DNS-->>C: A record -> OwnPay server IP
+C->>N: GET /pay/inv_123 (Host: pay.acme.com)
+N->>DM: Forward request
+DM->>DM: Look up op_domains by HTTP_HOST
+DM->>DM: Inject merchant_id, domain_type
+DM->>BT: Load brand logo, colors, CSS
+BT-->>CO: Return brand assets
+CO-->>C: Render branded checkout page
 `}>
 </Mermaid>
 

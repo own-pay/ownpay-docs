@@ -1,9 +1,9 @@
 ---
-title: Plugin Lifecycle
+title: "Plugin Lifecycle"
 description: "Stages of the OwnPay plugin lifecycle from upload through activation to uninstall, with a Mermaid state diagram and brand-level scoping."
 keywords: "plugin lifecycle, plugin activation, plugin deactivation, plugin uninstall, plugin stages, plugin upload"
-sidebarTitle: Lifecycle
-icon: refresh-cw
+sidebarTitle: "Lifecycle"
+icon: "refresh"
 ---
 
 A plugin moves through distinct stages from the moment you upload it to the moment you remove it. Understanding this lifecycle helps you place code in the right place.
@@ -13,14 +13,14 @@ A plugin moves through distinct stages from the moment you upload it to the mome
 <Mermaid chart={`
 %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
 stateDiagram-v2
-  [*] --> Uploaded: Upload ZIP
-  Uploaded --> Installed: Manifest valid, migrations run
-  Installed --> Activated: Activate for brand
-  Activated --> Running: boot() called, hooks registered
-  Running --> Deactivated: Deactivate
-  Deactivated --> Activated: Reactivate
-  Deactivated --> Uninstalled: Uninstall
-  Uninstalled --> [*]
+[*] --> Uploaded: Upload ZIP
+Uploaded --> Installed: Manifest valid, migrations run
+Installed --> Activated: Activate for brand
+Activated --> Running: boot() called, hooks registered
+Running --> Deactivated: Deactivate
+Deactivated --> Activated: Reactivate
+Deactivated --> Uninstalled: Uninstall
+Uninstalled --> [*]
 `}>
 </Mermaid>
 

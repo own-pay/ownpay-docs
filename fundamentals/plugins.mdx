@@ -1,9 +1,9 @@
 ---
-title: Plugin System - Extensible Architecture
+title: "Plugin System - Extensible Architecture"
 description: "OwnPay's plugin architecture supports four types - gateway, addon, theme, and integration - using a manifest-based discovery system with hooks, filters, and a capabilities model."
 keywords: "plugin system, plugin architecture, gateway plugins, theme plugins, addon plugins, integration plugins, hooks, filters, capabilities"
-sidebarTitle: Plugins
-icon: puzzle
+sidebarTitle: "Plugins"
+icon: "puzzle"
 ---
 
 import LlmsDirective from "/snippets/llms-directive.mdx";
@@ -21,7 +21,7 @@ OwnPay's core handles routing, the ledger, brands, and the checkout framework. E
     Add a new payment provider. Each gateway plugin implements the payment adapter contract: process payments, handle callbacks, manage refunds, and declare supported currencies. Examples: Stripe, bKash, Razorpay.
   </Card>
 
-  <Card title="Addon" icon="plus-circle">
+  <Card title="Addon" icon="circle-plus">
     Add features to the admin panel or checkout. Addons can register admin pages, API endpoints, scheduled jobs, and UI components. Examples: subscription management, CRM sync, advanced reporting.
   </Card>
 

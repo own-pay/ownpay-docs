@@ -3,7 +3,7 @@ title: "Disputes"
 description: "Track chargebacks and disputes through their full lifecycle, respond with evidence, and understand the financial impact of dispute outcomes."
 keywords: "disputes, chargebacks, dispute response, evidence upload, dispute lifecycle, financial disputes"
 sidebarTitle: "Disputes"
-icon: "circle-alert"
+icon: "alert-circle"
 ---
 
 A dispute (also called a chargeback) occurs when a customer contacts their bank or card issuer to reverse a completed payment. OwnPay tracks each dispute through its full lifecycle and records the financial impact on your ledger.
@@ -13,14 +13,14 @@ A dispute (also called a chargeback) occurs when a customer contacts their bank 
 <Mermaid chart={`
 %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
 stateDiagram-v2
-    [*] --> Open: Chargeback received
-    Open --> Under_Review: Evidence requested
-    Under_Review --> Won: Dispute resolved in your favor
-    Under_Review --> Lost: Dispute resolved against you
-    Under_Review --> Closed: Customer withdrew
-    Won --> [*]
-    Lost --> [*]
-    Closed --> [*]
+[*] --> Open: Chargeback received
+Open --> Under_Review: Evidence requested
+Under_Review --> Won: Dispute resolved in your favor
+Under_Review --> Lost: Dispute resolved against you
+Under_Review --> Closed: Customer withdrew
+Won --> [*]
+Lost --> [*]
+Closed --> [*]
 `}>
 </Mermaid>
 

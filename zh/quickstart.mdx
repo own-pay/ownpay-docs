@@ -1,9 +1,7 @@
 ---
-title: 快速开始 - 5 分钟内接受第一笔支付
-description: 部署 OwnPay、创建品牌、激活支付网关并接受测试支付。从零到处理支付的最快路径。
-keywords: "快速开始, 支付网关设置, 第一笔支付, 自托管支付, 支付教程, OwnPay 设置"
-sidebarTitle: 快速开始
-icon: rocket
+title: "快速开始 - 5 分钟内接受您的第一笔支付"
+sidebarTitle: "快速开始"
+description: "部署 OwnPay、创建品牌、激活支付网关并接受测试支付。从零到处理支付的最快路径。"
 ---
 
 让您的自托管支付网关运行起来并在五分钟内接受一笔测试支付。本指南将引导您完成每个步骤 —— 从部署 OwnPay 到完成一笔交易。
@@ -26,7 +24,7 @@ icon: rocket
 选择您的托管环境。每个选项卡涵盖基本要点 —— 完整指南请参阅 [安装](/installation)。
 
 <Tabs>
-  <Tab title="共享主机" icon="globe">
+  <Tab title="共享主机" icon="world">
     适用于 cPanel、Plesk、DirectAdmin 和大多数共享主机。
 
     1. 从 [GitHub Releases]({{github}}/releases) 下载最新版本。
@@ -104,7 +102,6 @@ icon: rocket
 1. 在侧边栏中转到 **人员 \> 品牌**。
 2. 点击 **添加品牌**。
 3. 填写以下信息：
-
    - **品牌名称** - 客户看到的显示名称（例如 "Acme Store"）
    - **默认货币** - 该品牌的主要货币
    - **时区** - 用于报告和时间戳
@@ -118,28 +115,22 @@ icon: rocket
 
 1. 在侧边栏中转到 **网关**。
 2. 点击 **添加网关** 并从可用提供商中选择：
-
    <CardGroup cols={3}>
      <Card title="Stripe" icon="credit-card">
        信用卡、Apple Pay、Google Pay - 全球覆盖。
      </Card>
-
-     <Card title="bKash" icon="smartphone">
+     <Card title="bKash" icon="device-mobile">
        移动支付 - 孟加拉国。
      </Card>
-
      <Card title="PayPal" icon="wallet">
        PayPal 账户和信用卡 - 全球范围。
      </Card>
-
-     <Card title="Nagad" icon="smartphone">
+     <Card title="Nagad" icon="device-mobile">
        移动支付 - 孟加拉国。
      </Card>
-
      <Card title="SSLCommerz" icon="shield">
        信用卡和银行转账 - 南亚。
      </Card>
-
      <Card title="Razorpay" icon="credit-card">
        信用卡、UPI、钱包 - 印度。
      </Card>
@@ -156,7 +147,6 @@ icon: rocket
 1. 转到 **支付 \> 支付链接**。
 2. 点击 **创建支付链接**。
 3. 填写以下信息：
-
    - **标题** - 支付的描述（例如 "专业版 - 月付"）
    - **金额** - 收费金额
    - **货币** - 默认为品牌的货币
@@ -182,7 +172,7 @@ OwnPay 会生成一个唯一的 URL，您可以通过电子邮件、聊天分享
     使用 Merchant API、Webhook 和 SDK 将 OwnPay 集成到您的应用中。
   </Card>
 
-  <Card title="设置自定义域名" icon="globe" href="/system/domains">
+  <Card title="设置自定义域名" icon="world" href="/system/domains">
     在 `pay.yourbrand.com` 上提供您的结账页面，支持自动 SSL 和白标品牌。
   </Card>
 
