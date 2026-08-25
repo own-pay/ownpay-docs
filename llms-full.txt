@@ -573,3 +573,213 @@ Terminology reference. Definitions of key terms used in OwnPay.
 Source: https://ownpay.org/docs/resources/code-examples.md
 
 Multi-language payment examples. Sample code for common integration patterns.
+
+## Local Setup
+
+Source: https://ownpay.org/docs/resources/local-setup.md
+
+Run OwnPay locally on macOS, Linux, or Windows for development and contribution using PHP, Composer, MySQL, and the built-in Laravel dev server.
+
+## Acknowledge Push Notifications
+
+Source: https://ownpay.org/docs/api-reference/acknowledge-push-notifications.md
+
+Acknowledge push notifications from companion app. Mark notifications as received by the companion device.
+
+## Bulk Revoke Devices
+
+Source: https://ownpay.org/docs/api-reference/bulk-revoke-devices.md
+
+Bulk revoke paired companion devices. Revoke multiple companion devices in a single request.
+
+## Create Customer
+
+Source: https://ownpay.org/docs/api-reference/create-customer.md
+
+Create a new customer record. Add a customer with PII data that is encrypted with AES-256-GCM.
+
+## Dispatch Test Webhook
+
+Source: https://ownpay.org/docs/api-reference/dispatch-test-webhook.md
+
+Send a test webhook event. Verify webhook endpoint configuration by sending a test event.
+
+## Generate API Key
+
+Source: https://ownpay.org/docs/api-reference/generate-api-key.md
+
+Generate a new API key. Create a scoped API key for programmatic access.
+
+## Get Pending Outbound SMS
+
+Source: https://ownpay.org/docs/api-reference/get-pending-outbound-sms.md
+
+Retrieve pending outbound SMS messages. Get SMS messages waiting to be sent.
+
+## Initiate Payment Intent
+
+Source: https://ownpay.org/docs/api-reference/initiate-payment-intent.md
+
+Create a payment intent for checkout. Initialize a payment with amount, currency, and gateway selection.
+
+## List API Keys
+
+Source: https://ownpay.org/docs/api-reference/list-api-keys.md
+
+List all API keys for a brand. Retrieve all active and revoked API keys.
+
+## List Companion App Notifications
+
+Source: https://ownpay.org/docs/api-reference/list-companion-app-notifications.md
+
+List notifications from companion app. Get all SMS notifications received by companion devices.
+
+## List Customers
+
+Source: https://ownpay.org/docs/api-reference/list-customers.md
+
+List all customers for a brand. Retrieve paginated customer records.
+
+## List Outbound SMS Queue
+
+Source: https://ownpay.org/docs/api-reference/list-outbound-sms-queue.md
+
+List outbound SMS delivery queue. View SMS messages in the delivery pipeline.
+
+## List Paired Companion Devices
+
+Source: https://ownpay.org/docs/api-reference/list-paired-companion-devices.md
+
+List all paired companion devices. Get all Android devices paired for SMS auto-verification.
+
+## List Refunds
+
+Source: https://ownpay.org/docs/api-reference/list-refunds.md
+
+List all refunds for a brand. Retrieve paginated refund records.
+
+## List SMS Templates
+
+Source: https://ownpay.org/docs/api-reference/list-sms-templates.md
+
+List SMS verification templates. Get all regex patterns for SMS parsing.
+
+## List Transactions
+
+Source: https://ownpay.org/docs/api-reference/list-transactions.md
+
+List all transactions for a brand. Retrieve paginated transaction records with filters.
+
+## Pair Mobile Companion Device
+
+Source: https://ownpay.org/docs/api-reference/pair-mobile-companion-device.md
+
+Pair a new companion device. Register an Android device for SMS auto-verification.
+
+## Refresh Access Token
+
+Source: https://ownpay.org/docs/api-reference/refresh-access-token.md
+
+Refresh an expired access token. Get a new access token using a refresh token.
+
+## Request Transaction Refund
+
+Source: https://ownpay.org/docs/api-reference/request-transaction-refund.md
+
+Request a refund for a transaction. Initiate a full or partial refund with automatic ledger adjustments.
+
+## Retrieve Customer
+
+Source: https://ownpay.org/docs/api-reference/retrieve-customer.md
+
+Retrieve a customer by ID. Get full customer details including encrypted PII.
+
+## Retrieve Dashboard Summary
+
+Source: https://ownpay.org/docs/api-reference/retrieve-dashboard-summary.md
+
+Get dashboard metrics summary. Retrieve transaction volumes, revenue, and other KPIs.
+
+## Retrieve Device Connection Status
+
+Source: https://ownpay.org/docs/api-reference/retrieve-device-connection-status.md
+
+Check companion device connection status. Verify if a paired device is online and connected.
+
+## Retrieve Payment Details
+
+Source: https://ownpay.org/docs/api-reference/retrieve-payment-details.md
+
+Retrieve payment intent details. Get full payment information including status and gateway response.
+
+## Retrieve Refund
+
+Source: https://ownpay.org/docs/api-reference/retrieve-refund.md
+
+Retrieve a refund by ID. Get full refund details including status and amount.
+
+## Retrieve SMS Filter Rules
+
+Source: https://ownpay.org/docs/api-reference/retrieve-sms-filter-rules.md
+
+Retrieve SMS filter rules. Get the rules used to filter incoming SMS messages.
+
+## Retrieve Transaction
+
+Source: https://ownpay.org/docs/api-reference/retrieve-transaction.md
+
+Retrieve a transaction by ID. Get full transaction details including ledger entries.
+
+## Retry Outbound SMS
+
+Source: https://ownpay.org/docs/api-reference/retry-outbound-sms.md
+
+Retry a failed outbound SMS. Resend an SMS message that failed delivery.
+
+## Revoke API Key
+
+Source: https://ownpay.org/docs/api-reference/revoke-api-key.md
+
+Revoke an API key. Permanently disable an API key.
+
+## Revoke Paired Device
+
+Source: https://ownpay.org/docs/api-reference/revoke-paired-device.md
+
+Revoke a paired companion device. Remove a device from SMS auto-verification.
+
+## Submit Device Heartbeat
+
+Source: https://ownpay.org/docs/api-reference/submit-device-heartbeat.md
+
+Submit companion device heartbeat. Report device status and connectivity.
+
+## Submit Received SMS
+
+Source: https://ownpay.org/docs/api-reference/submit-received-sms.md
+
+Submit a received SMS for processing. Forward an SMS message for payment verification parsing.
+
+## System Health Check
+
+Source: https://ownpay.org/docs/api-reference/system-health-check.md
+
+Check system health status. Verify database, Redis, and application health.
+
+## Update SMS Template
+
+Source: https://ownpay.org/docs/api-reference/update-sms-template.md
+
+Update an SMS verification template. Modify regex patterns for SMS parsing.
+
+## Verify Custom Domain
+
+Source: https://ownpay.org/docs/api-reference/verify-custom-domain.md
+
+Verify a custom domain configuration. Check DNS and SSL setup for a custom domain.
+
+## Webhook Delivery Log
+
+Source: https://ownpay.org/docs/api-reference/webhook-delivery-log.md
+
+Retrieve webhook delivery logs. View webhook event delivery history and status.
