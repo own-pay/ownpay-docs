@@ -2,7 +2,6 @@
 
 > OwnPay is an open-source, self-hosted payment gateway platform built on PHP 8.3. It supports 100+ payment gateways, multi-brand tenancy, white-label checkout, double-entry ledger, and plugin extensibility. Create by [Fattain Naime](https://iamnaime.info.bd)
 
-
 ### Tab 1: Documentation
 
 - [Introduction](https://ownpay.org/docs/introduction) — Overview of OwnPay, core features, audience guide
