@@ -1,325 +1,324 @@
 ---
-title: "Code Examples - Production-Ready SDK Snippets and Handlers"
-description: "A comprehensive collection of production-ready implementation examples, SDK snippets, and webhook handlers for common OwnPay integration patterns."
-keywords: "PHP payment integration, Node.js payment gateway, webhook verification script, REST API payment flow, PHP EventManager hooks, code examples"
-sidebarTitle: "Code Examples"
+title: Code Examples
+description: "Canonical multi-language code examples for creating payment intents, verifying webhooks, and querying transaction status via the OwnPay API."
+keywords: "code examples, PHP SDK, Laravel, Node.js, Python, Go, Java, cURL, payment integration, webhook verification"
+sidebarTitle: Code Examples
+icon: code
 ---
 
-This page provides production-ready code examples and snippets to accelerate your OwnPay integration.
+This page is the canonical reference for integrating with the OwnPay API. Every example shows how to create a payment intent, handle the response, and redirect the customer to the checkout page.
+
+<Info>
+  For a step-by-step tutorial, see the [Quickstart](/developer/quickstart). For the full API reference, see [API Overview](/api/overview).
+</Info>
 
 ---
 
-## Creating a Payment Intent
+## Creating a payment
 
-Initiate a checkout session by calling `POST /payments` to retrieve a `checkout_url`. Redirect your customers to this URL to complete payment.
+Create a payment intent by calling `POST /api/v1/payments`. The response includes a `checkout_url` - redirect your customer there to complete payment.
 
 <CodeGroup>
 
-```php PHP
-<?php
-// Initialize integration parameters
-$baseUrl = 'https://pay.yourbrand.com/api/v1';
-$apiKey = 'op_live_xxxxxxxxxxxxxxxxxxxxxx';
-
-$payload = [
-    'amount' => '500.00',
-    'currency' => 'BDT',
-    'callback_url' => 'https://my-store.com/webhooks/ownpay',
-    'redirect_url' => 'https://my-store.com/checkout/success',
-    'cancel_url' => 'https://my-store.com/checkout/cancel',
-    'customer_email' => 'customer@example.com',
-    'customer_name' => 'John Doe',
-    'reference' => 'ORDER-10024'
-];
-
-// Execute POST request via cURL
-$ch = curl_init("$baseUrl/payments");
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Authorization: Bearer ' . $apiKey,
-    'Content-Type: application/json',
-    'Accept: application/json'
-]);
-
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
-
-$result = json_decode($response, true);
-
-if ($httpCode === 201 && ($result['success'] ?? false)) {
-    $checkoutUrl = $result['data']['checkout_url'];
-    // Redirect the customer to the white-label checkout flow
-    header("Location: $checkoutUrl");
-    exit;
-} else {
-    echo "Error creating payment: " . ($result['error'] ?? 'Unknown API error');
-}
-```
-
-```javascript Node.js (Axios)
-import axios from 'axios';
-
-const baseUrl = 'https://pay.yourbrand.com/api/v1';
-const apiKey = 'op_live_xxxxxxxxxxxxxxxxxxxxxx';
-
-async function createPayment() {
-  try {
-    const response = await axios.post(`${baseUrl}/payments`, {
-      amount: '500.00',
-      currency: 'BDT',
-      callback_url: 'https://my-store.com/webhooks/ownpay',
-      redirect_url: 'https://my-store.com/checkout/success',
-      cancel_url: 'https://my-store.com/checkout/cancel',
-      customer_email: 'customer@example.com',
-      customer_name: 'John Doe',
-      reference: 'ORDER-10024'
-    }, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (response.data.success) {
-      console.log('Checkout URL:', response.data.data.checkout_url);
-      console.log('Payment ID:', response.data.data.payment_id);
-    }
-  } catch (error) {
-    console.error('Error:', error.response?.data?.error || error.message);
-  }
-}
-
-createPayment();
-```
-
-```python Python
-import requests
-
-base_url = "https://pay.yourbrand.com/api/v1"
-api_key = "op_live_xxxxxxxxxxxxxxxxxxxxxx"
-
-payload = {
-    "amount": "500.00",
-    "currency": "BDT",
-    "callback_url": "https://my-store.com/webhooks/ownpay",
-    "redirect_url": "https://my-store.com/checkout/success",
-    "cancel_url": "https://my-store.com/checkout/cancel",
-    "customer_email": "customer@example.com",
-    "customer_name": "John Doe",
-    "reference": "ORDER-10024"
-}
-
-headers = {
-    "Authorization": f"Bearer {api_key}",
-    "Content-Type": "application/json"
-}
-
-response = requests.post(f"{base_url}/payments", json=payload, headers=headers)
-result = response.json()
-
-if response.status_code == 201 and result.get("success"):
-    checkout_url = result["data"]["checkout_url"]
-    print(f"Redirecting user to: {checkout_url}")
-else:
-    print(f"Error: {result.get('error', 'Unknown API error')}")
-```
-
-```bash cURL
-curl -X POST https://pay.yourbrand.com/api/v1/payments \
-  -H "Authorization: Bearer op_live_xxxxxxxxxxxxxxxxxxxxxx" \
-  -H "Content-Type: application/json" \
+```cURL
+curl -X POST https://pay.yourbrand.com/api/v1/payments \\
+  -H "Authorization: Bearer op_live_abc123.def456" \\
+  -H "Content-Type: application/json" \\
   -d '{
     "amount": "500.00",
-    "currency": "BDT",
-    "callback_url": "https://my-store.com/webhooks/ownpay",
-    "redirect_url": "https://my-store.com/checkout/success",
-    "cancel_url": "https://my-store.com/checkout/cancel",
+    "currency": "USD",
+    "redirect_url": "https://my-store.com/success",
+    "cancel_url": "https://my-store.com/cancel",
     "customer_email": "customer@example.com",
-    "customer_name": "John Doe",
+    "customer_name": "Jane Doe",
     "reference": "ORDER-10024"
   }'
+```
+
+```PHP SDK
+<?php
+use OwnPay\Client;
+
+$client = new Client('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
+
+$payment = $client->payments->create([
+    'amount'        => '500.00',
+    'currency'      => 'USD',
+    'redirect_url'  => 'https://my-store.com/success',
+    'cancel_url'    => 'https://my-store.com/cancel',
+    'customer_email' => 'customer@example.com',
+    'customer_name'  => 'Jane Doe',
+    'reference'     => 'ORDER-10024',
+]);
+
+// Redirect the customer to the checkout page
+header('Location: ' . $payment->checkout_url);
+exit;
+```
+
+```Laravel
+use OwnPay\Laravel\Facades\OwnPay;
+
+$payment = OwnPay::createPayment([
+    'amount'        => '500.00',
+    'currency'      => 'USD',
+    'redirect_url'  => 'https://my-store.com/success',
+    'cancel_url'    => 'https://my-store.com/cancel',
+    'customer_email' => 'customer@example.com',
+    'customer_name'  => 'Jane Doe',
+    'reference'     => 'ORDER-10024',
+]);
+
+return redirect($payment->checkout_url);
+```
+
+```Node.js
+import OwnPay from 'ownpay';
+
+const client = new OwnPay('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
+
+const payment = await client.payments.create({
+  amount: '500.00',
+  currency: 'USD',
+  redirect_url: 'https://my-store.com/success',
+  cancel_url: 'https://my-store.com/cancel',
+  customer_email: 'customer@example.com',
+  customer_name: 'Jane Doe',
+  reference: 'ORDER-10024',
+});
+
+console.log('Redirect to:', payment.checkout_url);
+```
+
+```Python
+import ownpay
+
+client = ownpay.Client(
+    base_url="https://pay.yourbrand.com/api/v1",
+    api_key="op_live_abc123.def456"
+)
+
+payment = client.payments.create(
+    amount="500.00",
+    currency="USD",
+    redirect_url="https://my-store.com/success",
+    cancel_url="https://my-store.com/cancel",
+    customer_email="customer@example.com",
+    customer_name="Jane Doe",
+    reference="ORDER-10024",
+)
+
+print(f"Redirect to: {payment['checkout_url']}")
+```
+
+```Go
+package main
+
+import (
+        "fmt"
+        "github.com/own-pay/ownpay-go"
+)
+
+func main() {
+        client := ownpay.NewClient("https://pay.yourbrand.com/api/v1", "op_live_abc123.def456")
+
+        payment, err := client.Payments.Create(ownpay.PaymentParams{
+                Amount:        "500.00",
+                Currency:      "USD",
+                RedirectURL:   "https://my-store.com/success",
+                CancelURL:     "https://my-store.com/cancel",
+                CustomerEmail: "customer@example.com",
+                CustomerName:  "Jane Doe",
+                Reference:     "ORDER-10024",
+        })
+        if err != nil {
+                panic(err)
+        }
+
+        fmt.Println("Redirect to:", payment.CheckoutURL)
+}
+```
+
+```Java
+import org.ownpay.Client;
+import org.ownpay.model.Payment;
+import java.util.Map;
+
+public class Main {
+    public static void main(String[] args) {
+        Client client = new Client(
+            "https://pay.yourbrand.com/api/v1",
+            "op_live_abc123.def456"
+        );
+
+        Payment payment = client.payments().create(Map.of(
+            "amount", "500.00",
+            "currency", "USD",
+            "redirect_url", "https://my-store.com/success",
+            "cancel_url", "https://my-store.com/cancel",
+            "customer_email", "customer@example.com",
+            "customer_name", "Jane Doe",
+            "reference", "ORDER-10024"
+        ));
+
+        System.out.println("Redirect to: " + payment.getCheckoutUrl());
+    }
+}
 ```
 
 </CodeGroup>
 
 ---
 
-## Webhook Signature Verification
+## Verifying webhooks
 
-To ensure webhook events originate from your trusted OwnPay instance, always verify the `X-OwnPay-Signature` header against your Webhook Secret before acting on them.
+Always verify the HMAC-SHA256 signature before processing a webhook. The signature covers `{timestamp}.{raw_body}`.
 
 <CodeGroup>
 
-```php PHP
+```PHP SDK
 <?php
-// Retrieve secret from configuration
-$webhookSecret = getenv('OWNPAY_WEBHOOK_SECRET');
+use OwnPay\Webhook;
 
-// Fetch the raw HTTP POST request body
-$rawPayload = file_get_contents('php://input');
+$webhook = new Webhook('whsec_your_webhook_secret');
 
-// Retrieve custom headers
-$signatureHeader = $_SERVER['HTTP_X_OWNPAY_SIGNATURE'] ?? '';
-$timestampHeader = $_SERVER['HTTP_X_OWNPAY_TIMESTAMP'] ?? '';
-
-// Calculate the expected HMAC-SHA256 signature
-$expectedSignature = hash_hmac('sha256', $timestampHeader . '.' . $rawPayload, $webhookSecret);
-
-// Safe timing-attack-resistant comparison
-if (!hash_equals('sha256=' . $expectedSignature, $signatureHeader)) {
+try {
+    $event = $webhook->constructEvent(
+        file_get_contents('php://input'),
+        $_SERVER['HTTP_X_OWNPAY_SIGNATURE'] ?? '',
+        $_SERVER['HTTP_X_OWNPAY_TIMESTAMP'] ?? ''
+    );
+} catch (\OwnPay\Exception\SignatureVerificationException $e) {
     http_response_code(401);
     exit('Invalid signature');
 }
 
-// Signature is valid, proceed with event parsing
-$payload = json_decode($rawPayload, true);
-
-if ($payload['event'] === 'payment.paid') {
-    $transaction = $payload['data'];
-    $orderRef = $transaction['metadata']['order_id'];
-    $amount = $transaction['amount'];
-    
-    // Process order fulfillment asynchronously
-    // ...
+if ($event->type === 'payment.completed') {
+    $trx = $event->data;
+    // Fulfill the order using $trx['reference']
 }
 
 http_response_code(200);
 echo 'OK';
 ```
 
-```javascript Node.js (Express)
-import express from 'express';
+```Node.js
+import OwnPay from 'ownpay';
 import crypto from 'crypto';
 
-const app = express();
-const webhookSecret = process.env.OWNPAY_WEBHOOK_SECRET;
+const webhookSecret = 'whsec_your_webhook_secret';
 
-// Expose raw parser for signature checks
-app.post('/webhooks/ownpay', express.raw({ type: 'application/json' }), (req, res) => {
-  const signatureHeader = req.headers['x-ownpay-signature'];
-  const timestampHeader = req.headers['x-ownpay-timestamp'];
-  
-  if (!signatureHeader || !timestampHeader) {
-    return res.status(400).send('Missing webhook headers');
-  }
-
-  // Compute timing-safe hash
+function verifyWebhook(rawBody, signatureHeader, timestampHeader) {
   const hmac = crypto.createHmac('sha256', webhookSecret);
-  hmac.update(`${timestampHeader}.${req.body.toString()}`);
-  const computedSignature = `sha256=${hmac.digest('hex')}`;
+  hmac.update(`${timestampHeader}.${rawBody}`);
+  const expected = `sha256=${hmac.digest('hex')}`;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signatureHeader));
+}
 
-  const isValid = crypto.timingSafeEqual(
-    Buffer.from(computedSignature, 'utf8'),
-    Buffer.from(signatureHeader, 'utf8')
-  );
+// In your Express handler:
+app.post('/webhooks/ownpay', express.raw({ type: 'application/json' }), (req, res) => {
+  const sig = req.headers['x-ownpay-signature'];
+  const ts = req.headers['x-ownpay-timestamp'];
 
-  if (!isValid) {
+  if (!verifyWebhook(req.body.toString(), sig, ts)) {
     return res.status(401).send('Invalid signature');
   }
 
-  // Parse payload content after verification
-  const payload = JSON.parse(req.body.toString());
-  
-  if (payload.event === 'payment.paid') {
-    const transaction = payload.data;
-    console.log(`Fulfilling order ${transaction.metadata.order_id} for BDT ${transaction.amount}`);
-    // Process order fulfillment
+  const event = JSON.parse(req.body.toString());
+  if (event.type === 'payment.completed') {
+    console.log('Order fulfilled:', event.data.reference);
   }
 
   res.status(200).send('OK');
 });
+```
 
-app.listen(3000, () => console.log('Listening for webhooks on port 3000'));
+```Python
+import hmac
+import hashlib
+import json
+from flask import Flask, request, Response
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "whsec_your_webhook_secret"
+
+@app.route("/webhooks/ownpay", methods=["POST"])
+def handle_webhook():
+    sig = request.headers.get("x-ownpay-signature", "")
+    ts = request.headers.get("x-ownpay-timestamp", "")
+    raw = request.get_data()
+
+    expected = "sha256=" + hmac.new(
+        WEBHOOK_SECRET.encode(), (ts + ".").encode() + raw, hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected, sig):
+        return Response("Invalid signature", status=401)
+
+    event = json.loads(raw)
+    if event["type"] == "payment.completed":
+        print(f"Order fulfilled: {event['data']['reference']}")
+
+    return Response("OK", status=200)
 ```
 
 </CodeGroup>
 
 ---
 
-## Querying Transaction Status
+## Querying transaction status
 
-To avoid relying strictly on webhooks, query the status endpoint directly when a customer lands back on your redirection page.
+You can query a payment's status directly, which is useful when a customer returns to your site after payment.
 
-```php PHP
+<CodeGroup>
+
+```PHP SDK
 <?php
-$baseUrl = 'https://pay.yourbrand.com/api/v1';
-$apiKey = 'op_live_xxxxxxxxxxxxxxxxxxxxxx';
-$paymentId = 'pi_01j0x8kz7m3wd4b9qfhec5rtg6'; // Retrieved UUID
+use OwnPay\Client;
 
-$ch = curl_init("$baseUrl/payments/$paymentId");
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Authorization: Bearer ' . $apiKey,
-    'Accept: application/json'
-]);
+$client = new Client('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
 
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
+$payment = $client->payments->get('pi_01j0x8kz7m3wd4b9qfhec5rtg6');
 
-$result = json_decode($response, true);
-
-if ($httpCode === 200 && ($result['success'] ?? false)) {
-    $payment = $result['data'];
-    
-    switch ($payment['status']) {
-        case 'paid':
-            echo "Transaction successful! Reference: " . $payment['id'];
-            break;
-        case 'processing':
-            echo "Payment is processing, awaiting settlement confirmation.";
-            break;
-        case 'failed':
-            echo "Payment failed.";
-            break;
-        default:
-            echo "Payment status: " . $payment['status'];
-            break;
-    }
+if ($payment->status === 'completed') {
+    // Fulfill the order
+} elseif ($payment->status === 'failed') {
+    // Show payment failure to customer
+} else {
+    // Still processing - poll again or wait for webhook
 }
 ```
 
+```Node.js
+import OwnPay from 'ownpay';
+
+const client = new OwnPay('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
+
+const payment = await client.payments.get('pi_01j0x8kz7m3wd4b9qfhec5rtg6');
+
+switch (payment.status) {
+  case 'completed':
+    console.log('Fulfill order:', payment.reference);
+    break;
+  case 'failed':
+    console.log('Show failure message');
+    break;
+  default:
+    console.log('Status:', payment.status, '- poll or wait for webhook');
+}
+```
+
+</CodeGroup>
+
+<Tip>
+  Prefer webhooks over polling for production integrations. Webhooks are near real-time and do not waste API rate limit quota. Use status queries only as a fallback when a webhook was missed.
+</Tip>
+
 ---
 
-## Extension Hooks (Plugin Development)
+## Related Pages
 
-OwnPay plugins tap into the core lifecycle event loop using action filters and listeners.
-
-### Custom Payment Fee Filter
-
-You can modify transaction amounts dynamically based on payment parameters.
-
-```php PHP
-use OwnPay\Event\EventManager;
-
-// Add a 2% convenience fee if payment is processed on Stripe credit card gateway
-EventManager::addFilter('payment.amount', function(string $amount, array $payment): string {
-    if (($payment['gateway'] ?? '') === 'stripe-card') {
-        // ALWAYS use bcmath for high-precision decimal operations!
-        return bcmul($amount, '1.02', 2);
-    }
-    return $amount;
-}, 10, 2);
-```
-
-### Event Action Listeners
-
-Execute background actions (such as email receipt triggers) when payments succeed.
-
-```php PHP
-use OwnPay\Event\EventManager;
-
-EventManager::addAction('payment.completed', function(array $transaction): void {
-    $email = $transaction['customer']['email'] ?? null;
-    $amount = $transaction['amount'];
-    $currency = $transaction['currency'];
-
-    if ($email) {
-        // Trigger background receipt delivery
-        mail($email, "Receipt for payment", "Thank you for your payment of $amount $currency.");
-    }
-}, 10, 1);
-```
+- [Developer Quickstart](/developer/quickstart) - Step-by-step integration tutorial
+- [API Overview](/api/overview) - Full endpoint reference
+- [Ecosystem](/resources/ecosystem) - SDK installation and community integrations
+- [Rate Limiting](/resources/rate-limiting) - Understanding 429 responses and headers

@@ -1,0 +1,245 @@
+---
+title: "Python Integration"
+description: "Integrate OwnPay into Python applications using the requests library with a complete OwnPayClient class, webhook verification, and pagination."
+keywords: "Python payment integration, OwnPay Python, requests library, webhook verification Python, payment client Python"
+sidebarTitle: "Python"
+icon: "file-code"
+---
+
+Python provides no official OwnPay Python SDK yet. This guide shows you how to integrate using the popular `requests` library with a complete, reusable client class.
+
+## Installation
+
+```bash
+pip install requests
+```
+
+## OwnPayClient class
+
+Copy this class into your project. It handles authentication, error handling, and pagination:
+
+```python
+import os
+import hmac
+import hashlib
+import time
+import requests
+from typing import Any
+
+
+class OwnPayClient:
+    """Minimal OwnPay API client for Python."""
+
+    def __init__(self, api_key: str | None = None, base_url: str | None = None):
+        self.api_key = api_key or os.environ["OWNPAY_API_KEY"]
+        self.base_url = (base_url or os.environ.get("OWNPAY_BASE_URL", "https://your-domain.com")).rstrip("/")
+        self.session = requests.Session()
+        self.session.headers.update({
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        })
+
+    def _request(self, method: str, path: str, **kwargs: Any) -> dict:
+        url = f"{self.base_url}/api/v1{path}"
+        resp = self.session.request(method, url, timeout=30, **kwargs)
+        data = resp.json()
+        if not data.get("success"):
+            error = data.get("error", {})
+            raise OwnPayError(error.get("code", "unknown"), error.get("message", "Unknown error"), resp.status_code)
+        return data
+
+    # --- Payments ---
+
+    def create_payment(self, amount: str, currency: str, **kwargs: Any) -> dict:
+        """Create a payment intent. Amounts are strings (bcmath precision)."""
+        payload = {"amount": amount, "currency": currency, **kwargs}
+        return self._request("POST", "/payments", json=payload)
+
+    def get_payment(self, payment_id: str) -> dict:
+        return self._request("GET", f"/payments/{payment_id}")
+
+    # --- Transactions ---
+
+    def list_transactions(self, page: int = 1, per_page: int = 20, **filters: Any) -> dict:
+        params = {"page": page, "per_page": per_page, **filters}
+        return self._request("GET", "/transactions", params=params)
+
+    def get_transaction(self, txn_id: str) -> dict:
+        return self._request("GET", f"/transactions/{txn_id}")
+
+    # --- Refunds ---
+
+    def create_refund(self, payment_id: str, amount: str, reason: str = "") -> dict:
+        payload = {"amount": amount, "reason": reason}
+        return self._request("POST", f"/payments/{payment_id}/refunds", json=payload)
+
+    # --- Customers ---
+
+    def get_customer(self, identifier: str) -> dict:
+        return self._request("GET", f"/customers/{identifier}")
+
+
+class OwnPayError(Exception):
+    def __init__(self, code: str, message: str, status_code: int):
+        self.code = code
+        self.message = message
+        self.status_code = status_code
+        super().__init__(f"[{status_code}] {code}: {message}")
+```
+
+## Creating a payment
+
+```python
+client = OwnPayClient()
+
+payment = client.create_payment(
+    amount="50.00",
+    currency="USD",
+    customer_email="customer@example.com",
+    description="Order #1042",
+    redirect_url="https://your-store.com/callback",
+    cancel_url="https://your-store.com/cancel",
+    metadata={"order_id": "1042"},
+)
+
+checkout_url = payment["data"]["checkout_url"]
+print(f"Redirect customer to: {checkout_url}")
+```
+
+## Verifying payment status
+
+```python
+payment = client.get_payment("pay_abc123")
+status = payment["data"]["status"]
+
+if status == "completed":
+    fulfill_order(payment["data"]["metadata"]["order_id"])
+```
+
+## Listing transactions with pagination
+
+```python
+def list_all_transactions(client: OwnPayClient, status: str = "completed"):
+    page = 1
+    while True:
+        result = client.list_transactions(page=page, per_page=50, status=status)
+        items = result["data"]["data"]
+        for txn in items:
+            yield txn
+        meta = result["data"].get("meta", {})
+        if page >= meta.get("last_page", 1):
+            break
+        page += 1
+
+for txn in list_all_transactions(client):
+    print(f"{txn['id']}  {txn['amount']} {txn['currency']}")
+```
+
+## Webhook signature verification
+
+Use this function to verify incoming webhooks. See the canonical [Webhooks](/api/webhooks) page for the full reference.
+
+```python
+import hmac
+import hashlib
+import time
+
+
+def verify_webhook(signature: str, timestamp: int, raw_body: bytes, secret: str) -> dict:
+    """Verify HMAC-SHA256 webhook signature. Returns parsed event."""
+    # Reject events older than 5 minutes
+    if abs(int(time.time()) - timestamp) > 300:
+        raise ValueError("Webhook timestamp too old")
+
+    expected = "sha256=" + hmac.new(
+        secret.encode(), raw_body, hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected, signature):
+        raise ValueError("Invalid webhook signature")
+
+    import json
+    return json.loads(raw_body)
+```
+
+Usage with Flask:
+
+```python
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.post("/webhooks/ownpay")
+def handle_webhook():
+    try:
+        event = verify_webhook(
+            signature=request.headers.get("X-OwnPay-Signature", ""),
+            timestamp=int(request.headers.get("X-OwnPay-Timestamp", 0)),
+            raw_body=request.get_data(),
+            secret=os.environ["OWNPAY_WEBHOOK_SECRET"],
+        )
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
+
+    if event["event"] == "payment.completed":
+        order_id = event["data"].get("metadata", {}).get("order_id")
+        if order_id:
+            mark_order_paid(order_id)
+
+    return jsonify({"received": True}), 200
+```
+
+## Error handling
+
+```python
+from ownpay_client import OwnPayClient, OwnPayError
+
+client = OwnPayClient()
+
+try:
+    payment = client.create_payment(amount="50.00", currency="USD")
+except OwnPayError as e:
+    if e.status_code == 422:
+        print(f"Validation failed: {e.message}")
+    elif e.status_code == 429:
+        print("Rate limited - retry later")
+    elif e.status_code == 401:
+        print("Check your API key")
+    else:
+        print(f"Error {e.code}: {e.message}")
+        raise
+```
+
+## Optional Pydantic models
+
+If you use Pydantic for type safety, define response models:
+
+```python
+from pydantic import BaseModel
+
+
+class PaymentData(BaseModel):
+    id: str
+    amount: str
+    currency: str
+    status: str
+    checkout_url: str
+
+
+class PaymentResponse(BaseModel):
+    success: bool
+    data: PaymentData
+
+
+# Usage
+resp = PaymentResponse.model_validate(client.create_payment(...))
+print(resp.data.checkout_url)
+```
+
+## Related pages
+
+- [API overview](/api/overview)
+- [Webhooks](/api/webhooks)
+- [Authentication](/api/authentication)
+- [Testing payments](/developer/testing)

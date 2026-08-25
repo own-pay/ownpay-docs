@@ -1,0 +1,39 @@
+---
+title: "Webhook Integration Tutorial"
+description: "End-to-end tutorial for building a webhook receiver that listens for payment.completed events with complete PHP and Node.js code examples."
+keywords: "webhook tutorial, webhook receiver, payment completed, webhook integration, PHP webhook, Node.js webhook, Express webhook"
+sidebarTitle: "Webhook integration"
+icon: "link"
+---
+
+In this tutorial you will build a webhook receiver that listens for `payment.completed` events from OwnPay and updates your order database. By the end you will have a production-ready endpoint in PHP or Node.js.
+
+## What you will build
+
+A single endpoint (`/webhooks/ownpay`) that:
+
+1. Verifies the HMAC-SHA256 signature
+2. Parses the event payload
+3. Updates the order status in your database
+4. Returns the correct HTTP response codes
+
+## Prerequisites
+
+- An OwnPay instance with a webhook endpoint configured in **Developers → Webhooks**
+- A webhook signing secret (shown when you create the endpoint)
+- PHP 8.1\+ or Node.js 18\+ with Express
+
+### Security best practices
+
+- Verify the signature on **every** request - never skip it
+- Reject events with timestamps older than 5 minutes to prevent replay attacks
+- Only process events you have registered for - ignore unknown event types
+- Use HTTPS exclusively - OwnPay never sends webhooks to HTTP endpoints
+- Keep your webhook secret in environment variables, never in code
+
+## Related pages
+
+- [Webhooks](/api/webhooks)
+- [API overview](/api/overview)
+- [Error codes](/api/errors)
+- [Testing payments](/developer/testing)

@@ -1,0 +1,66 @@
+---
+title: Developer Hub
+description: "Access webhook endpoint management, delivery logs, test tools, and API request logs from the central developer tools section."
+keywords: "developer hub, webhook logs, API logs, test webhook, developer tools, webhook management"
+sidebarTitle: Developer Hub
+icon: terminal
+---
+
+The Developer Hub is your central workspace for integrating OwnPay with external systems. It provides tools for managing webhooks, testing endpoints, and reviewing API activity.
+
+## Webhook management
+
+The Webhooks tab in the Developer Hub lets you create, edit, and delete webhook endpoints. For the full webhook setup guide including event selection and signature verification, see [Webhooks](/notifications/webhooks).
+
+## Webhook delivery logs
+
+Every webhook delivery attempt is logged here, whether successful or failed.
+
+| Column | Description |
+| --- | --- |
+| **Endpoint** | The target URL |
+| **Event** | The event type that triggered the delivery |
+| **Status** | Success (2xx), Failed (non-2xx), or Pending (retry scheduled) |
+| **Attempts** | How many times the delivery has been attempted |
+| **Timestamp** | When the last attempt occurred |
+
+Click any log row to view the full request payload, response body, and response headers.
+
+<Info>
+  Delivery logs are retained for 30 days. For permanent records, implement server-side logging on your webhook endpoint.
+</Info>
+
+## Test webhook
+
+Click **Test Webhook** next to any endpoint to send a sample `payment.completed` payload. This sends a real HTTP request to your endpoint so you can verify:
+
+- Your server is reachable
+- Signature verification works correctly
+- Your routing and processing logic handles the payload
+
+The test delivery also appears in the delivery logs for debugging.
+
+## API request logs
+
+The API Logs tab records every request made to your OwnPay API endpoints (all three layers).
+
+| Column | Description |
+| --- | --- |
+| **API Layer** | Admin, Merchant, or Mobile |
+| **Endpoint** | The requested URI |
+| **Method** | GET, POST, PUT, DELETE |
+| **Status Code** | HTTP response status |
+| **IP Address** | Source IP of the requester |
+| **Timestamp** | When the request was made |
+
+Use the search and filter controls to find specific requests by endpoint, status code, or date range.
+
+<Tip>
+  API logs are useful for debugging integration issues. If a third-party integration reports unexpected responses, check the API logs to see exactly what OwnPay returned.
+</Tip>
+
+## Related Pages
+
+- [Webhooks](/notifications/webhooks) - Full webhook configuration and event reference
+- [API Keys](/security/api-keys) - Generate and manage API credentials
+- [API Overview](/api/overview) - Documentation for all three API layers

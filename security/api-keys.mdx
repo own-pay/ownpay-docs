@@ -1,0 +1,91 @@
+---
+title: API Keys
+description: "Generate, scope, and manage API keys for programmatic access to the OwnPay Admin API, Merchant API, and Mobile API."
+keywords: "API keys, API authentication, key scopes, revoke key, rate limits, programmatic access"
+sidebarTitle: API Keys
+icon: key
+---
+
+API keys let you authenticate programmatic requests to OwnPay's three API layers without going through the browser login flow. Each key has defined scopes that limit what it can access.
+
+<Info>
+  For the full authentication mechanism including signature generation, see [API Authentication](/api/authentication).
+</Info>
+
+## Generate an API key
+
+<Steps>
+  <Step>
+    Navigate to **Developer Hub \> API Keys** in the left sidebar.
+  </Step>
+  <Step>
+    Click **Generate New Key**.
+  </Step>
+  <Step>
+    Select the **API layer** this key will access: Admin API, Merchant API, or Mobile API.
+  </Step>
+  <Step>
+    Choose one or more **scopes**:
+
+    | Scope | Permission |
+    | --- | --- |
+    | `read` | View resources (transactions, customers, etc.) |
+    | `write` | Create and modify resources |
+    | `admin` | Full access including system configuration |
+  </Step>
+  <Step>
+    Optionally add a **label** (for example, "WooCommerce Integration") for identification.
+  </Step>
+  <Step>
+    Click **Create**. The full key is displayed once. Copy it immediately - it will not be shown again.
+  </Step>
+</Steps>
+
+<Warning>
+  Treat API keys like passwords. Never commit them to source code, log files, or public repositories. Use environment variables or a secrets manager instead.
+</Warning>
+
+## Key metadata
+
+Each API key in the list shows:
+
+| Column | Description |
+| --- | --- |
+| **Label** | The human-readable name you assigned |
+| **API Layer** | Admin, Merchant, or Mobile |
+| **Scopes** | The permissions granted to this key |
+| **Last Used** | Timestamp of the most recent API request |
+| **Last IP** | IP address of the most recent request |
+| **Actions** | Revoke |
+
+## Revoke a key
+
+Click **Revoke** on any key row. The key is immediately invalidated - any subsequent API request using that key returns a `401 Unauthorized` response.
+
+<Note>
+  Revocation is permanent. Generate a new key if you need to restore access.
+</Note>
+
+## Rate limits per key
+
+Each API key is subject to rate limiting. Exceeding the limit returns a `429 Too Many Requests` response with a `Retry-After` header.
+
+| API Layer | Limit |
+| --- | --- |
+| Admin API | 120 requests per minute |
+| Merchant API | 300 requests per minute |
+| Mobile API | 60 requests per minute |
+
+<Info>
+  For detailed rate limiting behavior and burst allowances, see [Rate Limiting](/resources/rate-limiting).
+</Info>
+
+## Super-admin API key generation
+
+Super-admins can generate keys with the `admin` scope, which grants full access to all system configuration, brand management, and user management endpoints. Only generate admin-scoped keys when absolutely necessary - use `read` or `write` scopes for integrations that only need data access or transaction creation.
+
+## Related Pages
+
+- [API Authentication](/api/authentication) - How to use your API key in requests
+- [Rate Limiting](/resources/rate-limiting) - Detailed rate limit documentation
+- [Developer Hub](/security/developer-hub) - Webhook and logging tools

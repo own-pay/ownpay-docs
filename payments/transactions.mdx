@@ -1,0 +1,71 @@
+---
+title: Transaction management
+description: "How to view, search, filter, and manage transactions in the OwnPay admin dashboard. The canonical reference for transaction UI operations."
+keywords: "transactions, transaction search, transaction filters, transaction detail, manual status, export CSV"
+sidebarTitle: Transactions
+icon: receipt
+---
+
+The Transactions page is your central hub for monitoring all payments processed through OwnPay. This is the canonical page for finding, inspecting, and acting on transactions from the admin UI.
+
+## View transactions
+
+1. Go to **Payments** → **Transactions**.
+2. The table loads all transactions for the currently selected brand.
+3. Each row shows the transaction ID, customer email, amount, gateway, status badge, and timestamp.
+4. Click **View** on any row to open the transaction detail panel.
+
+## Search and filter
+
+Use the filter toolbar above the table to narrow results:
+
+| Filter | How to use |
+| --- | --- |
+| **Status tabs** | Click a tab to show only that status: All, Completed, Pending, Failed, Refunded, or Cancelled |
+| **Search box** | Type a transaction ID, customer email, or amount to find a specific transaction |
+| **Gateway dropdown** | Select a specific gateway to see only transactions processed through it |
+| **Date range** | Pick a From and To date to limit results to a time period |
+| **Currency filter** | Filter by currency when your brand supports multiple currencies |
+
+## Transaction detail view
+
+Clicking **View** opens a panel with three sections:
+
+- **Payment details** - status, amount, gateway fee, net amount, gateway transaction ID, and lifecycle timestamps.
+- **Customer information** - name, email, phone, and IP address.
+- **Ledger entries** - the double-entry journal postings linked to this transaction.
+
+## Transaction statuses
+
+OwnPay uses a defined set of statuses for every transaction. For the full lifecycle explanation, see [Payment flow](/fundamentals/payment-flow).
+
+| Status | Meaning |
+| --- | --- |
+| **Pending** | Customer opened checkout but has not paid yet |
+| **Awaiting verification** | Customer submitted payment proof (manual gateways only) |
+| **Completed** | Payment confirmed and funds recorded in the ledger |
+| **Failed** | Gateway rejected the transaction |
+| **Refunded** | Funds returned to the customer |
+| **Cancelled** | Checkout expired or was cancelled by the customer |
+
+## Manual status changes
+
+For manual gateways (bank transfer, mobile money), transactions arrive in **awaiting verification** status. You can:
+
+- Click **Mark Completed** after you verify the payment on your bank or wallet statement.
+- Click **Mark Failed** if the payment proof is invalid.
+
+<Warning>
+  Do not force-complete a transaction unless you have verified the payment on your bank or wallet statement. Fraudulent completions break your ledger balance.
+</Warning>
+
+## Export transactions
+
+Click the **Export CSV** button on the Transactions page to download a spreadsheet of all currently filtered transactions. The export includes transaction ID, customer email, amount, currency, gateway, status, and timestamp columns.
+
+## Related Pages
+
+- [Payment flow](/fundamentals/payment-flow) - canonical explanation of all transaction statuses
+- [Refunds](/payments/refunds) - issue refunds from the transaction detail view
+- [Ledger](/payments/ledger) - double-entry accounting entries linked to transactions
+- [Invoices](/payments/invoices) - view payments from invoiced checkouts

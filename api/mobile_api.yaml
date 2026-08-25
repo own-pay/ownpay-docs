@@ -1,17 +1,7 @@
 openapi: 3.1.0
 info:
   title: OwnPay Mobile Companion App API
-  description: |
-    The OwnPay Mobile API is exposed exclusively to the paired mobile companion application.
-    It contains endpoints to complete initial device pairing, submit heartbeats to report online statuses, refresh authentication tokens, upload received SMS messages (supporting batch processing up to 200 items), fetch pending outbound SMS queues, acknowledge push notifications, and retrieve dashboard statistics.
-    
-    ### Security and Cryptography
-    - Except for `/api/mobile/v1/devices` (bootstrap pairing) and `/api/mobile/v1/devices/token-refreshes` (token refresh), all endpoints require authentication using a JSON Web Token (JWT) in the HTTP `Authorization` header.
-      ```http
-      Authorization: Bearer <jwt_access_token>
-      ```
-    - Device fingerprints are checked during token refreshes.
-    - Endpoints are brand-scoped; data visibility is restricted to the specific brand/merchant.
+  description: "The OwnPay Mobile API is exposed exclusively to the paired mobile companion application. It provides endpoints for device pairing, heartbeat reporting, token refresh, SMS message upload (batch up to 200), outbound SMS queue retrieval, push notification acknowledgment, and dashboard statistics. Most endpoints require JWT Bearer authentication. Endpoints are brand-scoped and data visibility is restricted to the specific merchant."
   version: 1.0.0
 servers:
   - url: https://{brand_domain}

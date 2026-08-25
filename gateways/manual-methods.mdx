@@ -1,0 +1,80 @@
+---
+title: "Manual payment methods"
+description: "How to create manual (offline) payment methods like bank transfer, cash on delivery, and mobile money with payment instructions in OwnPay."
+keywords: "manual gateway, offline payment, bank transfer, COD, mobile money, custom fields"
+sidebarTitle: "Manual Methods"
+icon: "cash"
+---
+
+Manual payment methods are offline channels where the customer pays outside of OwnPay - for example, by transferring money to your bank account, sending mobile money, or paying cash on delivery. You define the payment instructions and custom fields, and then verify the payment manually or automatically via SMS.
+
+## What manual gateways are
+
+Unlike API gateways (Stripe, bKash API) that process payments in real time, manual gateways rely on the customer completing the payment on their own and then submitting proof. OwnPay provides the checkout interface and tracking, but you confirm whether the payment actually arrived.
+
+Common examples:
+
+- **Bank transfer** - customer transfers to your account number and uploads a screenshot.
+- **Cash on delivery (COD)** - customer pays when they receive goods.
+- **Mobile money with instructions** - customer sends money to your phone number and enters the transaction ID.
+
+## Create a manual gateway
+
+1. Go to **Gateways & Currencies** → **Payment Gateways**.
+2. Click **Add Manual Gateway**.
+3. Fill in the basic settings (see table below).
+4. Click **Create Gateway**.
+
+| Setting | Type | Description |
+| --- | --- | --- |
+| **Name** | Text | Display name at checkout (for example "Bank Transfer - IBBL") |
+| **Slug** | Text | URL-safe identifier (lowercase, hyphens only) |
+| **Icon** | File upload | Logo or icon shown at checkout |
+| **Payment instructions** | Rich text | Instructions the customer sees after selecting this method |
+| **Custom fields** | JSON schema | Fields the customer must fill (for example transaction ID, account number) |
+| **QR code** | File upload | Optional QR code customers can scan to pay |
+| **Min / Max amount** | Number | Transaction limits for this method |
+
+## Custom fields
+
+Define a JSON schema for the fields customers must fill at checkout. For example:
+
+```json
+[
+  { "name": "trx_id", "label": "Transaction ID", "type": "text", "required": true },
+  { "name": "sender_account", "label": "Sender Account Number", "type": "text", "required": false }
+]
+```
+
+These fields appear on the checkout page after the customer selects this manual method.
+
+## How manual payments work
+
+1. The customer selects the manual method at checkout.
+2. They see your **payment instructions** (bank account, phone number, etc.).
+3. They complete the payment on their own.
+4. They fill in the **custom fields** (for example enter their transaction ID).
+5. The transaction enters **awaiting verification** status.
+6. You review the proof and click **Mark Completed** or **Mark Failed**.
+
+For automatic verification via SMS, see [SMS verification](/gateways/sms-verification).
+
+## Common mistakes
+
+| Mistake | Why it matters | Fix |
+| --- | --- | --- |
+| Vague payment instructions | Customer does not know where to send money | Write clear, step-by-step instructions with exact account numbers |
+| No custom fields for transaction ID | You cannot identify which payment belongs to which transaction | Always require at least a transaction ID field |
+| Min amount higher than max amount | Checkout will reject all amounts | Ensure min amount is less than or equal to max amount |
+| Spaces in slug | Breaks checkout URLs | Use only lowercase letters, numbers, and hyphens |
+
+<Warning>
+  Manual payments stay in "awaiting verification" until you or the SMS auto-verification system process them. Check the Transactions page regularly if you are not using SMS verification.
+</Warning>
+
+## Related Pages
+
+- [Configure payment gateways](/gateways/configuration) - set up API-based gateways
+- [SMS verification](/gateways/sms-verification) - auto-verify manual payments via SMS
+- [Transactions](/payments/transactions) - review and approve awaiting-verification transactions
+- [SMS templates](/mobile/sms-templates) - manage SMS parsing templates

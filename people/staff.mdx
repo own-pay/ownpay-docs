@@ -1,0 +1,66 @@
+---
+title: Invite and manage staff
+description: "How to invite team members, assign them to brands and roles, and manage their accounts in the OwnPay admin dashboard."
+keywords: "staff, team members, staff invitation, deactivate staff, super admin"
+sidebarTitle: Staff
+icon: user-plus
+---
+
+Staff members are the people who log in to your OwnPay admin dashboard to manage payments, brands, and settings. Each staff member has their own login credentials and can be scoped to specific brands.
+
+## Super admin concept
+
+The first account created during installation is the **super admin**. This account has unrestricted access to every brand, every setting, and every role. You cannot delete the super admin. Only the super admin can create other staff members and manage roles.
+
+## Invite a staff member
+
+1. Log in to the admin dashboard as the super admin.
+2. Go to **People** → **Staff**.
+3. Click **\+ Add Staff**.
+4. Enter the staff member’s **name** and **email address**.
+5. Select a **role** (see [Roles](/people/roles) for the full list).
+6. Choose the **brands** this staff member can access.
+7. Click **Create**.
+
+The system sends an invitation email to the staff member. They click the link, set their own password, and log in.
+
+<Note>
+  If your server does not have SMTP configured, the invitation email will not be sent. In that case, the super admin must communicate the login URL and reset the password manually from the staff member’s edit page.
+</Note>
+
+## Staff accepts the invitation
+
+1. The staff member opens the email and clicks the invitation link.
+2. They set a password (minimum 8 characters).
+3. They are redirected to the admin dashboard.
+4. Their initial view is limited to the brands and permissions assigned to their role.
+
+## Manage staff members
+
+From the **People** → **Staff** page, you can:
+
+- **Edit** - change name, email, role, or brand assignments.
+- **Deactivate** - temporarily disable access without deleting the account. Deactivated staff cannot log in.
+- **Delete** - permanently remove the staff account and its session data.
+- **Reset password** - force a password reset so the staff member sets a new password on next login.
+
+## Brand scoping
+
+Staff members only see brands they are assigned to. When a staff member logs in:
+
+1. The system loads their brand list.
+2. They can switch between assigned brands using the brand selector in the top navigation.
+3. If they have only one brand, the dashboard loads that brand’s data directly.
+4. Attempting to access an unassigned brand returns a **403 Forbidden** error.
+
+<Warning>
+  Never share your super admin password with other team members. Always create a separate staff account for each person so you maintain an audit trail of who did what.
+</Warning>
+
+## Related Pages
+
+- [Roles](/people/roles) - built-in roles and permission matrix
+- [Login and authentication](/security/login) - how admin authentication works
+- [Two-factor authentication](/security/two-factor) - secure staff accounts with 2FA
+- [Audit log](/reports/audit-log) - track actions taken by staff members
+- [Brands](/people/brands) - create and configure brands to assign staff to

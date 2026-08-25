@@ -1,0 +1,49 @@
+---
+title: "Ledger UI"
+description: "How to use the ledger page to view journal entries, filter by account type and date, and check balance summaries in OwnPay."
+keywords: "ledger, double-entry, journal entries, balance summary, ledger UI"
+sidebarTitle: "Ledger"
+icon: "book"
+---
+
+The Ledger page gives you a searchable view of all double-entry journal entries for the currently selected brand. For the conceptual explanation of how the double-entry system works, read [Ledger fundamentals](/fundamentals/ledger).
+
+## View ledger entries
+
+1. Go to **Payments** → **Ledger**.
+2. The page loads a table of all journal entries for the active brand, ordered by most recent first.
+3. Each row shows the date, reference ID, entry type (Debit or Credit), amount, and description.
+
+## Filter ledger entries
+
+Use the toolbar above the table to narrow the view:
+
+| Filter | Description |
+| --- | --- |
+| **Account type** | Select a specific ledger account (for example Merchant Payable, Gateway Settlement) |
+| **Date range** | Pick a From and To date to view entries within a period |
+| **Brand selector** | Switch to a different brand’s ledger (if you have multi-brand access) |
+| **Reference** | Search by transaction ID, invoice number, or payment link ID |
+
+## Balance summaries
+
+At the top of the page, you see a summary card showing the **current balance** for the selected brand. This balance is the net sum of all posted debit and credit entries in the brand’s base currency.
+
+The balance reflects:
+
+- Completed payments that credit your merchant payable account.
+- Gateway fees that debit your asset account.
+- Completed refunds that reverse the original entries.
+
+Pending transactions and awaiting-verification payments do **not** appear in the ledger. Entries are only posted when a transaction reaches **Completed** status.
+
+<Warning>
+  Do not edit the `op_ledger_entries` or `op_ledger_accounts` database tables directly. Manual changes break the double-entry balance constraint and will cause validation errors.
+</Warning>
+
+## Related Pages
+
+- [Ledger fundamentals](/fundamentals/ledger) - conceptual explanation of the double-entry model
+- [Balance verification](/reports/balance-verification) - reconcile your ledger against gateway statements
+- [Transactions](/payments/transactions) - find the payments behind ledger entries
+- [Refunds](/payments/refunds) - see how refunds reverse ledger entries

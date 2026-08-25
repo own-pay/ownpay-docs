@@ -181,7 +181,7 @@ function injectStructuredData() {
   }
 
   // 5. FAQPage - ONLY on the FAQ page
-  if (window.location.pathname.includes('/advanced-topics/faq') && !document.querySelector('script[data-ownpay-schema="faq"]')) {
+  if (window.location.pathname.includes('/resources/faq') && !document.querySelector('script[data-ownpay-schema="faq"]')) {
     const faqSchema = {
       "@context": "https://schema.org",
       "@type": "FAQPage",

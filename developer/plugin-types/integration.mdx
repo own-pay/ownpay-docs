@@ -1,0 +1,198 @@
+---
+title: Integration Plugin Development
+description: "Build integration plugins for third-party platforms like QuickBooks, HubSpot, and Slack using payment hooks and outbound API calls."
+keywords: "integration plugin, CRM integration, ERP integration, Slack notifications, QuickBooks sync, HubSpot integration, third-party plugin"
+sidebarTitle: Integration Dev
+icon: plug
+---
+
+Integration plugins connect OwnPay to external platforms: CRMs, ERPs, accounting software, analytics dashboards, and notification services. They do not process payments - they react to payment events and push data outbound.
+
+## Common use cases
+
+| Use case | Example | Trigger |
+| --- | --- | --- |
+| Accounting sync | QuickBooks, Xero | `payment.completed`, `refund.issued` |
+| CRM push | HubSpot, Salesforce | `customer.created`, `payment.completed` |
+| Notifications | Slack, Discord, Telegram | `payment.completed`, `payment.failed` |
+| Analytics | Google Analytics, Mixpanel | `payment.completed` |
+| Fraud alerts | PagerDuty, OpsGenie | `payment.failed` |
+
+## Directory structure
+
+```text
+plugins/integration-slack/
+├── manifest.json
+├── Plugin.php
+├── src/
+│   └── SlackNotifier.php
+├── config/
+│   └── settings.php
+└── resources/
+    └── views/
+        └── settings.twig
+```
+
+## Manifest
+
+```json
+{
+  "name": "Slack Notifications",
+  "slug": "integration-slack",
+  "version": "1.0.0",
+  "type": "integration",
+  "description": "Send payment events to a Slack channel",
+  "author": "Your Name",
+  "capabilities": ["addon", "hooks", "http_outbound", "settings"],
+  "minimumOwnPayVersion": "0.2.0"
+}
+```
+
+## Complete example: Slack notification plugin
+
+This plugin sends a message to Slack whenever a payment is completed or fails.
+
+### Plugin.php
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace OwnPay\Plugins\IntegrationSlack;
+
+use OwnPay\Container;
+use OwnPay\Event\EventManager;
+use OwnPay\Plugin\Capability;
+use OwnPay\Plugin\PluginInterface;
+
+final class Plugin implements PluginInterface
+{
+    public static function metadata(): array
+    {
+        return [
+            'name'        => 'Slack Notifications',
+            'slug'        => 'integration-slack',
+            'version'     => '1.0.0',
+            'description' => 'Send payment events to Slack.',
+            'author'      => 'Your Name',
+            'type'        => 'integration',
+        ];
+    }
+
+    public function capabilities(): array
+    {
+        return [Capability::ADDON, Capability::HOOKS, Capability::HTTP_OUTBOUND];
+    }
+
+    public function register(EventManager $events, Container $container): void
+    {
+        $notifier = new SlackNotifier($container);
+
+        $events->addAction('payment.transaction.completed', function (array $txn) use ($notifier): void {
+            $notifier->send(":white_check_mark: Payment *{$txn['amount']} {$txn['currency']}*\n"
+                . "Transaction: `{$txn['trx_id']}`\n"
+                . "Gateway: {$txn['gateway']}"
+            );
+        });
+
+        $events->addAction('payment.transaction.failed', function (array $txn) use ($notifier): void {
+            $notifier->send(":x: Payment *failed*\n"
+                . "Amount: {$txn['amount']} {$txn['currency']}\n"
+                . "Transaction: `{$txn['trx_id']}`\n"
+                . "Gateway: {$txn['gateway']}"
+            );
+        });
+
+        $events->addAction('refund.issued', function (array $txn) use ($notifier): void {
+            $notifier->send(":arrows_counterclockwise: Refund issued\n"
+                . "Amount: {$txn['amount']} {$txn['currency']}"
+            );
+        });
+    }
+
+    public function boot(Container $container): void {}
+    public function deactivate(Container $container): void {}
+    public function uninstall(Container $container): void {}
+
+    public function fields(): array
+    {
+        return [
+            [
+                'name'     => 'webhook_url',
+                'label'    => 'Slack Webhook URL',
+                'type'     => 'text',
+                'required' => true,
+            ],
+        ];
+    }
+}
+```
+
+### SlackNotifier.php
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace OwnPay\Plugins\IntegrationSlack;
+
+use OwnPay\Container;
+use OwnPay\Repository\SettingsRepository;
+
+class SlackNotifier
+{
+    private string $webhookUrl;
+
+    public function __construct(Container $container)
+    {
+        $settings = $container->get(SettingsRepository::class);
+        $this->webhookUrl = $settings->get('integration-slack', 'webhook_url') ?? '';
+    }
+
+    public function send(string $message): void
+    {
+        if ($this->webhookUrl === '') {
+            return;
+        }
+
+        $payload = json_encode(['text' => $message]);
+
+        $ch = curl_init($this->webhookUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 5,
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_POSTFIELDS     => $payload,
+        ]);
+        curl_exec($ch);
+        curl_close($ch);
+    }
+}
+```
+
+## Configuration UI
+
+The `fields()` method defines the settings form that appears in the admin panel. Values are stored per-brand and accessed via `SettingsRepository`.
+
+## Error handling best practices
+
+- Always check if the webhook URL is configured before making outbound calls
+- Set a short HTTP timeout (5 seconds) so your hook callback does not block checkout
+- Never throw from a hook callback - the error isolation wrapper catches it, but logging is better
+- Log failed outbound calls for debugging
+
+## Testing
+
+1. Install and activate the plugin
+2. Configure the Slack webhook URL in the plugin settings
+3. Create a test payment using a test card
+4. Verify the Slack message arrives
+
+## Related pages
+
+- [Gateway plugin development](/developer/plugin-types/gateway)
+- [Addon plugin development](/developer/plugin-types/addon)
+- [Theme plugin development](/developer/plugin-types/theme)
+- [Hooks reference](/developer/plugins/hooks)
+- [Manifest reference](/developer/plugins/manifest)

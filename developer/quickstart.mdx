@@ -1,211 +1,38 @@
 ---
-title: "Developer Quickstart - Build Your First Payment Integration"
-description: "Get started with the OwnPay REST API in five minutes by creating an API key, making your first payment intent, and receiving webhooks."
-keywords: "OwnPay API, payment API integration, REST API quickstart, PHP payment SDK, Node.js payment SDK, webhook setup, developer quickstart"
+title: "API Integration Quick Start"
+description: "Build a simple payment form that creates a payment, redirects to checkout, and verifies the result - the fastest path to accepting payments with OwnPay."
+keywords: "API quickstart, payment integration, create payment, checkout URL, payment verification, developer tutorial"
 sidebarTitle: "Quickstart"
+icon: "bolt"
 ---
 
-Integrate the OwnPay API in 5 minutes. This guide assumes you have an OwnPay instance running and admin access to generate API keys.
+In this quick start you will build a simple payment flow: create a payment intent, redirect the customer to the OwnPay checkout page, and verify the payment status. By the end you will have a working integration in under 10 minutes.
 
-## Step 1: Generate your API key
+## Prerequisites
 
-1. Log in to your OwnPay admin panel
-2. Go to **Developers > Developer Hub**
-3. Click **Generate API Key**
-4. Choose **Full Access** (or **Read-Only** for testing)
-5. Copy both the **Public Key** and **Secret Key**
+- A running OwnPay instance (v{{version}} or later)
+- An API key with `write` scope - see [API keys](/security/api-keys)
+- Your preferred language (PHP, Node.js, or cURL)
 
-Your keys look like:
+## What's next
 
-```text
-Public Key:  op_pub_abc123xyz...
-Secret Key:  op_sec_abc123xyz...
-```
+<CardGroup cols={3}>
+  <Card title="SDKs" icon="code" href="/developer/integration/php">
+    Full SDK reference for PHP, Laravel, and Node.js.
+  </Card>
 
-<Warning>
-Never commit API keys to git. Use environment variables instead.
-</Warning>
+  <Card title="Webhook guide" icon="shield-check" href="/developer/webhook-integration">
+    End-to-end webhook receiver with signature verification.
+  </Card>
 
-## Step 2: Choose your SDK
+  <Card title="Testing" icon="flask" href="/developer/testing">
+    Test cards, sandbox mode, and webhook simulation.
+  </Card>
+</CardGroup>
 
-<Tabs>
-<Tab title="PHP">
+## Related pages
 
-```bash
-composer require ownpay/php-sdk
-```
-
-```php
-use OwnPay\SDK\Client;
-
-$client = new Client(
-    publicKey: $_ENV['OWNPAY_PUBLIC_KEY'],
-    secretKey: $_ENV['OWNPAY_SECRET_KEY'],
-    baseUrl: 'https://yourdomain.com/api/v1'
-);
-
-$payment = $client->payments()->create([
-    'amount'       => 5000,
-    'currency'     => 'USD',
-    'customer_email' => 'customer@example.com',
-    'description'  => 'Order #123'
-]);
-```
-
-</Tab>
-<Tab title="Node.js">
-
-```bash
-npm install ownpay
-```
-
-```javascript
-import OwnPay from 'ownpay';
-
-const ownpay = new OwnPay({
-  publicKey: process.env.OWNPAY_PUBLIC_KEY,
-  secretKey: process.env.OWNPAY_SECRET_KEY,
-  baseUrl: 'https://yourdomain.com/api/v1'
-});
-
-const payment = await ownpay.payments.create({
-  amount: 5000,
-  currency: 'USD',
-  customer_email: 'customer@example.com',
-  description: 'Order #123'
-});
-```
-
-</Tab>
-<Tab title="cURL">
-
-```bash
-curl -X POST https://yourdomain.com/api/v1/payments \
-  -H "Authorization: Bearer op_sec_your_secret_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 5000,
-    "currency": "USD",
-    "customer_email": "customer@example.com",
-    "description": "Order #123"
-  }'
-```
-
-</Tab>
-</Tabs>
-
-## Step 3: Create your first payment
-
-After creating a payment, you get back:
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": "pay_abc123...",
-    "amount": 5000,
-    "currency": "USD",
-    "status": "pending",
-    "checkout_url": "https://yourdomain.com/checkout/pay_abc123",
-    "customer_email": "customer@example.com"
-  }
-}
-```
-
-The `checkout_url` is where your customer makes the payment.
-
-## Step 4: Handle webhooks
-
-When your customer completes a payment, OwnPay sends a webhook to your endpoint.
-
-### Configure your webhook endpoint
-
-1. Go to **Developers > Webhook Settings**
-2. Enter your endpoint URL: `https://yourapp.com/webhooks/ownpay`
-3. Copy the **Webhook Signing Secret**
-4. Click **Save**
-
-### Verify webhook signatures
-
-**PHP:**
-
-```php
-$payload = file_get_contents('php://input');
-$signature = $_SERVER['HTTP_X_OWNPAY_SIGNATURE'] ?? '';
-$secret = $_ENV['OWNPAY_WEBHOOK_SECRET'];
-
-$expectedSignature = hash_hmac('sha256', $payload, $secret);
-if (!hash_equals($expectedSignature, $signature)) {
-    http_response_code(401);
-    exit('Unauthorized');
-}
-
-$event = json_decode($payload, true);
-
-if ($event['type'] === 'payment.completed') {
-    updateOrder($event['data']['metadata']['order_id'], 'completed');
-}
-
-http_response_code(200);
-```
-
-**Node.js:**
-
-```javascript
-import crypto from 'crypto';
-
-app.post('/webhooks/ownpay', express.json(), (req, res) => {
-  const payload = JSON.stringify(req.body);
-  const signature = req.headers['x-ownpay-signature'];
-  const secret = process.env.OWNPAY_WEBHOOK_SECRET;
-
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(payload)
-    .digest('hex');
-
-  if (signature !== expectedSignature) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const { type, data } = req.body;
-
-  if (type === 'payment.completed') {
-    updateOrder(data.id, 'completed');
-  }
-
-  res.json({ success: true });
-});
-```
-
-## Step 5: Test your integration
-
-### Test mode
-
-1. In your admin panel, go to **Gateways**
-2. Set the gateway to **Test Mode**
-3. Use test card numbers:
-
-| Card type | Number | Outcome |
-|-----------|--------|---------|
-| Visa | 4111 1111 1111 1111 | Success |
-| Mastercard | 5555 5555 5555 4444 | Success |
-| Amex | 3782 822463 10005 | Success |
-| Declined | 4000 0000 0000 0002 | Failure |
-
-## API quick reference
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/payments` | POST | Create a payment |
-| `/payments/{id}` | GET | Get payment details |
-| `/transactions` | GET | List transactions |
-| `/payment-links` | POST | Create a payment link |
-
-## Next steps
-
-- [Full PHP SDK guide](/developer/integration/php) - Complete API reference for PHP
-- [Laravel SDK](/developer/integration/laravel) - Laravel facade, webhooks, and value objects
-- [Full Node.js SDK guide](/developer/integration/nodejs) - Complete API reference for Node.js
-- [Webhook events](/api/webhooks) - All webhook event types
-- [Build a plugin](/developer/plugin-types/gateway-development) - Extend OwnPay with plugins
+- [API overview](/api/overview)
+- [Authentication](/api/authentication)
+- [Webhooks](/api/webhooks)
+- [Testing payments](/developer/testing)

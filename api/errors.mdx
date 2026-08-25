@@ -1,101 +1,139 @@
 ---
-title: "API Error Codes - HTTP Status Codes and Response Reference"
-description: "Reference for OwnPay API HTTP status codes, error response format, and common error codes covering payments, authentication, and validation."
-keywords: "API errors, HTTP status codes, error codes, API troubleshooting, payment errors"
-sidebarTitle: "Error codes"
+title: "API Error Codes and HTTP Status Reference"
+description: "Complete reference of OwnPay API error codes, HTTP status codes, error response structure, and how to handle authentication, validation, and gateway errors."
+keywords: "API errors, error codes, HTTP status codes, validation errors, error response format, API troubleshooting"
+sidebarTitle: "Errors"
+icon: "alert-triangle"
 ---
 
-OwnPay API returns consistent error responses across all endpoints.
+OwnPay uses standard HTTP status codes and a consistent JSON error envelope so you can handle failures programmatically. Every non-2xx response returns a machine-readable `error.code` and a human-readable `error.message`.
 
-## Error response format
+## Error response structure
+
+All error responses share the same shape:
 
 ```json
 {
   "success": false,
   "error": {
-    "code": "invalid_amount",
-    "message": "Amount must be greater than 0"
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid or has been revoked.",
+    "details": {}
   }
 }
 ```
 
+| Field | Type | Description |
+| --- | --- | --- |
+| `success` | boolean | Always `false` for errors. |
+| `error.code` | string | Machine-readable error identifier. Use this for programmatic handling. |
+| `error.message` | string | Human-readable description safe to log. |
+| `error.details` | object | Optional. Field-level validation errors or gateway payloads. |
+
 ## HTTP status codes
 
-| Code | Meaning |
-|------|---------|
-| 200 | Success |
-| 201 | Created |
-| 400 | Bad request (validation error) |
-| 401 | Unauthorized (invalid API key) |
-| 403 | Forbidden (insufficient permissions) |
-| 404 | Resource not found |
-| 409 | Conflict (duplicate resource) |
-| 422 | Unprocessable entity (business logic error) |
-| 429 | Rate limit exceeded |
-| 500 | Internal server error |
+| Status | Meaning | When you see it |
+| --- | --- | --- |
+| `200` | OK | Request succeeded. |
+| `201` | Created | Resource created (payments, refunds, invoices). |
+| `400` | Bad Request | Malformed JSON or invalid parameters. |
+| `401` | Unauthorized | Missing, invalid, expired, or revoked API key. |
+| `403` | Forbidden | API key scope is insufficient for the endpoint. |
+| `404` | Not Found | Resource does not exist or belongs to another brand. |
+| `409` | Conflict | Idempotency conflict or duplicate resource. |
+| `422` | Unprocessable Entity | Validation failed on one or more fields. |
+| `429` | Too Many Requests | Rate limit exceeded. See [Rate limiting](/resources/rate-limiting). |
+| `500` | Internal Server Error | Unexpected server error. Safe to retry with backoff. |
+| `502` / `503` | Bad Gateway / Service Unavailable | Upstream gateway timeout or maintenance. Retry recommended. |
 
 ## Common error codes
 
-### Authentication errors
+### Authentication
 
-| Code | Description |
-|------|-------------|
-| `invalid_api_key` | API key not found or malformed |
-| `expired_api_key` | API key has expired |
-| `revoked_api_key` | API key has been revoked |
-| `insufficient_permissions` | Key lacks required access level |
+| Code | HTTP | Meaning |
+| --- | --- | --- |
+| `invalid_api_key` | 401 | Key not found or malformed. |
+| `expired_api_key` | 401 | Key has passed its expiration date. |
+| `revoked_api_key` | 401 | Key was manually revoked. |
+| `insufficient_permissions` | 403 | Key scope too low for this endpoint. |
+| `missing_authorization_header` | 401 | `Authorization` header not present. |
 
-### Payment errors
+See [Authentication](/api/authentication) for how to pass credentials.
 
-| Code | Description |
-|------|-------------|
-| `invalid_amount` | Amount must be greater than 0 |
-| `invalid_currency` | Unsupported currency code |
-| `gateway_unavailable` | Payment gateway is down |
-| `payment_declined` | Gateway declined the payment |
-| `insufficient_funds` | Customer account has insufficient funds |
-| `expired_card` | Card has expired |
-| `invalid_card` | Card details are invalid |
+### Validation
+
+| Code | HTTP | Meaning |
+| --- | --- | --- |
+| `validation_failed` | 422 | One or more fields failed validation. Inspect `error.details`. |
+| `invalid_currency` | 422 | Currency code not enabled for this brand. |
+| `invalid_amount` | 422 | Amount is zero, negative, or exceeds gateway limits. |
+| `unsupported_gateway` | 422 | Requested gateway not enabled for the brand. |
 
 ### Resource errors
 
-| Code | Description |
-|------|-------------|
-| `not_found` | Resource does not exist |
-| `already_exists` | Resource already exists |
-| `invalid_state` | Resource is in an invalid state for this operation |
+| Code | HTTP | Meaning |
+| --- | --- | --- |
+| `not_found` | 404 | Resource does not exist. |
+| `payment_not_found` | 404 | Payment ID not recognized. |
+| `already_refunded` | 409 | Payment has already been fully refunded. |
+| `idempotency_conflict` | 409 | Same `Idempotency-Key` used with a different payload. |
 
-### Webhook errors
+### Gateway errors
 
-| Code | Description |
-|------|-------------|
-| `invalid_webhook_url` | URL is not valid or not HTTPS |
-| `webhook_secret_missing` | Webhook secret not configured |
-| `signature_mismatch` | Webhook signature verification failed |
+| Code | HTTP | Meaning |
+| --- | --- | --- |
+| `gateway_declined` | 402 | Gateway rejected the transaction. See `error.details`. |
+| `gateway_timeout` | 502 | Upstream gateway did not respond in time. |
+| `gateway_unavailable` | 503 | Gateway is temporarily disabled or in maintenance. |
+
+### Rate limits
+
+| Code | HTTP | Meaning |
+| --- | --- | --- |
+| `rate_limit_exceeded` | 429 | Too many requests. Read the `Retry-After` header before retrying. |
+
+## Validation error details
+
+Validation failures include a `details` object mapping each field to its error messages:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "validation_failed",
+    "message": "The given data was invalid.",
+    "details": {
+      "amount": ["The amount must be at least 1."],
+      "currency": ["The selected currency is invalid."]
+    }
+  }
+}
+```
 
 ## Handling errors
 
-### Best practices
+<Steps>
+  <Step title="Check the HTTP status">
+    Use the status code to decide whether to retry, surface the error to the user, or log it silently.
+  </Step>
+  <Step title="Branch on `error.code`">
+    Never parse `error.message`. Codes are stable across releases; messages are not.
+  </Step>
+  <Step title="Retry safely">
+    Retry on `429`, `500`, `502`, and `503` with exponential backoff. Always send an `Idempotency-Key` on retries.
+  </Step>
+  <Step title="Log the full envelope">
+    Persist `error.code`, `error.message`, and `error.details` alongside the request ID for debugging.
+  </Step>
+</Steps>
 
-1. Check the `success` field first
-2. Use the `error.code` for programmatic handling
-3. Display `error.message` to users (it's human-readable)
-4. Implement retry logic for 5xx errors
-5. Log all errors for debugging
+<Tip>
+  Include an `Idempotency-Key` header on every mutating request. It lets you retry safely without creating duplicate payments or refunds.
+</Tip>
 
-### Example error handling
+## Related
 
-```php
-$response = $client->payments()->create([...]);
-
-if (!$response['success']) {
-    $code = $response['error']['code'];
-    $message = $response['error']['message'];
-    
-    match ($code) {
-        'invalid_amount' => handleInvalidAmount(),
-        'gateway_unavailable' => retryLater(),
-        default => logError($code, $message),
-    };
-}
-```
+- [Authentication](/api/authentication)
+- [Webhooks](/api/webhooks)
+- [Rate limiting](/resources/rate-limiting)
+- [Common errors](/resources/common-errors)

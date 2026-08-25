@@ -1,0 +1,73 @@
+---
+title: "Devices"
+description: "View paired Android companion devices, monitor their heartbeat health, and manage pairing status from the admin panel."
+keywords: "device management, paired devices, device health, heartbeat, unpair device, mobile devices"
+sidebarTitle: "Devices"
+icon: "device-mobile"
+---
+
+The Devices page in the admin panel lets you monitor all Android companion apps paired with your OwnPay instance. Each device's connectivity status, last heartbeat, and basic information are displayed in a single table.
+
+## Getting here
+
+Navigate to **Mobile \> Devices** in the left sidebar.
+
+## Device list
+
+Every paired device appears in the table with the following columns:
+
+| Column | Description |
+| --- | --- |
+| **Name** | The device label assigned during pairing |
+| **Phone Number** | The phone number associated with the SIM in the device |
+| **Last Heartbeat** | Timestamp of the most recent heartbeat received |
+| **Status** | Online, Offline, or Timeout |
+| **Actions** | Unpair button |
+
+## Device health monitoring
+
+OwnPay classifies each device into one of three statuses based on heartbeat frequency:
+
+<Columns>
+  <Column>
+    <Badge color="green">Online</Badge>
+
+    Heartbeat received within the last **10 minutes**. The device is actively connected and forwarding SMS.
+  </Column>
+  <Column>
+    <Badge color="red">Offline</Badge>
+
+    No heartbeat for **over 10 minutes**. The device may have lost network connectivity, been turned off, or had its background service killed by the OS.
+  </Column>
+  <Column>
+    <Badge color="yellow">Timeout</Badge>
+
+    Heartbeat is intermittent - the device connects and drops repeatedly. Check network stability and battery optimization settings.
+  </Column>
+</Columns>
+
+## Unpair a device
+
+To remove a device, click the **Unpair** action button on its row. This revokes the device's Mobile API key immediately. The companion app on that device will stop functioning until it is re-paired with a new key.
+
+<Warning>
+  Unpairing is immediate and irreversible. Any SMS arriving on the unpaired device will no longer be forwarded to your OwnPay instance.
+</Warning>
+
+## Multiple device support
+
+OwnPay supports pairing **multiple Android devices** to a single instance. This is useful when you operate across multiple phone numbers or gateways. Each device operates independently and forwards its own incoming SMS.
+
+<Tip>
+  If you use multiple devices, assign descriptive names (for example, "City Bank - Office SIM") to easily identify which device handles which gateway's verification SMS.
+</Tip>
+
+## Generate a mobile API key
+
+To pair a new device, click **Generate Key** at the top of the Devices page. Copy the key and enter it into the companion app during setup. Each key is single-use - once a device is paired with a key, that key cannot be reused.
+
+## Related Pages
+
+- [Companion App](/mobile/companion-app) - Install and configure the Android app
+- [SMS Templates](/mobile/sms-templates) - Regex templates for auto-verification
+- [SMS Center](/notifications/sms-center) - Centralized SMS log viewer

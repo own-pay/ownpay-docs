@@ -1,0 +1,277 @@
+---
+title: "Common Errors"
+description: "Diagnose and fix common OwnPay errors organized by category including installation, payment, webhook, SMS, plugin, and system errors with symptoms, causes, and resolutions."
+keywords: "troubleshooting, errors, installation errors, payment errors, webhook errors, SMS errors, plugin errors, system errors"
+sidebarTitle: "Common Errors"
+icon: "message-report"
+---
+
+Solutions to the most frequently encountered OwnPay issues, organized by category. Each entry includes the symptom, root cause, and resolution.
+
+---
+
+## Installation errors
+
+### Database connection refused
+
+**Symptom:** The installer shows "Could not connect to MySQL" or the admin panel returns a 500 error with a database connection message.
+
+**Cause:** MySQL is not running, the credentials in `.env` are incorrect, or the database user lacks permission.
+
+**Resolution:**
+
+1. Verify MySQL is running: `sudo systemctl status mysql`
+2. Test the connection manually: `mysql -u db_user -p -h db_host db_name`
+3. Check that `DB_HOST`, `DB_USER`, `DB_PASS`, and `DB_NAME` in `.env` match your MySQL configuration
+
+See [Installation](/installation) for the full setup guide.
+
+### Storage directory not writable
+
+**Symptom:** Installer fails at the permissions check step, or you see "Failed to write to storage/" errors.
+
+**Cause:** The web server user does not have write permissions on the `storage/` directory.
+
+**Resolution:**
+
+```bash
+sudo chown -R www-data:www-data /var/www/ownpay/storage
+sudo chmod -R 775 /var/www/ownpay/storage
+```
+
+### Required PHP extensions missing
+
+**Symptom:** A blank page, or a fatal error mentioning a missing class or function.
+
+**Cause:** PHP 8.3 is active but required extensions are not enabled.
+
+**Resolution:** Install the required extensions:
+
+```bash
+sudo apt install php8.3-bcmath php8.3-mbstring php8.3-openssl php8.3-curl php8.3-zip php8.3-mysql
+sudo systemctl restart php8.3-fpm
+```
+
+### Installer lock file present
+
+**Symptom:** Visiting `/install` shows "Already Installed" even on a fresh setup.
+
+**Cause:** The file `storage/.installed` exists from a previous installation.
+
+**Resolution:** Delete the lock file: `rm storage/.installed`. Only do this if you are intentionally re-installing.
+
+---
+
+## Payment errors
+
+### Gateway timeout
+
+**Symptom:** Transaction stuck in `processing` status. Customer was charged but OwnPay shows no completion.
+
+**Cause:** The upstream gateway took too long to respond, or the callback from the gateway was blocked by a firewall or failed to reach your server.
+
+**Resolution:**
+
+1. Check the gateway's dashboard to confirm the payment was captured
+2. If confirmed, manually update the transaction status in the admin panel
+3. Verify the gateway callback URL is reachable: `curl -v https://your-domain.com/webhook/{gateway-slug}`
+4. Check firewall rules allow inbound POST requests from the gateway's IP ranges
+
+### Invalid gateway credentials
+
+**Symptom:** Payments fail immediately with a gateway error. Admin shows "Authentication failed" or "Invalid API key."
+
+**Cause:** The API key or secret configured for the gateway is incorrect, expired, or belongs to the wrong environment (test vs live).
+
+**Resolution:**
+
+1. Go to **Gateways \> Payment Gateways** and re-enter the credentials from your gateway dashboard
+2. Make sure you are using live keys in production and test keys in sandbox mode
+3. Some gateways require IP whitelisting - add your server's outbound IP to the gateway's allowed list
+
+### Currency not supported
+
+**Symptom:** Checkout page shows the gateway but returns an error when the customer attempts to pay.
+
+**Cause:** The payment intent currency is not in the gateway's supported currency list.
+
+**Resolution:** OwnPay auto-converts currencies when a gateway does not support the intent currency. If conversion fails, check that exchange rates are configured in **Settings \> Currencies** and the target currency is supported by the gateway.
+
+### Amount validation error
+
+**Symptom:** API returns "Amount must be greater than zero" or "Amount exceeds maximum."
+
+**Cause:** The amount is zero, negative, or exceeds the gateway's maximum transaction limit.
+
+**Resolution:** Send amounts as string decimal values (for example, `"500.00"`), not integers or floats. For large transactions, check the gateway's documentation for maximum amount limits.
+
+### Expired payment intent
+
+**Symptom:** Customer clicks an old checkout link and sees "Payment link has expired."
+
+**Cause:** The payment intent exceeded its configured expiry time.
+
+**Resolution:** Create a new payment intent. You can increase the default expiry in **Settings \> Payment**.
+
+---
+
+## Webhook errors
+
+### Signature mismatch on your server
+
+**Symptom:** Your webhook endpoint rejects OwnPay deliveries with a 401 status.
+
+**Cause:** You are using the wrong webhook secret, re-encoding the JSON body before computing the signature, or not including the timestamp in the signed payload.
+
+**Resolution:** The signed payload is `{timestamp}.{raw_body}`. Use the raw request body bytes exactly as received, never re-serialized JSON. See the [Code Examples](/resources/code-examples) page for correct verification code.
+
+### Webhook delivery failures
+
+**Symptom:** OwnPay shows failed deliveries in the webhook log.
+
+**Cause:** The target URL is unreachable, returns a non-2xx status, or times out.
+
+**Resolution:**
+
+1. Verify the URL is publicly accessible and returns 200 for valid payloads
+2. Check your server's outbound connectivity: `curl -X POST -d '{}' https://your-webhook-url.com`
+3. Review the specific error in **Developer \> Webhook Delivery Logs**
+
+### Retry exhausted / dead letter queue
+
+**Symptom:** Webhook delivery shows `status: dead_letter`.
+
+**Cause:** The delivery failed after all retry attempts with exponential backoff.
+
+**Resolution:** Fix the receiving endpoint, then go to **Developer \> Webhook Delivery Logs**, find the failed delivery, and click **Replay**.
+
+---
+
+## SMS errors
+
+### SMS forwarding not working
+
+**Symptom:** Manual gateway payments stay in `awaiting_verification` even though the customer's SMS arrived on the paired device.
+
+**Cause:** The companion app is not forwarding SMS, or the forwarding permission was revoked.
+
+**Resolution:**
+
+1. Open the companion app and verify SMS forwarding is enabled
+2. Check that the device shows as "online" in **Devices** in the admin panel
+3. Re-pair the device if the JWT has expired
+
+### Regex not matching
+
+**Symptom:** SMS arrives but `op_sms_data` shows `match_status: no_match`.
+
+**Cause:** The SMS template regex for this gateway does not match the actual SMS format from the provider.
+
+**Resolution:**
+
+1. Go to **SMS Verification \> Templates** and find the gateway's template
+2. Click **Test** and paste a sample SMS body to debug the regex
+3. Update the regex to match the current SMS format (providers sometimes change their format)
+
+### Parser confidence too low
+
+**Symptom:** SMS was parsed but the transaction was not auto-matched due to low confidence.
+
+**Cause:** Multiple pending transactions have similar amounts, so the parser cannot determine which one the SMS corresponds to.
+
+**Resolution:** Manually verify the transaction from the admin panel. Reduce the number of concurrent pending transactions for the same amount to improve auto-matching.
+
+---
+
+## Plugin errors
+
+### Sandbox scan failure
+
+**Symptom:** Plugin upload fails with "Plugin failed security scan."
+
+**Cause:** The plugin source code contains a prohibited function call (`exec`, `shell_exec`, `eval`, `passthru`, `system`, or raw PDO).
+
+**Resolution:** Remove the prohibited call. If you need to execute external commands, you must use OwnPay's approved service methods instead. See the [Plugin Development Overview](/developer/plugins/overview) for the full sandbox rules.
+
+### Manifest validation failure
+
+**Symptom:** Plugin upload fails with "Invalid manifest.json."
+
+**Cause:** The `manifest.json` file is missing required fields, has invalid JSON syntax, or uses an unsupported plugin type.
+
+**Resolution:** Check the manifest against the specification. Required fields include `name`, `slug`, `version`, `type` (gateway/theme/addon), and `entry`.
+
+### Migration failure
+
+**Symptom:** Plugin installs but shows a database error on activation.
+
+**Cause:** The plugin's migration SQL has a syntax error or references a table that does not exist.
+
+**Resolution:**
+
+1. Check the exact error in `storage/logs/`
+2. Fix the migration SQL in the plugin's `database/` directory
+3. Uninstall and re-install the plugin
+
+---
+
+## System errors
+
+### Cache driver failure
+
+**Symptom:** Admin panel is extremely slow or returns 500 errors. Logs show "Cache driver not available."
+
+**Cause:** Redis is down or the file cache directory is not writable.
+
+**Resolution:**
+
+1. If using Redis: `sudo systemctl status redis` and check `REDIS_HOST`/`REDIS_PORT` in `.env`
+2. If using file cache: verify `storage/cache/` is writable
+3. Temporarily switch to file cache in `.env`: `CACHE_DRIVER=file`
+
+### Queue worker crash
+
+**Symptom:** Webhook deliveries, emails, or SMS verifications are not being processed.
+
+**Cause:** The cron job is not running, or the queue worker encountered a fatal error.
+
+**Resolution:**
+
+1. Verify cron is configured: `crontab -l` should contain the queue worker entry
+2. Check for errors: `tail -50 storage/logs/queue.log`
+3. Manually trigger a run: `php /var/www/ownpay/public/index.php cron/run`
+
+### Maintenance mode stuck
+
+**Symptom:** All pages show "Under Maintenance" after an update.
+
+**Cause:** The update process did not complete successfully and did not exit maintenance mode.
+
+**Resolution:**
+
+1. Check for pending migrations: look at the latest entries in `storage/logs/`
+2. If the update is stuck, manually disable maintenance mode by setting `APP_MAINTENANCE=false` in `.env`
+3. Visit the admin panel and check if the schema version matches the code version
+
+---
+
+## Getting help
+
+If your issue is not covered here:
+
+1. Search [GitHub Issues](https://github.com/own-pay/OwnPay/issues) for known problems
+2. Enable [debug mode](/resources/debug-mode) temporarily to get detailed error output
+3. Open a [GitHub Issue](https://github.com/own-pay/OwnPay/issues/new) with:
+   - OwnPay version: `php public/index.php --version`
+   - PHP version: `php -v`
+   - The full error message and stack trace
+   - Steps to reproduce
+
+---
+
+## Related Pages
+
+- [FAQ](/resources/faq) - Answers to common questions
+- [Debug Mode](/resources/debug-mode) - Enabling detailed error output
+- [Migration Guide](/resources/migration-guide) - Version upgrade troubleshooting
+- [Performance and Scaling](/resources/performance-scaling) - Resolving slow response times

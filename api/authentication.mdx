@@ -1,85 +1,143 @@
 ---
-title: "API Authentication - Bearer Tokens and API Key Scoping"
-description: "Generate, scope, rotate, and use OwnPay API keys with Bearer token authentication across the Merchant, Admin, and Mobile REST APIs."
-keywords: "API authentication, Bearer token, API key, payment API security, REST API auth"
+title: "API Authentication"
+description: "Canonical reference for OwnPay API authentication using Bearer tokens, API key scopes, and the super admin override header."
+keywords: "API authentication, Bearer token, API key, key scopes, super admin, REST API auth, op_live"
 sidebarTitle: "Authentication"
+icon: "lock"
 ---
 
-OwnPay uses API keys for authentication. All API requests must include a valid API key.
+OwnPay authenticates every API request via a Bearer token in the `Authorization` header. You generate API keys from the admin panel - see [API keys](/security/api-keys) for the full key management guide.
 
-## API key format
+## How to get an API key
 
-```text
-op_live_abc123xyz...
-op_secret_def456...
-```
-
-- **Public Key** (`op_live_...`) - Used in client-side code
-- **Secret Key** (`op_secret_...`) - Used for server-side authentication
-
-## Generating keys
-
-1. Log in to OwnPay admin
-2. Go to **Developers > API Keys**
+1. Log in to your OwnPay admin panel
+2. Navigate to **Developers → API Keys**
 3. Click **Generate API Key**
-4. Choose access level (Full Access or Read-Only)
-5. Copy both keys immediately
+4. Choose the access scope (read, write, or admin)
+5. Copy the key immediately - it is shown only once
 
 <Warning>
-Keys are shown once only. Store them in environment variables, never in code.
+  Store API keys in environment variables. Never commit them to version control.
 </Warning>
 
-## Using keys
+## Header format
 
-### HTTP Header
+Every API request must include the key as a Bearer token:
 
-```bash
-curl -H "Authorization: Bearer op_live_your_key" \
-     https://yourdomain.com/api/v1/payments
+```http
+Authorization: Bearer op_live_abc123.def456
 ```
 
-### PHP SDK
+The key prefix `op_live_` identifies a live key. Test-mode keys use the `op_test_` prefix.
 
-```php
-$client = new Client(
-    publicKey: $_ENV['OWNPAY_PUBLIC_KEY'],
-    secretKey: $_ENV['OWNPAY_SECRET_KEY'],
-    baseUrl: 'https://yourdomain.com/api/v1'
-);
+## Key scopes
+
+API keys carry one of three scopes, which determine which endpoints the key can access:
+
+| Scope | Can read | Can write | Can manage | Typical use |
+| --- | --- | --- | --- | --- |
+| `read` | Yes | No | No | Dashboards, reporting bots |
+| `write` | Yes | Yes | No | Payment creation, checkout flows |
+| `admin` | Yes | Yes | Yes | Full platform management |
+
+<Info>
+  The scope is set when you generate the key and cannot be changed afterward. Create separate keys for separate applications.
+</Info>
+
+## Super admin operations
+
+A small set of platform-level operations (creating brands, managing system users) require an additional header on top of an `admin`-scoped key:
+
+```http
+Authorization: Bearer op_live_abc123.def456
+X-Super-Admin-Email: admin@your-domain.com
 ```
 
-### Node.js SDK
+Only the super admin email registered during installation can use this header. Without it, admin-scoped endpoints return a 403.
 
-```javascript
-const ownpay = new OwnPay({
-  publicKey: process.env.OWNPAY_PUBLIC_KEY,
-  secretKey: process.env.OWNPAY_SECRET_KEY,
-  baseUrl: 'https://yourdomain.com/api/v1'
+## Authentication error response
+
+If the key is missing, invalid, expired, or lacks the required scope, the API returns:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid or has been revoked."
+  }
+}
+```
+
+Common auth error codes:
+
+| Code | HTTP status | Meaning |
+| --- | --- | --- |
+| `invalid_api_key` | 401 | Key not found or malformed |
+| `expired_api_key` | 401 | Key has passed its expiration date |
+| `revoked_api_key` | 401 | Key was manually revoked |
+| `insufficient_permissions` | 403 | Key scope too low for this endpoint |
+
+## Code examples
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://your-domain.com/api/v1/payments/pay_abc123 \
+  -H "Authorization: Bearer op_live_abc123.def456"
+```
+
+```php PHP
+$ch = curl_init('https://your-domain.com/api/v1/payments/pay_abc123');
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        'Authorization: Bearer ' . $_ENV['OWNPAY_API_KEY'],
+        'Content-Type: application/json',
+    ],
+]);
+
+$response = json_decode(curl_exec($ch), true);
+curl_close($ch);
+```
+
+```javascript Node.js
+const response = await fetch('https://your-domain.com/api/v1/payments/pay_abc123', {
+  headers: {
+    'Authorization': `Bearer ${process.env.OWNPAY_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
 });
+
+const data = await response.json();
 ```
 
-## Key security
+```python Python
+import os
+import requests
 
-- Never commit keys to git repositories
-- Use environment variables for storage
+resp = requests.get(
+    'https://your-domain.com/api/v1/payments/pay_abc123',
+    headers={
+        'Authorization': f'Bearer {os.environ["OWNPAY_API_KEY"]}',
+        'Content-Type': 'application/json',
+    },
+)
+data = resp.json()
+```
+
+</CodeGroup>
+
+## Best practices
+
 - Rotate keys every 90 days
-- Use separate keys per application
-- Monitor API usage for anomalies
+- Use one key per environment (dev, staging, prod)
+- Use one key per application
+- Monitor usage in **Developers → API Keys** for anomalies
 - Revoke unused keys immediately
 
-## Key rotation
+## Related pages
 
-1. Generate a new key pair
-2. Update all applications to use the new key
-3. Test in production
-4. Delete the old key
-5. Verify no errors
-
-## Error codes
-
-| Error | Cause |
-|-------|-------|
-| `invalid_api_key` | Key not found or malformed |
-| `expired_api_key` | Key has expired |
-| `revoked_api_key` | Key has been revoked |
-| `insufficient_permissions` | Key lacks required access level |
+- [API keys](/security/api-keys)
+- [API overview](/api/overview)
+- [Error codes](/api/errors)

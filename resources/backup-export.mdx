@@ -1,0 +1,151 @@
+---
+title: "Backup and Export"
+description: "Learn how to back up and restore your OwnPay installation including database dumps, file backups, automated backup scripts, and data export procedures."
+keywords: "backup, restore, mysqldump, data export, database backup, file backup, automated backup"
+sidebarTitle: "Backup & Export"
+icon: "server"
+---
+
+A reliable backup strategy is essential for any payment platform. This guide covers what to back up, how to automate backups, how to restore from a backup, and how to export data for external use.
+
+---
+
+## What to back up
+
+You need to protect four categories of data:
+
+| Category | Location | Contents |
+| :-- | :-- | :-- |
+| Database | MySQL | All `op_` tables - transactions, customers, ledger, settings, sessions |
+| Storage files | `storage/` | Cache, compiled views, logs, uploaded files (logos, dispute evidence) |
+| Environment config | `.env` | APP\_KEY, ENCRYPTION\_KEY, JWT\_SECRET, database credentials, Redis config |
+| Custom code | `modules/`, `config/` | Custom plugins, themes, and config overrides |
+
+<Warning>
+  The `.env` file contains your `ENCRYPTION_KEY`. Without it, you cannot decrypt customer PII or gateway credentials stored in the database. Always include `.env` in your backups.
+</Warning>
+
+---
+
+## Database backup
+
+Use `mysqldump` with the `--single-transaction` flag to produce a consistent snapshot without locking tables during the dump.
+
+```bash
+mysqldump \
+  --single-transaction \
+  --routines \
+  --triggers \
+  --set-gtid-purged=OFF \
+  -u ownpay_user -p \
+  ownpay_db > /backups/ownpay-db-$(date +%Y-%m-%d_%H%M%S).sql
+```
+
+<Note>
+  The `--single-transaction` flag uses InnoDB's MVCC to create a consistent snapshot. This is safe for production databases because it does not block reads or writes.
+</Note>
+
+---
+
+## File backup
+
+Archive the application files, excluding dependencies that can be reinstalled and temporary files that are regenerated automatically.
+
+```bash
+tar -czf /backups/ownpay-files-$(date +%Y-%m-%d_%H%M%S).tar.gz \
+  --exclude='vendor' \
+  --exclude='node_modules' \
+  --exclude='storage/cache/*' \
+  --exclude='storage/sessions/*' \
+  --exclude='storage/logs/*' \
+  -C /var/www ownpay/
+```
+
+Then copy the `.env` file separately with restricted permissions:
+
+```bash
+cp /var/www/ownpay/.env /backups/ownpay-env-$(date +%Y-%m-%d_%H%M%S).txt
+chmod 600 /backups/ownpay-env-*.txt
+```
+
+---
+
+## Automated backup script
+
+Create a shell script that produces timestamped database and file backups, and rotates old backups to prevent disk exhaustion.
+
+```bash
+#!/bin/bash
+# /opt/scripts/ownpay-backup.sh
+
+BACKUP_DIR="/backups/ownpay"
+RETENTION_DAYS=30
+DB_NAME="ownpay_db"
+DB_USER="ownpay_user"
+APP_DIR="/var/www/ownpay"
+
+mkdir -p "$BACKUP_DIR"
+
+# Database backup
+mysqldump --single-transaction -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+  | gzip > "$BACKUP_DIR/db-$(date +%Y-%m-%d_%H%M%S).sql.gz"
+
+# File backup (exclude vendor, cache, sessions)
+tar -czf "$BACKUP_DIR/files-$(date +%Y-%m-%d_%H%M%S).tar.gz" \
+  --exclude='vendor' --exclude='node_modules' \
+  --exclude='storage/cache' --exclude='storage/sessions' \
+  -C /var/www ownpay/
+
+# Rotate old backups
+find "$BACKUP_DIR" -name "*.sql.gz" -mtime +$RETENTION_DAYS -delete
+find "$BACKUP_DIR" -name "*.tar.gz" -mtime +$RETENTION_DAYS -delete
+
+echo "Backup completed: $(date)"
+```
+
+Make it executable and schedule it with cron:
+
+```bash
+chmod +x /opt/scripts/ownpay-backup.sh
+
+# Run daily at 2:00 AM
+crontab -e
+0 2 * * * /opt/scripts/ownpay-backup.sh >> /var/log/ownpay-backup.log 2>&1
+```
+
+---
+
+## Restore procedure
+
+Follow these steps to restore an OwnPay installation from backup.
+
+<Steps>
+</Steps>
+
+---
+
+## Pre-update backups
+
+OwnPay's built-in `UpdateService` automatically creates a database backup and file snapshot before applying any update. These backups are stored in `storage/backups/pre-update-{version}/`.
+
+<Info>
+  Automatic pre-update backups are a safety net, not a replacement for your own backup schedule. If the update process itself fails catastrophically (disk full, permissions error), the automatic backup may not have completed. Always maintain independent backups.
+</Info>
+
+---
+
+## Data export
+
+For compliance, accounting, or migration purposes, you can export data without a full database backup.
+
+- **Transactions** - Filter by date range, status, or gateway on the Transactions page, then click **Export CSV**. This includes amount, fee, net amount, currency, status, and gateway reference.
+- **Reports** - The Reports page generates summary data that can be exported as CSV for import into accounting software.
+- **Customer data** - Export individual customer records or bulk-export all customers for a brand. This includes all PII in decrypted form for GDPR data portability requests.
+
+---
+
+## Related Pages
+
+- [Security and Compliance](/resources/security-compliance) - Encrypting backups and handling PII
+- [Migration Guide](/resources/migration-guide) - Upgrading between versions safely
+- [Performance and Scaling](/resources/performance-scaling) - Optimizing backup I/O on busy servers

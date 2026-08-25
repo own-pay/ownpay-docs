@@ -1,17 +1,18 @@
 ---
-title: "WooCommerce Plugin - Accept Payments on WordPress"
-description: "Install and configure the OwnPay WooCommerce plugin to accept card and mobile wallet payments on WordPress storefronts and checkout."
+title: WooCommerce Plugin - Accept Payments on WordPress
+description: Install and configure the OwnPay WooCommerce plugin to accept card and mobile wallet payments on WordPress storefronts and checkout.
 keywords: "WooCommerce payment plugin, WordPress payments, WooCommerce gateway, card payments, mobile wallet WooCommerce"
-sidebarTitle: "WooCommerce"
+sidebarTitle: WooCommerce
+icon: shopping-cart
 ---
 
 This guide explains how to integrate OwnPay as a payment gateway in a **WordPress WooCommerce** store using the OwnPay Gateway Plugin for WooCommerce.
 
 ## Prerequisites
 
-- WordPress 6.0+
-- WooCommerce 8.0+
-- PHP 8.2+
+- WordPress 6.0\+
+- WooCommerce 8.0\+
+- PHP 8.2\+
 - An OwnPay instance with a valid API key
 - OwnPay Gateway Plugin for WooCommerce - download from [GitHub Releases](https://github.com/own-pay/OwnPay-WordPress/releases/)
 
@@ -43,7 +44,7 @@ Customer Checkout
 **Option A: Upload ZIP manually**
 
 1. Download the latest plugin ZIP from [GitHub Releases](https://github.com/own-pay/OwnPay-WordPress/releases/)
-2. Go to **WordPress Admin > Plugins > Add New > Upload Plugin**
+2. Go to **WordPress Admin \> Plugins \> Add New \> Upload Plugin**
 3. Upload the ZIP and click **Install Now**
 4. Click **Activate Plugin**
 
@@ -55,17 +56,17 @@ wp plugin install ownpay-woocommerce --activate
 
 ### Step 2: Configure the gateway
 
-1. Go to **WooCommerce > Settings > Payments**
+1. Go to **WooCommerce \> Settings \> Payments**
 2. Find **OwnPay** and click **Manage**
 3. Fill in:
 
 | Field | Description |
-|-------|-------------|
+| --- | --- |
 | **Enable/Disable** | Toggle to enable OwnPay at checkout |
 | **Title** | Payment method label shown to customers |
 | **Description** | Short description shown on checkout page |
 | **API Base URL** | Your OwnPay instance URL |
-| **API Key** | Your OwnPay API key from Admin > Developer Hub |
+| **API Key** | Your OwnPay API key from Admin \> Developer Hub |
 | **Brand ID** | Your OwnPay brand/store ID |
 | **Webhook Secret** | Secret key for verifying incoming webhooks |
 | **Test Mode** | Enable to use sandbox environment |
@@ -75,7 +76,7 @@ wp plugin install ownpay-woocommerce --activate
 ### Step 3: Configure webhooks in OwnPay
 
 1. Log in to your OwnPay Admin panel
-2. Go to **Developer Hub > Webhooks**
+2. Go to **Developer Hub \> Webhooks**
 3. Add a new webhook endpoint:
 
 ```text
@@ -88,7 +89,7 @@ https://yourstore.com/?wc-api=ownpay_gateway
 ## Order status mapping
 
 | OwnPay Event | WooCommerce Status |
-|---|---|
+| --- | --- |
 | `payment.transaction.completed` | `processing` (or `completed` for virtual products) |
 | `payment.transaction.failed` | `failed` |
 | `payment.transaction.cancelled` | `cancelled` |
@@ -130,7 +131,7 @@ add_filter('ownpay_completed_order_status', function (string $status, \WC_Order 
 ### Webhooks not received
 
 - Ensure your OwnPay instance can reach `https://yourstore.com/?wc-api=ownpay_gateway`
-- Check **WooCommerce > Status > Logs** and filter by `ownpay`
+- Check **WooCommerce \> Status \> Logs** and filter by `ownpay`
 - Verify the Webhook Secret matches in both systems
 
 ### Orders stuck in "Pending Payment"
@@ -138,7 +139,7 @@ add_filter('ownpay_completed_order_status', function (string $status, \WC_Order 
 This usually means the webhook was not delivered. You can manually sync:
 
 1. Open the order in WooCommerce Admin
-2. Click **OwnPay > Sync Payment Status**
+2. Click **OwnPay \> Sync Payment Status**
 
 Or via WP-CLI:
 
@@ -146,8 +147,9 @@ Or via WP-CLI:
 wp ownpay sync-order --order-id=1234
 ```
 
-## See Also
+## Related pages
 
-- [PHP SDK Integration](/developer/integration/php)
-- [Node.js SDK Integration](/developer/integration/nodejs)
-- [Webhooks Setup](/api/webhooks)
+- [PHP SDK](/developer/integration/php)
+- [Node.js SDK](/developer/integration/nodejs)
+- [Webhooks](/api/webhooks)
+- [Testing payments](/developer/testing)

@@ -1,0 +1,103 @@
+---
+title: "Migration Guide"
+description: "Safely upgrade OwnPay between versions with pre-migration checklists, the auto-migration process, post-migration verification, and rollback procedures."
+keywords: "migration, upgrade, version upgrade, database migration, rollback, breaking changes"
+sidebarTitle: "Migration Guide"
+icon: "arrows-exchange"
+---
+
+Upgrading OwnPay between versions involves database schema changes, file updates, and cache clearing. This guide walks you through the process from preparation to verification.
+
+---
+
+## Version history
+
+| From | To | Key changes |
+| :-- | :-- | :-- |
+| v0.1.0 | v0.2.0 | New tables: `op_disputes`, `op_fee_rules`. New columns on `op_transactions`, `op_gateways`. CSP origin tracking per gateway. |
+
+<Note>
+  Check the [Changelog](/resources/changelog) for the full list of changes in each release.
+</Note>
+
+---
+
+## Pre-migration checklist
+
+Complete every item before starting an upgrade. Skipping any of these steps risks data loss or a broken installation.
+
+<Steps>
+</Steps>
+
+---
+
+## Migration process
+
+OwnPay uses an **auto-migration** system that runs at boot time. You do not need to run migration commands manually.
+
+### How auto-migration works
+
+When `Kernel::boot()` runs, it compares the current schema version (stored in `op_system_settings`) against the code version. If they differ, it executes pending migration files from `database/migrations/` in order.
+
+Each migration file uses a safe pattern:
+
+```sql
+-- Migration: 001_add_disputes_table.sql
+
+CREATE TABLE IF NOT EXISTS op_disputes (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  -- ...
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Add column only if it does not exist
+SET @dbname = DATABASE();
+SET @tablename = 'op_transactions';
+SET @columnname = 'dispute_status';
+SET @preparedStatement = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+   WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = @tablename AND COLUMN_NAME = @columnname) > 0,
+  'SELECT 1',
+  CONCAT('ALTER TABLE ', @tablename, ' ADD COLUMN ', @columnname, ' VARCHAR(50) DEFAULT NULL')
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+```
+
+This `SHOW COLUMNS / ALTER TABLE` pattern means migrations are **idempotent** - running them multiple times is safe.
+
+### Running the upgrade
+
+<Steps>
+</Steps>
+
+---
+
+## Post-migration steps
+
+After the migration completes, verify everything is working correctly.
+
+<Steps>
+</Steps>
+
+---
+
+## Rollback
+
+If something goes wrong after an upgrade, restore from your pre-migration backups.
+
+<Steps>
+</Steps>
+
+<Warning>
+  Rolling back after the new version has processed transactions will create a data mismatch. The restored database will not contain transactions that were completed between the upgrade and the rollback. Reconcile with your gateway dashboards.
+</Warning>
+
+---
+
+## Related Pages
+
+- [Changelog](/resources/changelog) - Detailed release notes for each version
+- [Backup and Export](/resources/backup-export) - Backup procedures
+- [Performance and Scaling](/resources/performance-scaling) - Post-upgrade optimization
+- [Common Errors](/resources/common-errors) - Troubleshooting migration failures

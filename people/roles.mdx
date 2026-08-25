@@ -1,0 +1,72 @@
+---
+title: Roles and permissions
+description: "Built-in roles, the permission matrix, and how to assign roles to staff members per brand in OwnPay."
+keywords: "roles, permissions, RBAC, access control, permission matrix, super admin"
+sidebarTitle: Roles
+icon: shield-check
+---
+
+OwnPay uses role-based access control (RBAC) to determine what each staff member can see and do. Roles are assigned per brand, so the same person can be a Manager on one brand and a Viewer on another. For authentication details, see [Login and authentication](/security/login).
+
+## Built-in roles
+
+OwnPay ships with four built-in roles. Custom roles are not yet supported in v{{version}}.
+
+| Role | Scope | Typical use |
+| --- | --- | --- |
+| **Super Admin** | Global - all brands, all settings | Server owner who installed OwnPay |
+| **Admin** | Per-brand - full access within assigned brands | Business manager who controls one or more brands |
+| **Manager** | Per-brand - can manage payments and view reports | Operations lead handling day-to-day transactions |
+| **Viewer** | Per-brand - read-only access to transactions and reports | Auditor or accountant who needs visibility only |
+
+## Permission matrix
+
+| Permission | Super Admin | Admin | Manager | Viewer |
+| --- | :-: | :-: | :-: | :-: |
+| View brands | ✅ | ✅ | ✅ | ✅ |
+| Manage brands | ✅ | ✅ | ❌ | ❌ |
+| Manage staff | ✅ | ✅ | ❌ | ❌ |
+| Manage roles | ✅ | ❌ | ❌ | ❌ |
+| View customers | ✅ | ✅ | ✅ | ✅ |
+| Manage customers | ✅ | ✅ | ✅ | ❌ |
+| View transactions | ✅ | ✅ | ✅ | ✅ |
+| Manage transactions | ✅ | ✅ | ✅ | ❌ |
+| Manage refunds | ✅ | ✅ | ✅ | ❌ |
+| View invoices | ✅ | ✅ | ✅ | ✅ |
+| Manage invoices | ✅ | ✅ | ✅ | ❌ |
+| View payment links | ✅ | ✅ | ✅ | ✅ |
+| Manage payment links | ✅ | ✅ | ✅ | ❌ |
+| Manage gateways | ✅ | ✅ | ❌ | ❌ |
+| View reports | ✅ | ✅ | ✅ | ✅ |
+| View audit log | ✅ | ✅ | ✅ | ❌ |
+| Manage domains | ✅ | ✅ | ❌ | ❌ |
+| Manage plugins | ✅ | ✅ | ❌ | ❌ |
+| Manage system settings | ✅ | ✅ | ❌ | ❌ |
+| Manage API keys | ✅ | ✅ | ❌ | ❌ |
+| Balance verification | ✅ | ✅ | ❌ | ❌ |
+| System update | ✅ | ❌ | ❌ | ❌ |
+
+## How to assign a role
+
+1. Go to **People** → **Staff**.
+2. Click **Edit** on the staff member’s row.
+3. Select the **role** from the dropdown.
+4. Choose the **brands** this role applies to.
+5. Click **Save**.
+
+The role takes effect the next time the staff member loads a page. If they are currently logged in, ask them to refresh the browser or log out and back in.
+
+## Per-brand role assignment
+
+The same staff member can hold different roles on different brands. When you edit a staff member, you see a list of all brands with a role selector next to each one. This lets you give someone Admin access on Brand A but only Viewer access on Brand B.
+
+<Warning>
+  Do not give the Admin or Super Admin role to staff who only need to view reports. Use the Viewer role instead and follow the principle of least privilege.
+</Warning>
+
+## Related Pages
+
+- [Staff](/people/staff) - invite and manage team members
+- [Login and authentication](/security/login) - how admin authentication works
+- [Audit log](/reports/audit-log) - monitor actions taken by different roles
+- [Brands](/people/brands) - create brands and assign staff to them

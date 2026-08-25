@@ -1,39 +1,40 @@
 ---
-title: "Contributing to OwnPay - Dev Setup, Standards, and PRs"
+title: Contributing to OwnPay
 description: "How to contribute to OwnPay by forking the repository, setting up a dev environment, following coding standards, opening pull requests, and filing issues."
 keywords: "contributing, open source, pull requests, development setup, coding standards"
-sidebarTitle: "Contributing"
+sidebarTitle: Contributing
+icon: git-pull-request
 ---
 
-First off - **thank you** for considering a contribution to OwnPay! 🎉 Whether it's a bug report, a new payment gateway, a translation, a documentation fix, or a feature, every contribution helps make self-hosted, open-source payment infrastructure better for everyone.
+First off - **thank you** for considering a contribution to OwnPay! Whether it's a bug report, a new payment gateway, a translation, a documentation fix, or a feature, every contribution helps make self-hosted, open-source payment infrastructure better for everyone.
 
 This guide explains how to get involved effectively.
 
 ---
 
-## 📜 Code of Conduct
+## Code of Conduct
 
-This project and everyone participating in it is governed by our [Code of Conduct](https://github.com/own-pay/OwnPay/blob/main/CODE_OF_CONDUCT.md). By participating, you are expected to uphold it. Please report unacceptable behavior to **[ping@ownpay.org](mailto:ping@ownpay.org)**.
+This project and everyone participating in it is governed by our [Code of Conduct](/resources/code-of-conduct). By participating, you are expected to uphold it. Please report unacceptable behavior to {{supportEmail}}.
 
 ---
 
-## 🧭 Ways to Contribute
+## Ways to contribute
 
-- **🐛 Report bugs** - open a clear, reproducible [issue](https://github.com/own-pay/OwnPay/issues).
-- **💡 Suggest features** - start a [discussion](https://github.com/own-pay/OwnPay/discussions) or feature request.
-- **🔌 Build a gateway/plugin** - add a payment gateway or add-on (see below).
-- **🌍 Translate** - add or improve a language catalog (see [TRANSLATIONS.md](/developer/translations)).
-- **📖 Improve docs** - fix typos, clarify guides, expand examples.
-- **🧹 Improve code** - fix bugs, add tests, refactor with care.
+- **Report bugs** - open a clear, reproducible [issue](https://github.com/own-pay/OwnPay/issues).
+- **Suggest features** - start a [discussion](https://github.com/own-pay/OwnPay/discussions) or feature request.
+- **Build a gateway/plugin** - add a payment gateway or add-on (see below).
+- **Translate** - add or improve a language catalog (see [TRANSLATIONS.md](/developer/translations)).
+- **Improve docs** - fix typos, clarify guides, expand examples.
+- **Improve code** - fix bugs, add tests, refactor with care.
 
 > Not sure where to start? Look for issues labelled **`good first issue`** or **`help wanted`**.
 
 ---
 
-## 🚀 Getting Set Up
+## Getting set up
 
 1. **Fork** the repository and clone your fork.
-2. Follow **[LOCAL_SETUP.md](/resources/local-setup)** to get a local instance running (~2 minutes).
+2. Follow [**LOCAL\_SETUP.md**](/resources/local-setup) to get a local instance running (~2 minutes).
 3. Create a feature branch from `dev` (the integration branch PRs target):
 
    ```bash
@@ -41,11 +42,11 @@ This project and everyone participating in it is governed by our [Code of Conduc
    git checkout -b feat/short-description
    ```
 
-**Requirements:** PHP 8.3+ (`bcmath`, `json`, `mbstring`, `openssl`, `pdo_mysql`, `curl`), Composer 2, MySQL 8 / MariaDB 10.4+.
+**Requirements:** PHP 8.3\+ (`bcmath`, `json`, `mbstring`, `openssl`, `pdo_mysql`, `curl`), Composer 2, MySQL 8 / MariaDB 10.4\+.
 
 ---
 
-## 🔁 Development Workflow
+## Development workflow
 
 1. Make your changes in a focused branch (one logical change per PR).
 2. Add or update tests for any behavior you change.
@@ -56,96 +57,69 @@ This project and everyone participating in it is governed by our [Code of Conduc
    composer analyse    # PHPStan - must stay clean at level 9
    composer lint       # Twig + JS + CSS linting
    ```
-
 4. Commit with a clear message and a **DCO sign-off** (see below).
 5. Push to your fork and open a Pull Request against `dev`.
 
-> ✅ **PRs must pass `composer test`, `composer analyse`, and `composer lint` before review.** Green checks get reviewed faster.
+> **PRs must pass `composer test`, `composer analyse`, and `composer lint` before review.** Green checks get reviewed faster.
 
 ---
 
-## 🎯 Coding Standards
+## Coding standards
 
 OwnPay maintains a high quality bar. Please match the existing code and these rules:
 
 - **Strict types everywhere.** Every PHP file starts with `declare(strict_types=1);` as its first statement (no BOM).
-- **PHPStan level 9 must stay green.** Don't suppress errors with baselines, `@phpstan-ignore`, or needless casts - fix the root cause.
+- **PHPStan level 9 must stay green.** Don't suppress errors - fix the root cause.
 - **Money is always bcmath strings, never floats.** Financial correctness is non-negotiable.
-- **Tenant scoping is mandatory.** Never run a scoped query without `forTenant()` / `*Scoped()`; use `forAllTenants()` only for deliberate owner-level views.
-- **Build URLs via `DomainUrlService`** (`buildCheckoutUrl()`, `buildCallbackUrl()`) - never hardcode a host (white-label domains depend on this).
+- **Tenant scoping is mandatory.** Never run a scoped query without `forTenant()` / `*Scoped()`.
+- **Build URLs via `DomainUrlService`** - never hardcode a host.
 - **CSRF tokens via `SecurityHelpers::csrfToken()`** - never read `$_SESSION` directly.
 - **Prepared statements only.** No string-interpolated SQL, ever.
 - **Escape output.** Twig autoescaping stays on; never `|raw` untrusted data.
-- **Keep it lean.** No new heavyweight dependencies without discussion; prefer the existing first-party utilities.
-- **Comments explain *why*, not *what*.** Document non-obvious decisions.
-
-For the full feature inventory, see the **[Feature Reference](/resources/features)**. For the bigger picture, read the **[Architecture Guide](/resources/architecture)**.
+- **Keep it lean.** No new heavyweight dependencies without discussion.
+- **Comments explain _why_, not _what_.** Document non-obvious decisions.
 
 ---
 
-## 🔌 Contributing a Payment Gateway or Plugin
+## Contributing a payment gateway or plugin
 
 Gateways and add-ons are plugins under `modules/`:
 
-1. Create `modules/gateways/<slug>/` with a `manifest.json` (metadata, capabilities, CSP origins, icon).
-2. Add an adapter class implementing `OwnPay\Gateway\GatewayAdapterInterface` (use the `GatewayDefaults` trait for no-op defaults).
+1. Create `modules/gateways/<slug>/` with a `manifest.json`.
+2. Add an adapter class implementing `OwnPay\Gateway\GatewayAdapterInterface`.
 3. Declare `supportedCurrencies()` accurately (return `[]` for "any currency").
-4. Keep the plugin within the sandbox rules - no `exec`, `shell_exec`, `eval`, raw PDO, etc.
-5. Test the full flow (initiate → callback → verify → refund) locally.
-
-See the gateway developer guide on **[Gateway Developer Guide](https://ownpay.org/docs/developer/plugin-types/gateway-development)** for the full contract and examples.
+4. Keep the plugin within the sandbox rules - no `exec`, `shell_exec`, `eval`, raw PDO.
+5. Test the full flow (initiate, callback, verify, refund) locally.
 
 ---
 
-## 🌍 Contributing Translations
+## Commit messages and DCO sign-off
 
-OwnPay has full i18n for both the admin panel and customer checkout. To add or update a language, follow **[docs/TRANSLATIONS.md](/developer/translations)** - create a dot-notation JSON catalog (keep `:placeholders` intact) and place core languages in `config/languages/`.
-
----
-
-## ✍️ Commit Messages & DCO Sign-Off
-
-We use the **[Developer Certificate of Origin](https://developercertificate.org/)** (DCO). By signing off, you certify you have the right to submit the contribution under the project's license.
-
-Add a sign-off line to every commit by using the `-s` flag:
+We use the [**Developer Certificate of Origin**](https://developercertificate.org/) (DCO). Add a sign-off line to every commit:
 
 ```bash
 git commit -s -m "feat(gateway): add Acme Pay adapter"
 ```
 
-This appends:
-
-```text
-Signed-off-by: Your Name <your.email@example.com>
-```
-
-Please write clear messages. We encourage [Conventional Commits](https://www.conventionalcommits.org/) style (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`), though it isn't strictly enforced.
+We encourage [Conventional Commits](https://www.conventionalcommits.org/) style (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
 
 ---
 
-## 📥 Pull Request Guidelines
+## Licensing of contributions
 
-- Keep PRs focused - one logical change each. Split large work into reviewable pieces.
-- Fill out the PR description: **what** changed, **why**, and **how to test** it.
-- Link the related issue (e.g. `Closes #123`).
-- Update documentation and tests alongside code.
-- Be responsive to review feedback - we review with care because this is payment software.
-- Ensure all CI checks are green.
+OwnPay is licensed under **AGPL-3.0**. By submitting a contribution, you agree that your work is licensed under the same license, and you certify its origin via your **DCO sign-off**. No separate CLA is required.
 
 ---
 
-## ⚖️ Licensing of Contributions
-
-OwnPay is licensed under the **[GNU AGPL-3.0](https://github.com/own-pay/OwnPay/blob/main/LICENSE)**. By submitting a contribution, you agree that your work is licensed under the **same AGPL-3.0** license as the project (inbound = outbound), and you certify its origin via your **DCO sign-off**. No separate CLA is required.
+Questions about contributing? Reach out at {{supportEmail}} or open a [discussion](https://github.com/own-pay/OwnPay/discussions).
 
 ---
 
-## 🙏 Thank You
+Built by the **Community**, for the **Community**.
 
-Every issue, PR, translation, and idea moves OwnPay forward. We're building this in the open, for the community - and we're glad you're here.
+## Related Pages
 
-Questions about contributing? Reach out at **[ping@ownpay.org](mailto:ping@ownpay.org)** or open a [discussion](https://github.com/own-pay/OwnPay/discussions).
-
----
-
-❤️ Built by the **Community**, for the **Community**.
+- [Code of Conduct](/resources/code-of-conduct) - Community standards
+- [Architecture](/resources/architecture) - Understanding the codebase
+- [Changelog](/resources/changelog) - Release history
+- [Glossary](/resources/glossary) - Terminology reference

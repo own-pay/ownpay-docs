@@ -9,8 +9,7 @@ const BRANCH = 'main';
 const filesToSync = [
   {
     remotePath: 'CHANGELOG.md',
-    localPath: 'user-guide/changelog.mdx',
-    docUrl: '/user-guide/changelog'
+    localPath: 'resources/changelog.mdx',    docUrl: '/resources/changelog'
   },
   {
     remotePath: 'docs/ARCHITECTURE.md',

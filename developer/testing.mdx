@@ -1,0 +1,137 @@
+---
+title: "Testing Payments"
+description: "How to test payments without real money using test card numbers, sandbox gateways, and simulated webhooks."
+keywords: "test payments, test cards, sandbox mode, Stripe test cards, bKash test, Nagad test, webhook simulation, debug mode"
+sidebarTitle: "Testing"
+icon: "flask"
+---
+
+You can test your entire payment flow without processing real transactions. OwnPay supports test card numbers, sandbox gateways, and webhook simulation.
+
+## Test card numbers
+
+Use these cards with any Stripe-based gateway configured in test mode:
+
+| Card number | Brand | Outcome |
+| --- | --- | --- |
+| `4242 4242 4242 4242` | Visa | Success |
+| `4000 0025 0000 3155` | Visa | 3D Secure required |
+| `4000 0000 0000 0002` | Visa | Decline |
+| `4000 0000 0000 9995` | Visa | Insufficient funds |
+| `5555 5555 5555 4444` | Mastercard | Success |
+| `2223 0000 0000 0009` | Mastercard | Success (2-series) |
+| `3782 822463 10005` | Amex | Success |
+
+<Info>
+  Use any future expiry date, any CVC, and any postal code with these test cards.
+</Info>
+
+## Bkash sandbox credentials
+
+Use those sandbox credentials for bkash:
+
+| Field | Value |
+| --- | --- |
+| Username | `sandboxTokenizedUser02` |
+| Password | `sandboxTokenizedUser02@12345` |
+| App Key | `4f6o0cjiki2rfm34kfdadl1eqq` |
+| App Secret | `2is7hdktrekvrbljjh44ll3d9l1dtjo4pasmjvs5vl5qr3fug4b` |
+
+<Info>
+  Note: These are public sandbox credentials only. Never use them in a live/production environment. For live credentials, you must apply through the official bKash Merchant Portal
+</Info>
+
+## bKash Sandbox Test Wallet Numbers
+
+bKash provides specific test wallet numbers you can use to simulate payments inside the sandbox environment.
+
+| Wallet Number | OTP | PIN | Failure Reason |
+| --- | --- | --- | --- |
+| `01770618575` | `123456` | `12121` |  |
+| `01929918378` | `123456` | `12121` |  |
+| `01770618576` | `123456` | `12121` |  |
+| `01877722345` | `123456` | `12121` |  |
+| `01619777282` | `123456` | `12121` |  |
+| `01619777283` | `123456` | `12121` |  |
+| `01823074817` | `123456` | `12121` | Insufficient Balance |
+| `01823074818` | `123456` | `12121` | Debit Block |
+
+## Gateway sandbox configuration
+
+Each gateway has a sandbox or test mode you activate from the admin panel. The table below shows where to find test credentials:
+
+| Gateway | Sandbox activation | Where to get test credentials |
+| --- | --- | --- |
+| Stripe | Toggle **Test Mode** in gateway settings | [Stripe Dashboard → Developers → Test mode](https://dashboard.stripe.com/test/apikeys) |
+| PayPal | Use sandbox endpoint URL | [PayPal Developer → Sandbox → Apps](https://developer.paypal.com/developer/applications/sandbox) |
+| bKash | Use sandbox URL and token | [https://tokenized.sandbox.bka.sh/v1.2.0-beta](https://tokenized.sandbox.bka.sh/v1.2.0-beta) |
+| Nagad | Use sandbox URL and merchant ID | Contact Nagad for sandbox credentials |
+| SSLCommerz | Toggle **Sandbox** in gateway settings | [SSLCommerz Sandbox](https://sandbox.sslcommerz.com/) |
+
+## Creating a test payment via API
+
+```bash
+curl -X POST https://your-domain.com/api/v1/payments \
+  -H "Authorization: Bearer $OWNPAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "10.00",
+    "currency": "USD",
+    "customer_email": "test@example.com",
+    "description": "Test payment",
+    "metadata": { "test": true }
+  }'
+```
+
+Use the returned `checkout_url` to walk through the checkout flow with a test card.
+
+## Simulating webhooks
+
+### From the Developer Hub
+
+1. Go to **Developers → Webhooks**
+2. Click **Send Test Event** next to your endpoint
+3. Choose an event type (for example `payment.completed`)
+4. OwnPay sends a realistic payload with a valid signature
+
+### Via cURL
+
+You can also manually trigger a test event:
+
+```bash
+curl -X POST https://your-domain.com/api/v1/webhooks/test \
+  -H "Authorization: Bearer $OWNPAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "endpoint_id": "we_abc123",
+    "event": "payment.completed"
+  }'
+```
+
+## Testing refunds
+
+Create a completed test payment first, then issue a refund:
+
+```bash
+curl -X POST https://your-domain.com/api/v1/payments/pay_abc123/refunds \
+  -H "Authorization: Bearer $OWNPAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "10.00",
+    "reason": "Customer request"
+  }'
+```
+
+<Note>
+  Refunds in test mode are instant and do not move real money.
+</Note>
+
+For deeper debugging including log inspection and request tracing, see [Debug mode](/resources/debug-mode).
+
+## Related pages
+
+- [API overview](/api/overview)
+- [Webhooks](/api/webhooks)
+- [Webhook integration tutorial](/developer/webhook-integration)
+- [Debug mode](/resources/debug-mode)
+- [Common errors](/resources/common-errors)

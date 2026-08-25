@@ -1,0 +1,125 @@
+---
+title: "Payment Flow - Transaction Statuses and Lifecycle"
+description: "The canonical reference for OwnPay transaction statuses. Understand every state a payment passes through: created, pending, processing, completed, failed, expired, cancelled, and refunded."
+keywords: "payment flow, transaction statuses, payment lifecycle, payment processing, transaction states, payment status"
+sidebarTitle: "Payment Flow"
+icon: "cash"
+---
+
+import LlmsDirective from "/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+This is the **canonical reference** for OwnPay transaction statuses. Every payment link, API payment, and invoice payment passes through the same state machine. When you build integrations or troubleshoot transactions, this is the page to check.
+
+## Transaction state diagram
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+stateDiagram-v2
+[*] --> Created
+Created --> Pending: Payment link visited / API call
+Pending --> Processing: Customer submits payment
+Processing --> Completed: Gateway approves
+Processing --> Failed: Gateway declines
+Pending --> Expired: Auto-expiry timer fires
+Pending --> Cancelled: Merchant cancels
+Completed --> Refunded: Merchant initiates refund
+Failed --> Pending: Customer retries
+Refunded --> [*]
+Completed --> [*]
+Failed --> [*]
+Expired --> [*]
+Cancelled --> [*]
+
+style Created fill:#E8F4FD,stroke:#0F97ED,color:#102963
+style Pending fill:#E8F4FD,stroke:#0F97ED,color:#102963
+style Processing fill:#E8F4FD,stroke:#0F97ED,color:#102963
+style Completed fill:#0F97ED,stroke:#102963,color:#ffffff
+style Failed fill:#c62828,stroke:#102963,color:#ffffff
+style Expired fill:#f9a825,stroke:#102963,color:#102963
+style Cancelled fill:#f9a825,stroke:#102963,color:#102963
+style Refunded fill:#102963,stroke:#0F97ED,color:#ffffff
+`}>
+</Mermaid>
+
+## State descriptions
+
+### Created
+
+The payment intent exists in the database but the customer hasn't interacted with it yet. This is the initial state for API-created payments and freshly generated payment links. No webhook is fired.
+
+<Badge color="blue">Transitional</Badge>
+
+### Pending
+
+The customer has visited the checkout page and sees the payment form. No funds have been authorized. The payment sits in this state until the customer submits payment details or the auto-expiry timer fires.
+
+<Badge color="blue">Transitional</Badge>
+
+### Processing
+
+The customer has submitted their payment details and OwnPay has sent the authorization request to the gateway. The customer sees a loading indicator. OwnPay is waiting for the gateway's response.
+
+<Badge color="blue">Transitional</Badge>
+
+### Completed
+
+The gateway approved the payment. OwnPay records the transaction in the double-entry ledger, fires the `payment.completed` event, and delivers a webhook to your configured URL. The customer sees the success page.
+
+<Badge color="green">Terminal: Yes</Badge>
+
+### Failed
+
+The gateway declined the payment - insufficient funds, invalid card, fraud detection, or a temporary network error. A `payment.failed` webhook is delivered. The customer can retry from the Pending state.
+
+<Badge color="red">Terminal: Yes</Badge>
+
+### Expired
+
+The payment link or checkout session timed out without customer action. The configurable auto-expiry timer fires a scheduled job that moves the payment to Expired. No webhook is sent.
+
+<Badge color="yellow">Terminal: Yes</Badge>
+
+### Cancelled
+
+A merchant or staff member manually cancelled the payment before it was completed. A `payment.cancelled` webhook is delivered.
+
+<Badge color="yellow">Terminal: Yes</Badge>
+
+### Refunded
+
+A previously completed payment was refunded (full or partial). The gateway returned the funds to the customer and OwnPay recorded reversing ledger entries. A `payment.refunded` webhook is delivered.
+
+<Badge color="blue">Terminal: Yes</Badge>
+
+## Webhook events per state
+
+| State | Webhook event | Payload includes |
+| :-- | :-- | :-- |
+| Completed | `payment.completed` | Transaction ID, amount, currency, gateway, fees |
+| Failed | `payment.failed` | Transaction ID, error code, error message, gateway |
+| Cancelled | `payment.cancelled` | Transaction ID, cancelled by, reason |
+| Refunded | `payment.refunded` | Transaction ID, refund amount, refund ID |
+
+<Note>
+  **Pending**, **Processing**, and **Expired** states do **not** trigger webhooks. Your integration should rely on the terminal states (Completed, Failed, Cancelled, Refunded) to confirm payment outcomes.
+</Note>
+
+## Auto-expiry
+
+Unpaid payments are automatically moved to **Expired** after a configurable timeout (default: 24 hours). The cron job (`php public/index.php cron`) runs every minute and checks for stale pending payments. Adjust the expiry window in **System \> Settings**.
+
+<Info>
+  If you need real-time status updates during the Processing phase, use polling or rely on the gateway's own callback. OwnPay only fires webhooks on terminal states.
+</Info>
+
+## Related pages
+
+- [Transactions](/payments/transactions) - view and filter transaction history in the dashboard
+- [Webhooks](/api/webhooks) - configure webhook URLs and verify HMAC-SHA256 signatures
+- [Gateways](/fundamentals/gateways) - understand how gateway routing affects processing
+- [Developer quickstart](/developer/quickstart) - integrate webhooks into your application
+- [Common errors](/resources/common-errors) - troubleshoot payment failures

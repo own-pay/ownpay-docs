@@ -1,0 +1,166 @@
+---
+title: Performance and Scaling
+description: "Optimize OwnPay performance with Redis caching, database tuning, PHP-FPM configuration, Nginx optimization, queue workers, and scaling strategies."
+keywords: "performance, scaling, Redis, PHP-FPM, Nginx, database optimization, queue workers, CDN"
+sidebarTitle: Performance
+icon: gauge
+---
+
+OwnPay is designed to run well on modest hardware, but as your transaction volume grows you can make targeted optimizations at each layer of the stack. This guide covers the most impactful changes.
+
+---
+
+## Redis for sessions and cache
+
+The single biggest performance improvement for most deployments is switching from file-based cache and sessions to Redis. Redis eliminates disk I/O for session reads, cache lookups, and rate limit tracking.
+
+<Steps>
+</Steps>
+
+<Tip>
+  Use separate Redis databases for cache (DB 0) and queues (DB 1) if you want to flush the cache without losing queued jobs.
+</Tip>
+
+---
+
+## Database optimization
+
+OwnPay's schema uses MySQL Stored Generated Columns to avoid JSON extraction overhead on filtered queries. The existing composite indexes (`idx_merchant_status`, `idx_merchant_created`) handle most common query patterns.
+
+### Key configuration
+
+```ini
+[mysqld]
+innodb_buffer_pool_size    = 256M    # Increase to 1G+ for high volume
+innodb_flush_log_at_trx_commit = 1
+innodb_flush_method        = O_DIRECT
+max_connections            = 100
+wait_timeout               = 600
+slow_query_log             = 1
+long_query_time            = 2
+```
+
+<Note>
+  Set `innodb_buffer_pool_size` to roughly 70% of available RAM dedicated to MySQL. On a server with 4 GB RAM and Redis, 1 GB is a reasonable starting point.
+</Note>
+
+You can optimize tables from the admin panel under **Settings \> Database**. This runs `OPTIMIZE TABLE` on all `op_` tables to reclaim fragmented space.
+
+---
+
+## PHP-FPM tuning
+
+PHP-FPM worker configuration directly affects how many concurrent requests OwnPay can handle.
+
+```ini
+[ownpay]
+pm                   = dynamic
+pm.max_children      = 20
+pm.start_servers     = 4
+pm.min_spare_servers = 2
+pm.max_spare_servers = 8
+pm.max_requests      = 500
+slowlog              = storage/logs/php-fpm-slow.log
+request_slowlog_timeout = 10s
+```
+
+Also enable OPcache with JIT compilation in your `php.ini`:
+
+```ini
+opcache.enable                  = 1
+opcache.memory_consumption      = 128
+opcache.interned_strings_buffer = 16
+opcache.max_accelerated_files   = 10000
+opcache.revalidate_freq         = 0
+opcache.validate_timestamps     = 0
+opcache.jit                     = tracing
+opcache.jit_buffer_size         = 64M
+```
+
+<Warning>
+  Set `opcache.validate_timestamps = 0` in production for maximum performance. After disabling it, you must restart PHP-FPM when updating OwnPay files.
+</Warning>
+
+---
+
+## Nginx configuration
+
+Enable gzip compression and static asset caching in your Nginx server block:
+
+```nginx
+gzip on;
+gzip_types text/plain text/css application/json application/javascript text/xml;
+gzip_min_length 256;
+
+location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff2)$ {
+    expires 30d;
+    add_header Cache-Control "public, immutable";
+}
+```
+
+For SSL, use a modern cipher suite and enable OCSP stapling. Nginx's default SSL settings on most distributions are already reasonable, but you can test your configuration with [SSL Labs](https://www.ssllabs.com/ssltest/).
+
+---
+
+## CDN for static assets
+
+If your brands use custom domains across different geographic regions, place a CDN (Cloudflare, Fastly) in front of the checkout domain. The CDN caches static assets (CSS, JS, images, fonts) and serves them from edge nodes closer to your customers.
+
+<Info>
+  Payment form submissions and webhook callbacks always hit your origin server directly. The CDN only caches static files.
+</Info>
+
+---
+
+## Queue workers for async jobs
+
+Background jobs (webhook deliveries, email sending, SMS processing, export generation) run through the queue system. When using Redis as the queue driver, process jobs with the cron endpoint:
+
+```bash
+# Add to crontab
+* * * * * php /var/www/ownpay/public/index.php cron/run >> /dev/null 2>&1
+```
+
+For high-volume environments, run the queue worker as a dedicated long-running process instead of relying on the cron-based worker:
+
+```bash
+php /var/www/ownpay/public/index.php queue:work --daemon
+```
+
+---
+
+## Scaling considerations
+
+| Volume | Architecture | Key change |
+| :-- | :-- | :-- |
+| Up to 1,000 payments/day | Single server, file cache | Default installation is sufficient |
+| 1,000 - 8,000 payments/day | Single server, Redis | Switch to Redis for cache, sessions, and queues |
+| 8,000 - 50,000 payments/day | Single server, tuned | Increase PHP-FPM workers, InnoDB buffer pool, add OPcache JIT |
+| 50,000\+ payments/day | Separate app \+ database servers | Move MySQL to a dedicated host with 5 GB\+ buffer pool |
+| 100,000\+ payments/day | Horizontal scaling | Multiple app servers behind a load balancer, Redis Cluster, read replicas |
+
+<Note>
+  OwnPay's PHP application is stateless when using Redis for sessions. This makes horizontal scaling straightforward - add more app servers behind your load balancer with no code changes.
+</Note>
+
+---
+
+## Monitoring
+
+Monitor these key metrics to know when to scale:
+
+| Metric | Healthy range | Where to check |
+| :-- | :-- | :-- |
+| PHP-FPM active workers | Below 80% of `pm.max_children` | `/fpm-status` endpoint |
+| OPcache hit rate | Above 95% | `opcache_get_status()` in a PHP info page |
+| Slow queries | Zero per minute | MySQL slow query log |
+| InnoDB buffer pool hits | Above 95% | `SHOW STATUS LIKE 'Innodb_buffer_pool_read_requests'` |
+| Redis evicted keys | Zero per minute | `redis-cli info stats` |
+
+---
+
+## Related Pages
+
+- [Installation](/installation) - Initial server setup and requirements
+- [Backup and Export](/resources/backup-export) - Backup procedures before scaling changes
+- [Rate Limiting](/resources/rate-limiting) - Configure rate limits for high-traffic deployments

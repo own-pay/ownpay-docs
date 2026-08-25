@@ -1,0 +1,108 @@
+---
+title: "Plugin Manifest"
+description: "Complete manifest.json field reference for OwnPay plugins including all fields, capability values, and validation rules."
+keywords: "manifest.json, plugin metadata, plugin version, plugin capabilities, plugin manifest validation"
+sidebarTitle: "Manifest"
+icon: "file-text"
+---
+
+Every OwnPay plugin must have a `manifest.json` in its root directory. The plugin loader reads this file before anything else - if validation fails, the plugin is not loaded.
+
+## Field reference
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | string | Yes | Human-readable plugin name |
+| `slug` | string | Yes | Unique machine identifier (lowercase, hyphens) |
+| `version` | string | Yes | Semantic version (for example `1.2.3`) |
+| `type` | string | Yes | One of: `gateway`, `addon`, `theme`, `integration` |
+| `description` | string | No | Short description of what the plugin does |
+| `author` | string | No | Author name or organization |
+| `homepage` | string | No | URL to the plugin's homepage or repository |
+| `capabilities` | array | Yes | List of capability strings the plugin requires |
+| `cspOrigins` | array | No | Additional Content-Security-Policy origins for assets |
+| `icon` | string | No | Path to an SVG or PNG icon relative to plugin root |
+| `permissions` | array | No | Admin permission slugs required to manage the plugin |
+| `minimumOwnPayVersion` | string | No | Minimum OwnPay version (semver) required |
+| `phpVersion` | string | No | Minimum PHP version required (default: `8.3`) |
+
+## Capability values
+
+Only declare capabilities your plugin actually uses. The sandbox enforces these as permission gates.
+
+| Capability | Effect |
+| --- | --- |
+| `payment_process` | Plugin can implement `GatewayInterface` |
+| `webhook_receive` | Plugin can register webhook endpoint handlers |
+| `admin_page` | Plugin can add items to the admin sidebar menu |
+| `api_routes` | Plugin can register custom API routes via `routes/api.php` |
+| `database` | Plugin can define and run database migrations |
+| `assets` | Plugin can serve CSS and JS files from `assets/` |
+| `settings` | Plugin can define a settings page |
+| `schedule` | Plugin can register scheduled (cron) tasks |
+
+## Validation rules
+
+| Rule | Detail |
+| --- | --- |
+| Slug format | Must match `^[a-z][a-z0-9-]{1,48}[a-z0-9]$` |
+| Version format | Must be valid semver (`MAJOR.MINOR.PATCH`) |
+| Type | Must be one of the four supported types |
+| Capabilities | Each must be a known capability string |
+
+If validation fails, OwnPay logs the error and skips the plugin. Check the logs in **System → Logs**.
+
+## Examples
+
+### Gateway manifest
+
+```json
+{
+  "name": "Stripe Gateway",
+  "slug": "gateway-stripe",
+  "version": "2.1.0",
+  "type": "gateway",
+  "description": "Accept Visa, Mastercard, and Amex payments via Stripe",
+  "author": "OwnPay Team",
+  "homepage": "https://github.com/own-pay/gateway-stripe",
+  "capabilities": ["payment_process", "webhook_receive", "settings", "database"],
+  "minimumOwnPayVersion": "0.2.0",
+  "phpVersion": "8.3"
+}
+```
+
+### Addon manifest
+
+```json
+{
+  "name": "Telegram Bot",
+  "slug": "addon-telegram-bot",
+  "version": "1.0.0",
+  "type": "addon",
+  "description": "Send payment notifications to Telegram",
+  "capabilities": ["settings", "admin_page"],
+  "author": "Community"
+}
+```
+
+### Theme manifest
+
+```json
+{
+  "name": "Modern Checkout",
+  "slug": "theme-modern",
+  "version": "1.3.0",
+  "type": "theme",
+  "description": "Clean, responsive checkout theme",
+  "capabilities": ["assets"],
+  "cspOrigins": ["https://fonts.googleapis.com"],
+  "icon": "icon.svg"
+}
+```
+
+## Related pages
+
+- [Directory structure](/developer/plugins/directory-structure)
+- [Capabilities reference](/developer/plugins/capabilities)
+- [Plugin lifecycle](/developer/plugins/lifecycle)
+- [Hooks reference](/developer/plugins/hooks)

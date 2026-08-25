@@ -1,0 +1,65 @@
+---
+title: "Customer profiles"
+description: "How customer profiles are auto-created, what fields they store, and how to search and view customer data in OwnPay."
+keywords: "customers, customer profiles, PII encryption, GDPR, customer data"
+sidebarTitle: "Customers"
+icon: "id"
+---
+
+Customers are the people who pay you through OwnPay. You rarely need to create customer profiles manually - the system creates them automatically from completed payments, invoices, and payment link checkouts.
+
+## How customer profiles are created
+
+When a customer completes a payment for the first time, OwnPay registers their email address (and phone number if provided) as a customer profile under the brand that received the payment. The same email address used across different brands creates separate customer records per brand.
+
+## Customer fields
+
+| Field | Source | Encrypted | Description |
+| --- | --- | --- | --- |
+| **Name** | Checkout input or API payload | No | Customer’s full name |
+| **Email** | Checkout input or API payload | Yes | Billing and receipt email |
+| **Phone** | Checkout input or API payload | Yes | Mobile or landline contact number |
+| **IP address** | Transaction metadata | No | IP used during checkout |
+| **Total spent** | Calculated from transactions | No | Lifetime spend in the brand’s base currency |
+| **Transaction count** | Calculated from transactions | No | Number of completed payments |
+| **Created at** | System timestamp | No | When the profile was first registered |
+
+## PII encryption
+
+OwnPay encrypts customer email addresses and phone numbers at rest using **AES-256-GCM**. This means:
+
+- The raw values are never stored in plaintext in the database.
+- Only the application can decrypt them using the server-side encryption key.
+- Database dumps or backups contain only ciphertext for these fields.
+
+Staff members with the **View Customers** permission can see the decrypted values in the admin UI, but the data stays encrypted in storage.
+
+## GDPR considerations
+
+- **Right of access** - you can export a customer’s profile and transaction history from the admin UI.
+- **Right to erasure** - use the **Delete** action on the customer profile. This removes the customer record but preserves transaction records for financial compliance.
+- **Data minimization** - only collect the fields you need. Avoid asking for phone numbers unless required by a payment method.
+
+## View and search customers
+
+1. Go to **People** → **Customers**.
+2. Use the **search bar** to find customers by name, email, or phone number.
+3. Click a customer row to open their **detail view**, which shows:
+   - Contact information.
+   - Transaction history with amounts, statuses, and dates.
+   - Lifetime spending summary.
+
+## Customer data in the API
+
+You can also manage customers programmatically through the Merchant API. Customer records support create, read, and list operations. See the [Merchant API reference](/api/overview) for endpoint details.
+
+<Warning>
+  Do not delete customer profiles that have active invoices or pending transactions. The system preserves transaction records for financial compliance even after you delete the profile.
+</Warning>
+
+## Related Pages
+
+- [Transactions](/payments/transactions) - view payments made by customers
+- [Invoices](/payments/invoices) - create invoices for customers
+- [Security and compliance](/resources/security-compliance) - encryption and data protection details
+- [Merchant API](/api/overview) - programmatic customer management

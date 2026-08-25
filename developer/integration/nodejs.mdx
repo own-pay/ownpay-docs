@@ -3,23 +3,17 @@ title: "Node.js SDK - TypeScript-First Payment Integration"
 description: "Integrate OwnPay into Node.js 18+ apps with the official zero-dependency TypeScript SDK featuring automatic retries and webhook verification."
 keywords: "Node.js payment SDK, TypeScript payment integration, OwnPay Node.js, npm payment package, webhook verification Node.js"
 sidebarTitle: "Node.js"
+icon: "braces"
 ---
 
-The official OwnPay Node.js SDK is a zero-dependency, TypeScript-first package for integrating payments into your backend. It uses native `fetch` and `crypto` modules with built-in retries and webhook signature verification.
+The official OwnPay Node.js SDK is a zero-dependency, TypeScript-first package for integrating payments into your server-side. It uses native `fetch` and `crypto` modules with built-in retries and webhook signature verification.
 
 <CardGroup cols={2}>
-  <Card
-    title="npm"
-    href="https://www.npmjs.com/package/ownpay-nodejs"
-    icon="box"
-  >
+  <Card title="npm" icon="box" href="https://www.npmjs.com/package/ownpay-nodejs">
     Install via npm, yarn, or pnpm.
   </Card>
-  <Card
-    title="GitHub"
-    href="https://github.com/own-pay/ownpay-nodejs"
-    icon="github"
-  >
+
+  <Card title="GitHub" icon="brand-github" href="https://github.com/own-pay/ownpay-nodejs">
     View source code, report bugs, or contribute.
   </Card>
 </CardGroup>
@@ -27,68 +21,58 @@ The official OwnPay Node.js SDK is a zero-dependency, TypeScript-first package f
 ## Prerequisites
 
 - Node.js 18 or higher
-- An OwnPay API key from Admin > Developer Hub
+- An OwnPay API key from Admin \> Developer Hub
 
 ## Installation
 
 <Tabs>
-<Tab title="npm">
-
-```bash
-npm install ownpay-nodejs
-```
-
-</Tab>
-<Tab title="yarn">
-
-```bash
-yarn add ownpay-nodejs
-```
-
-</Tab>
-<Tab title="pnpm">
-
-```bash
-pnpm add ownpay-nodejs
-```
-
-</Tab>
+  <Tab title="npm">
+    ```bash
+    npm install ownpay-nodejs
+    ```
+  </Tab>
+  <Tab title="yarn">
+    ```bash
+    yarn add ownpay-nodejs
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm add ownpay-nodejs
+    ```
+  </Tab>
 </Tabs>
 
 ## Initialize the client
 
 <Tabs>
-<Tab title="ESM">
-
-```typescript
-import OwnPay from 'ownpay-nodejs';
-
-// Simple initialization
-const client = new OwnPay('op_your_api_key_here');
-
-// With configuration options
-const client = new OwnPay({
-  apiKey: 'op_your_api_key_here',
-  timeout: 30000,       // Request timeout in ms (default: 30000)
-  maxRetries: 2,        // Max retry attempts (default: 2)
-  baseUrl: 'https://api.ownpay.com',  // Custom API URL (optional)
-});
-```
-
-</Tab>
-<Tab title="CommonJS">
-
-```javascript
-const OwnPay = require('ownpay-nodejs');
-
-const client = new OwnPay('op_your_api_key_here');
-```
-
-</Tab>
+  <Tab title="ESM">
+    ```typescript
+    import OwnPay from 'ownpay-nodejs';
+    
+    // Simple initialization
+    const client = new OwnPay('op_live_abc123.def456');
+    
+    // With configuration options
+    const client = new OwnPay({
+      apiKey: 'op_live_abc123.def456',
+      timeout: 30000,       // Request timeout in ms (default: 30000)
+      maxRetries: 2,        // Max retry attempts (default: 2)
+      baseUrl: 'https://api.ownpay.com',  // Custom API URL (optional)
+    });
+    ```
+  </Tab>
+  <Tab title="CommonJS">
+    ```javascript
+    const OwnPay = require('ownpay-nodejs');
+    
+    const client = new OwnPay('op_live_abc123.def456');
+    ```
+  </Tab>
 </Tabs>
 
 <Info>
-Store your API key in environment variables. Never commit it to version control.
+  Store your API key in environment variables. Never commit it to version control.
 </Info>
 
 ```typescript
@@ -121,9 +105,9 @@ console.log('Checkout URL:', payment.checkout_url);
 ### Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `amount` | `string \| number` | Yes | Payment amount (positive number) |
-| `currency` | `string` | Yes | 3-letter ISO currency code (e.g., `BDT`, `USD`) |
+| `currency` | `string` | Yes | 3-letter ISO currency code (for example, `BDT`, `USD`) |
 | `callback_url` | `string` | No | Webhook notification URL |
 | `redirect_url` | `string` | No | Success redirect URL |
 | `cancel_url` | `string` | No | Cancel redirect URL |
@@ -290,14 +274,14 @@ app.listen(3000);
 ```
 
 <Warning>
-You must use the raw request body (not parsed JSON) for webhook signature verification. In Express, use `express.raw({ type: 'application/json' })` middleware.
+  You must use the raw request body (not parsed JSON) for webhook signature verification. In Express, use `express.raw({ type: 'application/json' })` middleware.
 </Warning>
 
 ### Webhook event structure
 
 ```typescript
 interface WebhookPayload {
-  event: string;              // e.g., 'payment.completed'
+  event: string;              // for example, 'payment.completed'
   transaction_id: string;     // OwnPay transaction reference
   gateway_trx_id: string;     // Gateway transaction ID
   amount: string;             // Transaction amount
@@ -411,7 +395,7 @@ const customer = await client.customers.get('+8801712345678');
 ## API key management
 
 <Warning>
-API key operations require an API key with both `write` and `admin` scopes, and must include the `X-Super-Admin-Email` header.
+  API key operations require an API key with both `write` and `admin` scopes, and must include the `X-Super-Admin-Email` header.
 </Warning>
 
 ```typescript
@@ -509,17 +493,17 @@ try {
 ```
 
 <Accordion title="Error reference">
-| Error | Status | When thrown |
-|-------|--------|------------|
-| `AuthenticationError` | 401 | Invalid or revoked API key |
-| `PermissionError` | 403 | Insufficient scope |
-| `NotFoundError` | 404 | Resource does not exist |
-| `ValidationError` | 422 | Invalid parameters |
-| `RateLimitError` | 429 | Too many requests |
-| `IdempotencyError` | 409 | Duplicate request with different body |
-| `ApiError` | 5xx | Server error |
-| `NetworkError` | - | Connection failure |
-| `AbortError` | - | Request timeout or cancellation |
+  | Error | Status | When thrown |
+  | --- | --- | --- |
+  | `AuthenticationError` | 401 | Invalid or revoked API key |
+  | `PermissionError` | 403 | Insufficient scope |
+  | `NotFoundError` | 404 | Resource does not exist |
+  | `ValidationError` | 422 | Invalid parameters |
+  | `RateLimitError` | 429 | Too many requests |
+  | `IdempotencyError` | 409 | Duplicate request with different body |
+  | `ApiError` | 5xx | Server error |
+  | `NetworkError` | - | Connection failure |
+  | `AbortError` | - | Request timeout or cancellation |
 </Accordion>
 
 ### Validation error details
@@ -542,7 +526,7 @@ catch (error) {
 All errors expose these properties:
 
 | Property | Type | Description |
-|----------|------|-------------|
+| --- | --- | --- |
 | `message` | `string` | Human-readable error message |
 | `type` | `string` | Error type identifier |
 | `status` | `number` | HTTP status code (if applicable) |
@@ -616,7 +600,7 @@ try {
 The SDK automatically retries failed requests for transient errors:
 
 | Status code | Retryable | Behavior |
-|-------------|-----------|----------|
+| --- | --- | --- |
 | 429 | Yes | Respects `Retry-After` header |
 | 500 | Yes | Exponential backoff |
 | 502 | Yes | Exponential backoff |
@@ -631,7 +615,7 @@ The SDK automatically retries failed requests for transient errors:
 
 ```typescript
 const client = new OwnPay({
-  apiKey: 'op_your_key',
+  apiKey: 'op_live_abc123.def456',
   maxRetries: 3,  // Default: 2
   timeout: 60000, // Default: 30000ms
 });
@@ -661,7 +645,7 @@ For self-hosted or white-label deployments:
 
 ```typescript
 const client = new OwnPay({
-  apiKey: 'op_your_key',
+  apiKey: 'op_live_abc123.def456',
   baseUrl: 'https://your-domain.com',
   headers: {
     'X-App-Version': '1.0.0',
@@ -673,41 +657,42 @@ const client = new OwnPay({
 ## Troubleshooting
 
 <AccordionGroup>
-<Accordion title="Invalid API key format">
-Ensure your API key starts with `op_` and is at least 12 characters long.
+  <Accordion title="Invalid API key format">
+    Ensure your API key starts with `op_` and is at least 12 characters long.
 
-```typescript
-// Wrong
-const client = new OwnPay('sk_live_...');
+    ```typescript
+    // Wrong
+    const client = new OwnPay('sk_live_...');
+    
+    // Correct
+    const client = new OwnPay('op_live_abc123.def456');
+    ```
+  </Accordion>
 
-// Correct
-const client = new OwnPay('op_abcdef123456...');
-```
-</Accordion>
+  <Accordion title="Authentication failed">
+    - Check that your API key is active and not revoked
+    - Ensure you're using the correct key for your environment (test/live)
+  </Accordion>
 
-<Accordion title="Authentication failed">
-- Check that your API key is active and not revoked
-- Ensure you're using the correct key for your environment (test/live)
-</Accordion>
+  <Accordion title="Insufficient scope">
+    Your API key doesn't have the required permissions:
 
-<Accordion title="Insufficient scope">
-Your API key doesn't have the required permissions:
-- `read` scope: GET requests
-- `write` scope: POST/PUT/PATCH/DELETE requests
-- `admin` scope: API key management operations
-</Accordion>
+    - `read` scope: GET requests
+    - `write` scope: POST/PUT/PATCH/DELETE requests
+    - `admin` scope: API key management operations
+  </Accordion>
 
-<Accordion title="Webhook verification failed">
-- Ensure you're using the raw request body (not parsed JSON)
-- Check that the webhook secret matches your configuration
-- Verify the timestamp is within the tolerance window
-</Accordion>
+  <Accordion title="Webhook verification failed">
+    - Ensure you're using the raw request body (not parsed JSON)
+    - Check that the webhook secret matches your configuration
+    - Verify the timestamp is within the tolerance window
+  </Accordion>
 </AccordionGroup>
 
 ## API reference summary
 
 | Resource | Methods |
-|----------|---------|
+| --- | --- |
 | `client.payments` | `create()`, `get()` |
 | `client.transactions` | `list()`, `get()` |
 | `client.refunds` | `create()`, `list()`, `get()` |
@@ -715,3 +700,11 @@ Your API key doesn't have the required permissions:
 | `client.apiKeys` | `list()`, `generate()`, `revoke()` |
 | `client.webhooks` | `test()`, `deliveries()` |
 | `client.health` | `check()` |
+
+## Related pages
+
+- [PHP SDK](/developer/integration/php)
+- [API overview](/api/overview)
+- [Webhooks](/api/webhooks)
+- [Authentication](/api/authentication)
+- [Testing payments](/developer/testing)

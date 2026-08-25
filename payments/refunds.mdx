@@ -1,0 +1,76 @@
+---
+title: "Issue refunds"
+description: "How to issue full or partial refunds, understand gateway-specific refund behavior, and troubleshoot failed refunds in OwnPay."
+keywords: "refunds, partial refund, refund status, gateway refund, RefundReconciliationJob"
+sidebarTitle: "Refunds"
+icon: "rotate"
+---
+
+Refunds return money to customers for completed transactions. You can issue refunds from the admin UI or the API. OwnPay tracks refund statuses separately from the original transaction.
+
+## How to issue a refund
+
+1. Go to **Payments** → **Transactions**.
+2. Find and open the transaction you want to refund.
+3. Click **Refund**.
+4. Enter the refund amount (must not exceed the original transaction amount).
+5. Optionally add an internal note explaining the reason.
+6. Click **Confirm Refund**.
+
+## Refund statuses
+
+| Status | Meaning |
+| --- | --- |
+| **Pending** | Refund request submitted to the gateway, awaiting confirmation |
+| **Completed** | Gateway confirmed the refund; funds returned to the customer |
+| **Failed** | Gateway rejected the refund (for example insufficient balance, time limit exceeded) |
+
+## Refund rules
+
+- You can only refund transactions with **Completed** status.
+- The refund amount cannot exceed the original transaction amount.
+- Partial refunds are allowed - you can refund any amount up to the original.
+- You cannot refund a transaction that has already been fully refunded.
+- Gateway fees from the original transaction are **not** refunded to the customer.
+
+## Gateway-specific behavior
+
+| Gateway | Refund type | Speed | Partial refund | Time limit |
+| --- | --- | --- | --- | --- |
+| **Stripe** | API-initiated | Instant | Yes | 180 days |
+| **PayPal** | API-initiated | Instant | Yes | 180 days |
+| **bKash** | API-initiated | Delayed (up to 24h) | Yes | 30 days |
+| **Nagad** | API-initiated | Delayed (up to 24h) | Yes | 30 days |
+| **SSLCommerz** | API-initiated | Delayed (up to 48h) | Yes | 90 days |
+| **Razorpay** | API-initiated | Instant | Yes | 180 days |
+
+For gateways marked as **Delayed**, the refund stays in **Pending** status until the gateway sends a confirmation webhook. The `RefundReconciliationJob` runs periodically (via cron or queue worker) to sync pending refund statuses with the gateway.
+
+## Ledger impact
+
+When a refund completes, OwnPay records a reversing double-entry in the ledger. The original credit to your merchant payable account is debited back, and the corresponding asset account is adjusted. Your ledger balance decreases by the refunded amount.
+
+<Warning>
+  Issuing a refund reduces your ledger balance. Verify you have sufficient balance before refunding, especially large amounts.
+</Warning>
+
+## API access
+
+You can issue refunds programmatically with a `POST` request to `/payments/{id}/refund`. See the [Merchant API reference](/api/overview) for the full request and response schema.
+
+## Troubleshooting
+
+| Problem | Cause | Solution |
+| --- | --- | --- |
+| Refund stays Pending | Gateway webhook not received | Check webhook logs; run the queue worker manually |
+| Refund Failed | Time limit exceeded | Check the gateway’s refund time limit in the table above |
+| Cannot click Refund | Transaction not in Completed status | Only Completed transactions can be refunded |
+| Refund amount rejected | Amount exceeds original | Enter an amount less than or equal to the original transaction |
+| Ledger shows wrong balance after refund | `RefundReconciliationJob` not running | Ensure your cron job or queue worker is active |
+
+## Related Pages
+
+- [Transactions](/payments/transactions) - find transactions to refund
+- [Ledger](/payments/ledger) - see the accounting impact of refunds
+- [Payment flow](/fundamentals/payment-flow) - full transaction lifecycle explanation
+- [Merchant API](/api/overview) - programmatic refund endpoint

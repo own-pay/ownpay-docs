@@ -1,0 +1,66 @@
+---
+title: Balance Verification
+description: Reconcile your double-entry ledger by comparing system-recorded balances against recalculated totals to catch any discrepancies.
+keywords: "balance verification, ledger reconciliation, double-entry, balance mismatch, financial audit"
+sidebarTitle: Balance Verification
+icon: scale
+---
+
+Balance Verification lets you compare the balances stored in OwnPay's double-entry ledger against independently recalculated totals. This is essential for financial integrity and catching any data inconsistencies.
+
+<Info>
+  For background on how the double-entry ledger works, see [Ledger](/fundamentals/ledger).
+</Info>
+
+## Run a verification
+
+<Steps>
+  <Step>
+    Navigate to **Reports \> Balance Verification** in the left sidebar.
+  </Step>
+  <Step>
+    Select a **Brand** from the dropdown. If you operate a single brand, it is pre-selected.
+  </Step>
+  <Step>
+    Choose a **Date Range**. The verification recalculates every transaction within this window.
+  </Step>
+  <Step>
+    Click **Verify**. OwnPay sums all debit and credit entries from raw transaction data and compares the result against the stored running balance.
+  </Step>
+</Steps>
+
+## Understanding the results
+
+The verification report displays:
+
+| Field | Description |
+| --- | --- |
+| **System Balance** | The running balance stored in the ledger accounts |
+| **Calculated Balance** | The sum recalculated from individual transaction entries |
+| **Difference** | System Balance minus Calculated Balance (should be zero) |
+| **Status** | Matched or Mismatched |
+
+A **Matched** status means your ledger is consistent. All debits and credits sum correctly.
+
+## What to do if balances don't match
+
+If the verification shows a mismatch:
+
+1. **Check for manual ledger adjustments** - Review the [audit log](/reports/audit-log) for any `ledger.adjustment` actions in the selected period
+2. **Verify no transactions were deleted** - OwnPay prevents transaction deletion, but direct database modifications could cause inconsistencies
+3. **Check for partial refunds** - Ensure partial refunds were recorded with the correct amounts using `bcmath` precision
+4. **Run the verification again** - Exclude the most recent day to isolate when the discrepancy started
+
+<Warning>
+  Never manually edit database tables to fix a balance mismatch. Contact {{supportEmail}} if you cannot identify the root cause. Incorrect manual fixes can compound the discrepancy.
+</Warning>
+
+<Tip>
+  Schedule a weekly balance verification as part of your operational routine. Small discrepancies are easier to investigate when the time window is narrow.
+</Tip>
+
+## Related Pages
+
+- [Ledger](/fundamentals/ledger) - How the double-entry system works
+- [Audit Log](/reports/audit-log) - Review actions that may have affected balances
+- [Dashboard](/reports/dashboard) - High-level financial metrics

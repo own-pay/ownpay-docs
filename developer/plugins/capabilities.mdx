@@ -3,12 +3,13 @@ title: "Plugin Capabilities - Declare Features and Permissions"
 description: "Capability system that declares what a plugin does, which hooks it uses, and platform features it touches for permissions and discovery."
 keywords: "plugin capabilities, permissions, feature declarations, plugin discovery, capability system"
 sidebarTitle: "Capabilities"
+icon: "list-check"
 ---
 
 OwnPay uses a capability system to declare what a plugin does and what platform features it interacts with. Capabilities are expressed as string values in `manifest.json` and mapped to the `OwnPay\Plugin\Capability` backed PHP enum.
 
 <Note>
-**Full-trust model**: Installed plugins are owner-uploaded and run with full application trust. Capabilities are declarative metadata and an intent contract. They document what a plugin does and drive UI presentation; they are not a runtime enforcement sandbox.
+  **Full-trust model**: Installed plugins are owner-uploaded and run with full application trust. Capabilities are declarative metadata and an intent contract. They document what a plugin does and drive UI presentation; they are not a runtime enforcement sandbox.
 </Note>
 
 ## Declaring capabilities
@@ -36,7 +37,7 @@ public function capabilities(): array
 ## Full capability reference
 
 | Enum Case | JSON Value | Required Permission Keys | Scope and Intent |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `Capability::GATEWAY` | `"gateway"` | `gateway.process`, `gateway.config` | Payment gateway adapter |
 | `Capability::THEME` | `"theme"` | `theme.render` | Checkout theme |
 | `Capability::ADDON` | `"addon"` | None | General-purpose extension |
@@ -98,7 +99,7 @@ Queries to any `op_*` table not prefixed with `op_plugin_` are blocked by `Plugi
 Regardless of capabilities, the following functions cause an immediate load failure:
 
 | Blocked Function | Reason |
-|---|---|
+| --- | --- |
 | `exec()` | Direct OS command execution |
 | `shell_exec()` | Shell command via backtick-equivalent |
 | `system()` | OS command with direct output |
@@ -110,3 +111,10 @@ Regardless of capabilities, the following functions cause an immediate load fail
 | `assert()` | Code evaluation via assertion |
 | `create_function()` | Runtime lambda code generation |
 | `eval` | Dynamic code evaluation |
+
+## Related pages
+
+- [Manifest reference](/developer/plugins/manifest)
+- [Hooks reference](/developer/plugins/hooks)
+- [Plugin lifecycle](/developer/plugins/lifecycle)
+- [Plugin overview](/developer/plugins/overview)

@@ -1,0 +1,188 @@
+---
+title: Security and Compliance
+description: "Understand OwnPay's security architecture including AES-256-GCM encryption, HMAC-SHA256 webhooks, CSRF protection, rate limiting, and compliance considerations for PCI DSS and GDPR."
+keywords: "security, compliance, AES-256-GCM, HMAC-SHA256, PCI DSS, GDPR, encryption, rate limiting, CSRF, XSS, SQL injection"
+sidebarTitle: Security
+icon: shield-check
+---
+
+OwnPay handles financial transactions, so security is not an afterthought - it is baked into every layer of the architecture. This page explains the technical mechanisms OwnPay uses to protect your data and your customers' data.
+
+---
+
+## Encryption at rest
+
+OwnPay encrypts sensitive data before writing it to MySQL using **AES-256-GCM** with a per-installation key stored in the `ENCRYPTION_KEY` environment variable.
+
+<Columns>
+  <Column>
+    **What gets encrypted:**
+
+    - Gateway API keys and credentials in `op_gateway_configs`
+    - Customer names, emails, and phone numbers in `op_customers`
+    - TOTP secrets for two-factor authentication
+    - Any plugin-stored secrets via the encryption helper
+  </Column>
+  <Column>
+    **How it works:**
+
+    - Each encryption operation generates a random 12-byte IV and produces a 16-byte auth tag
+    - The IV, auth tag, and ciphertext are stored together in a single base64-encoded string
+    - Decryption verifies the auth tag before returning plaintext, detecting tampering
+  </Column>
+</Columns>
+
+<Warning>
+  If you lose your `ENCRYPTION_KEY`, all encrypted data becomes permanently unrecoverable. Store it securely and include it in your backups.
+</Warning>
+
+---
+
+## Webhook signature verification
+
+Every outbound webhook delivery is signed with **HMAC-SHA256**. The signature is sent in the `X-OwnPay-Signature` header using the format `sha256={hex_digest}`.
+
+The signed payload is constructed as `{timestamp}.{raw_body}`, where `timestamp` is a Unix epoch value sent in the `X-OwnPay-Timestamp` header. This prevents replay attacks - you should reject webhooks older than 5 minutes.
+
+```php
+$expected = hash_hmac('sha256', $timestamp . '.' . $rawBody, $webhookSecret);
+$valid = hash_equals('sha256=' . $expected, $signatureHeader);
+```
+
+For full webhook verification code in multiple languages, see the [Code Examples](/resources/code-examples) page.
+
+---
+
+## CSRF protection
+
+OwnPay generates a unique CSRF token per session using `SecurityHelpers::csrfToken()`. The `CsrfMiddleware` enforces token validation on every `POST`, `PUT`, and `DELETE` request to web routes (not API routes, which use Bearer/JWT authentication instead).
+
+The token is stored in an HTTP-only, SameSite=Lax cookie. Twig templates include it automatically in every form via the `csrf_field()` function. AJAX requests must read the token from the meta tag or cookie and include it in a custom header.
+
+---
+
+## SQL injection prevention
+
+Every database query in OwnPay uses **parameterized statements** through the PDO wrapper. No user input is ever concatenated into SQL strings. The `Database` class does not expose a `query()` method that accepts raw SQL with interpolation.
+
+<Note>
+  When writing plugins, always use the provided repository methods or the `Database` wrapper. The plugin sandbox will reject any code that attempts to construct raw PDO statements.
+</Note>
+
+---
+
+## XSS prevention
+
+All output in Twig templates is auto-escaped by default. The `|raw` filter is only safe for content you control (like system-generated HTML). Never use `|raw` on user-submitted data, customer names, or gateway response values.
+
+The Content Security Policy (CSP) middleware adds a per-request nonce to all inline scripts and styles. Any inline script without the correct nonce is blocked by the browser, providing defense-in-depth even if an XSS vector is discovered.
+
+---
+
+## Rate limiting
+
+OwnPay implements a **sliding window** rate limiter using Redis (or the file system as fallback). Rate limits are enforced per IP address on sensitive endpoints and per API key on authenticated endpoints.
+
+See the [Rate Limiting](/resources/rate-limiting) page for the full reference on tiers, headers, and configuration.
+
+---
+
+## Session security
+
+Sessions are stored in Redis when available, falling back to the file system. Key security properties:
+
+- **HTTP-only cookies** - session IDs are not accessible to JavaScript
+- **SameSite=Lax** - prevents cross-site request forgery via cookies
+- **IP binding** - the session is invalidated if the client IP changes
+- **Idle timeout** - sessions expire after a configurable period of inactivity
+- **Fingerprinting** - optional browser fingerprint validation on each request
+
+---
+
+## Password hashing
+
+OwnPay uses **Argon2id** as the default password hashing algorithm, with bcrypt as a legacy fallback for upgraded installations. Passwords are never stored in plaintext or reversible form.
+
+For API keys, OwnPay generates a 192-bit random string prefixed with `op_live_` or `op_test_`. The plain key is shown only once at creation time. At rest, the key is stored as a SHA-256 hash and compared using `hash_equals()` to prevent timing attacks.
+
+---
+
+## File upload security
+
+Uploaded files (logos, favicons, dispute evidence) are validated before storage:
+
+- File extension whitelist (images only for logos/favicons)
+- MIME type verification against the file content, not just the extension
+- Random filenames prevent path prediction and directory traversal
+- Files are stored outside the web root when possible, served through a controller
+
+---
+
+## Security headers
+
+The `SecurityHeadersMiddleware` adds the following headers to every response:
+
+| Header | Value | Purpose |
+| :-- | :-- | :-- |
+| `Content-Security-Policy` | Dynamic with nonce | Blocks unauthorized inline scripts and external resources |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Forces HTTPS on all future requests |
+| `X-Frame-Options` | `DENY` | Prevents clickjacking |
+| `X-Content-Type-Options` | `nosniff` | Prevents MIME type sniffing |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Limits referrer leakage |
+
+---
+
+## Checkout Content Security Policy
+
+Checkout pages use a stricter CSP than the admin panel. The nonce-based policy allows scripts only from OwnPay's own domain and the gateway provider domains configured for the brand. This prevents a compromised admin session from injecting malicious scripts into customer-facing checkout pages.
+
+Gateway-specific CSP origins are automatically added to the policy when a gateway is enabled for a brand, so no manual configuration is needed.
+
+---
+
+## Audit logging
+
+Every significant action in OwnPay is recorded in the `op_audit_log` table with:
+
+- The actor (user ID or system)
+- The entity type and ID affected
+- The action performed (create, update, delete, login, etc.)
+- Old and new values for updates
+- The client IP address
+- A cryptographic signature to detect post-creation tampering
+
+The admin panel includes an integrity scanner that verifies all log entry signatures. Any modified entry is flagged immediately.
+
+<Info>
+  PII such as customer emails and phone numbers is automatically masked in audit log output using the `LogSanitizer`.
+</Info>
+
+---
+
+## Compliance considerations
+
+### PCI DSS
+
+OwnPay operates under a **gateway delegation model** for PCI compliance. Credit card numbers, CVVs, and payment card data are never stored on your server. Instead, payment data is collected and tokenized directly by the upstream gateway (Stripe, Adyen, etc.) via their own PCI-certified iframes or redirect flows.
+
+This means OwnPay itself typically falls under **PCI DSS SAQ-A** (the simplest self-assessment questionnaire), since no cardholder data touches your infrastructure. However, you should consult with a Qualified Security Assessor for your specific deployment.
+
+### GDPR
+
+OwnPay supports GDPR compliance through:
+
+- **Data minimization** - only necessary PII is collected at checkout
+- **Encryption at rest** - customer data encrypted with AES-256-GCM
+- **Hash-based lookup** - email and phone stored as hashes; decryption only needed for display
+- **Data export** - customer data can be exported via CSV from the admin panel
+- **Data deletion** - customer records and associated transactions can be deleted (ledger entries are anonymized to preserve accounting integrity)
+- **Audit trail** - all access to customer data is logged and reviewable
+
+---
+
+## Related Pages
+
+- [Two-Factor Authentication](/security/two-factor) - Enable TOTP for staff accounts
+- [API Keys](/security/api-keys) - Generate, scope, and revoke API keys
+- [Backup and Export](/resources/backup-export) - Secure backup procedures
+- [Rate Limiting](/resources/rate-limiting) - Full rate limit tiers and configuration

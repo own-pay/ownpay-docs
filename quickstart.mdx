@@ -1,222 +1,198 @@
 ---
-title: "Quickstart - Get Your Payment Gateway Running in 5 Minutes"
-description: "Get your self-hosted payment gateway running in 5 minutes. Install OwnPay, configure your first gateway, and start accepting payments."
-keywords: "quickstart, payment gateway setup, install OwnPay, first payment, self-hosted payments, payment gateway tutorial"
+title: "Quickstart - Accept Your First Payment in 5 Minutes"
+description: "Deploy OwnPay, create a brand, activate a payment gateway, and accept a test payment. The fastest path from zero to processing payments."
+keywords: "quickstart, payment gateway setup, first payment, self-hosted payments, payment tutorial, OwnPay setup"
 sidebarTitle: "Quickstart"
+icon: "rocket"
 ---
 
 import LlmsDirective from "/snippets/llms-directive.mdx";
 
-<LlmsDirective />
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
 
-Get your self-hosted payment gateway running in 5 minutes. This guide covers the fastest path from zero to processing payments with OwnPay.
+Get your self-hosted payment gateway running and accept a test payment in under five minutes. This guide walks you through every step - from deploying OwnPay to completing a transaction.
 
 <Info>
-  This guide assumes basic familiarity with web hosting. Developers looking to integrate the API should see the [Developer Quickstart](/developer/quickstart).
+  Developers looking to integrate the API should start with the [Developer Quickstart](/developer/quickstart) instead.
 </Info>
 
 ## Prerequisites
 
-Before you begin, make sure you have:
+Before you start, make sure you have:
 
-- **PHP 8.3\+** with required extensions
-- **MySQL 5.7\+** or MariaDB 10.3\+
-- **Web server** (Apache or Nginx)
-- **SSL certificate** (required for production)
+- **PHP 8.3\+** with `bcmath`, `pdo_mysql`, `mbstring`, `curl`, `gd`, `zip`, `json`, `openssl`, `intl`
+- **MySQL 8\+** (or MariaDB 10.4\+)
+- **A domain with HTTPS** - SSL is required for payment processing
+- **About 5 minutes** of focused time
 
-<Tip>
-  Don't have a server? Skip to [Shared Hosting](#shared-hosting) for cPanel/DirectAdmin installation, or [VPS](#vps-cloud-server) for Ubuntu/Debian.
-</Tip>
+## Step 1: Deploy OwnPay
 
-## Installation
+Choose your hosting environment. Each tab covers the essentials - visit [Installation](/installation) for the full guide.
 
 <Tabs>
-  <Tab title="Shared Hosting" icon="globe">
-    A quick way to get started. Works with hosts like Hostinger, Namecheap, and SiteGround.
+  <Tab title="Shared Hosting" icon="world">
+    Works with cPanel, Plesk, DirectAdmin, and most shared hosts.
 
-    <Steps>
-      <Step title="Download OwnPay">
-        Go to the [GitHub Releases page](https://github.com/own-pay/OwnPay/releases/) and download the latest `.zip` file.
-      </Step>
-      <Step title="Upload to hosting">
-        Upload the `.zip` file to your web root (`public_html/`) using File Manager or FTP.
-      </Step>
-      <Step title="Extract and set PHP">
-        Extract the ZIP file. Set PHP version to **8.3** in your hosting control panel.
-      </Step>
-      <Step title="Create MySQL database">
-        Create a new database and user with **All Privileges**. Note the database name, username, and password.
-      </Step>
-      <Step title="Run the installer">
-        Visit `https://yourdomain.com/install` and follow the 4-step wizard:
+    1. Download the latest release from [GitHub Releases]({{github}}/releases).
+    2. Upload the `.zip` to your web root (`public_html/`) and extract it.
+    3. Set PHP to **8.3** in your hosting control panel.
+    4. Create a MySQL database and user with **ALL PRIVILEGES**.
 
-        - Requirements check
-        - Database configuration
-        - Admin account creation
-        - Application settings
-      </Step>
-      <Step title="Set up cron job">
-        Add a cron job to run every minute:
-
-        ```bash
-        * * * * * php /home/your_username/public_html/public/index.php cron
-        ```
-      </Step>
-    </Steps>
+    <Tip>
+      If extraction creates a nested folder (for example, `public_html/ownpay-v0.2.0/`), move all files up one level into `public_html/` directly.
+    </Tip>
   </Tab>
-  <Tab title="VPS / Cloud Server" icon="server" id="vps-cloud-server">
-    For production use. Gives you full control, Redis caching support, and server-level configuration.
+  <Tab title="VPS with Nginx" icon="server">
+    For Ubuntu/Debian servers with full root access.
 
-    <Steps>
-      <Step title="Connect via SSH">
-        ```bash
-        ssh root@YOUR_SERVER_IP
-        ```
-      </Step>
-      <Step title="Update and install software">
-        ```bash
-        sudo apt update && sudo apt upgrade -y
-        sudo apt install -y nginx mysql-server \
-          php8.3-fpm php8.3-mysql php8.3-mbstring php8.3-curl \
-          php8.3-xml php8.3-zip php8.3-gd php8.3-bcmath \
-          php8.3-intl unzip curl
-        ```
-      </Step>
-      <Step title="Set up MySQL database">
-        ```bash
-        sudo mysql_secure_installation
-        sudo mysql -u root -p
-        ```
+    ```bash
+    # Install dependencies
+    sudo apt update && sudo apt install -y nginx mysql-server \
+      php8.3-fpm php8.3-mysql php8.3-mbstring php8.3-curl \
+      php8.3-xml php8.3-zip php8.3-gd php8.3-bcmath \
+      php8.3-intl certbot python3-certbot-nginx
+    
+    # Clone and configure
+    cd /var/www
+    sudo git clone {{github}}.git ownpay
+    cd ownpay
+    sudo chown -R www-data:www-data .
+    sudo chmod -R 775 storage public/assets/uploads
+    ```
 
-        ```sql
-        CREATE DATABASE ownpay CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-        CREATE USER 'ownpay'@'localhost' IDENTIFIED BY 'STRONG_PASSWORD';
-        GRANT ALL PRIVILEGES ON ownpay.* TO 'ownpay'@'localhost';
-        FLUSH PRIVILEGES;
-        ```
-      </Step>
-      <Step title="Download and configure OwnPay">
-        ```bash
-        cd /var/www
-        sudo wget {{github}}/releases/download/vX.X.X/ownpay-vX.X.X.zip
-        sudo unzip ownpay-vX.X.X.zip -d ownpay
-        sudo chown -R www-data:www-data /var/www/ownpay
-        sudo chmod -R 775 /var/www/ownpay/storage
-        ```
-      </Step>
-      <Step title="Configure Nginx">
-        Create `/etc/nginx/sites-available/ownpay` with the PHP-FPM configuration, then:
-
-        ```bash
-        sudo ln -s /etc/nginx/sites-available/ownpay /etc/nginx/sites-enabled/
-        sudo nginx -t && sudo systemctl reload nginx
-        ```
-      </Step>
-      <Step title="Install SSL">
-        ```bash
-        sudo apt install -y certbot python3-certbot-nginx
-        sudo certbot --nginx -d yourdomain.com
-        ```
-      </Step>
-      <Step title="Run installer and set up cron">
-        Visit `https://yourdomain.com/install` to complete setup, then add the cron job:
-
-        ```bash
-        sudo crontab -u www-data -e
-        ```
-
-        ```bash
-        * * * * * /usr/bin/php /var/www/ownpay/public/index.php cron >> /var/log/ownpay-cron.log 2>&1
-        ```
-      </Step>
-    </Steps>
+    Point your Nginx server block at `/var/www/ownpay/public` and provision SSL with `certbot`. Full details in the [Installation guide](/installation).
   </Tab>
   <Tab title="Docker" icon="box">
-    Run OwnPay in containers for deployment and scaling.
+    Containerized deployment for local development or cloud orchestration.
 
-    <Steps>
-      <Step title="Clone the repository">
-        ```bash
-        git clone {{github}}.git
-        cd ownpay
-        ```
-      </Step>
-      <Step title="Configure environment">
-        ```bash
-        cp .env.example .env
-        # Edit .env with your database credentials
-        ```
-      </Step>
-      <Step title="Start containers">
-        ```bash
-        docker-compose up -d
-        ```
-      </Step>
-      <Step title="Run migrations">
-        ```bash
-        docker-compose exec app php public/index.php migrate
-        ```
-      </Step>
-    </Steps>
+    ```bash
+    git clone {{github}}.git && cd OwnPay
+    cp .env.example .env
+    # Edit .env with your database credentials
+    docker-compose up -d
+    docker-compose exec app php bin/migrate
+    docker-compose exec app php bin/seed
+    ```
+
+    Visit `http://localhost:8080/install` to complete the setup wizard.
   </Tab>
 </Tabs>
 
-## First login
+## Step 2: Run the web installer
 
-Navigate to `https://yourdomain.com/login` and log in with the admin credentials you created during installation.
-
-<Warning>
-  Change your default password immediately after first login. Enable Two-Factor Authentication under your profile for security.
-</Warning>
-
-## Create your first brand
+Open your browser and navigate to `https://yourdomain.com/install`. The setup wizard walks you through four stages:
 
 <Steps>
-  <Step title="Navigate to Brands">
-    Go to **People \> Brands** in the admin sidebar.
+  <Step title="Connect your database">
+    Enter the MySQL host, database name, username, and password you created in Step 1. The wizard tests the connection and confirms it can read and write.
   </Step>
-  <Step title="Create a brand">
-    Click **Add Brand** and fill in:
-
-    - Brand name and slug
-    - Default currency
-    - Timezone
-    - Contact email
+  <Step title="Import the schema">
+    OwnPay automatically creates all required tables - ledger accounts, brands, gateways, transactions, and settings. No manual SQL needed.
   </Step>
-  <Step title="Configure a gateway">
-    Go to **Gateways** and activate a payment gateway. Enter your provider's API credentials.
+  <Step title="Create your admin account">
+    Register a master administrator with your email and a strong password. This account has full system access across all brands.
   </Step>
-  <Step title="Test a payment">
-    Create a payment link and complete a test transaction to verify everything works.
+  <Step title="Generate API keys">
+    The wizard generates your first set of API keys for the Merchant, Mobile, and Admin APIs. Store these securely - you won't see the secret again.
   </Step>
 </Steps>
 
-## What's next?
+<Warning>
+  After logging in for the first time, change your admin password and enable two-factor authentication under **My Account**.
+</Warning>
 
-### For brand owners
+## Step 3: Create your first brand
 
-<CardGroup cols={2}>
-  <Card title="Multi-brand setup" icon="store" href="/concepts/brands">
-    Configure multiple brands with isolated data and custom domains.
-  </Card>
+A **brand** is your isolated merchant tenant - it holds its own gateways, customers, transactions, and ledger.
 
-  <Card title="Production deployment" icon="server" href="/resources/local-setup">
-    Optimize OwnPay for production with Redis, SSL, and monitoring.
-  </Card>
-</CardGroup>
+1. Go to **People \> Brands** in the sidebar.
+2. Click **Add Brand**.
+3. Fill in:
+   - **Brand name** - the display name customers see (for example, "Acme Store")
+   - **Default currency** - the primary currency for this brand
+   - **Timezone** - used for reports and timestamps
+   - **Logo** - upload your brand's logo for the checkout page
 
-### For developers
+<Note>
+  You can always add more brands later. Each brand operates in complete isolation from the others.
+</Note>
 
-<CardGroup cols={2}>
-  <Card title="API integration" icon="code" href="/developer/quickstart">
-    Integrate OwnPay with your applications via REST API.
-  </Card>
+## Step 4: Activate a payment gateway
 
-  <Card title="Gateway plugins" icon="plug" href="/developer/plugin-types/gateway-development">
-    Build custom payment gateway plugins.
-  </Card>
-</CardGroup>
+1. Go to **Gateways** in the sidebar.
+2. Click **Add Gateway** and choose from the available providers:
+   <CardGroup cols={3}>
+     <Card title="Stripe" icon="credit-card">
+       Cards, Apple Pay, Google Pay - global coverage.
+     </Card>
+     <Card title="bKash" icon="device-mobile">
+       Mobile money - Bangladesh.
+     </Card>
+     <Card title="PayPal" icon="wallet">
+       PayPal accounts and cards - worldwide.
+     </Card>
+     <Card title="Nagad" icon="device-mobile">
+       Mobile payment - Bangladesh.
+     </Card>
+     <Card title="SSLCommerz" icon="shield">
+       Cards and bank transfers - South Asia.
+     </Card>
+     <Card title="Razorpay" icon="credit-card">
+       Cards, UPI, wallets - India.
+     </Card>
+   </CardGroup>
+3. Enter your provider credentials (API key, secret, merchant ID).
+4. Toggle **Active** to enable the gateway for your brand.
+
+<Info>
+  All gateway credentials are encrypted at rest using AES-256-GCM. OwnPay never stores raw secrets in the database.
+</Info>
+
+## Step 5: Create a payment link
+
+1. Go to **Payments \> Payment Links**.
+2. Click **Create Payment Link**.
+3. Fill in:
+   - **Title** - a description for the payment (for example, "Pro Plan - Monthly")
+   - **Amount** - the charge amount
+   - **Currency** - defaults to your brand's currency
+4. Save the link.
+
+OwnPay generates a unique URL you can share via email, chat, or embed on your website.
+
+## Step 6: Test the checkout
+
+1. Open the payment link in an incognito browser window.
+2. Select your activated gateway from the checkout page.
+3. Complete a test payment using your gateway's sandbox/test mode credentials.
+4. Confirm you see the success page.
 
 <Tip>
-  Need help? Check our [Troubleshooting guide](/advanced-topics/troubleshooting) or open an issue on [GitHub](https://github.com/own-pay/OwnPay/issues).
+  Use your gateway's **test mode** for this step. Stripe test cards like `4242 4242 4242 4242` work perfectly. No real money changes hands.
 </Tip>
+
+## What's next?
+
+<CardGroup cols={3}>
+  <Card title="Accept payments on your website" icon="code" href="/developer/quickstart">
+    Integrate OwnPay into your app using the Merchant API, webhooks, and SDKs.
+  </Card>
+
+  <Card title="Set up a custom domain" icon="world" href="/system/domains">
+    Serve your checkout on `pay.yourbrand.com` with automated SSL and white-label branding.
+  </Card>
+
+  <Card title="Invite your team" icon="users" href="/people/staff">
+    Add staff members with role-based permissions so your team can manage payments collaboratively.
+  </Card>
+</CardGroup>
+
+## Related pages
+
+- [Installation](/installation) - detailed deployment for all environments
+- [How OwnPay works](/fundamentals/how-ownpay-works) - architecture and concepts overview
+- [Gateway configuration](/gateways/configuration) - full setup guide for each provider
+- [Payment flow](/fundamentals/payment-flow) - understand transaction statuses and lifecycle
+- [Developer quickstart](/developer/quickstart) - API integration guide
