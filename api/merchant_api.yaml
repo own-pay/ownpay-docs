@@ -1,17 +1,7 @@
 openapi: 3.1.0
 info:
   title: OwnPay Merchant API
-  description: |
-    The OwnPay Merchant API enables merchants to programmatically interface with their white-labeled payment gateway.
-    It exposes endpoints to initiate payments (creating payment intents), query transaction statuses, issue full or partial refunds, manage customer profiles securely in compliance with GDPR and OWASP, generate and revoke API keys, and test/audit webhook delivery attempts.
-    
-    ### Authentication
-    Authentication is performed via HTTP Bearer token in the `Authorization` header.
-    ```http
-    Authorization: Bearer op_live_abc123.def456
-    ```
-    API keys carry specific privilege scopes (e.g., `read`, `write`, `admin`).
-    Some administrative operations (like listing/generating API keys) require **both** `write` and `admin` scopes, as well as passing a valid platform super-administrator's email address in the `X-Super-Admin-Email` header for safety.
+  description: "The OwnPay Merchant API enables merchants to programmatically interface with their white-labeled payment gateway. It exposes endpoints to initiate payments, query transaction statuses, issue refunds, manage customer profiles, generate and revoke API keys, and test webhook delivery. Authentication is via HTTP Bearer token. API keys carry privilege scopes (read, write, admin). Some operations require both write and admin scopes along with a super-admin email header."
   version: 1.0.0
 servers:
   - url: https://{brand_domain}/api/v1
