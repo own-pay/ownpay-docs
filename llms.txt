@@ -108,6 +108,44 @@
 - [Changelog](https://ownpay.org/docs/resources/changelog.md): Release history
 - [Glossary](https://ownpay.org/docs/resources/glossary.md): Terminology reference
 - [Code Examples](https://ownpay.org/docs/resources/code-examples.md): Multi-language payment examples
+- [Local Setup](https://ownpay.org/docs/resources/local-setup.md): Run OwnPay locally for development
+
+## API Reference Endpoints
+
+- [Acknowledge Push Notifications](https://ownpay.org/docs/api-reference/acknowledge-push-notifications.md): Acknowledge push notifications from companion app
+- [Bulk Revoke Devices](https://ownpay.org/docs/api-reference/bulk-revoke-devices.md): Bulk revoke paired companion devices
+- [Create Customer](https://ownpay.org/docs/api-reference/create-customer.md): Create a new customer record
+- [Dispatch Test Webhook](https://ownpay.org/docs/api-reference/dispatch-test-webhook.md): Send a test webhook event
+- [Generate API Key](https://ownpay.org/docs/api-reference/generate-api-key.md): Generate a new API key
+- [Get Pending Outbound SMS](https://ownpay.org/docs/api-reference/get-pending-outbound-sms.md): Retrieve pending outbound SMS messages
+- [Initiate Payment Intent](https://ownpay.org/docs/api-reference/initiate-payment-intent.md): Create a payment intent for checkout
+- [List API Keys](https://ownpay.org/docs/api-reference/list-api-keys.md): List all API keys for a brand
+- [List Companion App Notifications](https://ownpay.org/docs/api-reference/list-companion-app-notifications.md): List notifications from companion app
+- [List Customers](https://ownpay.org/docs/api-reference/list-customers.md): List all customers for a brand
+- [List Outbound SMS Queue](https://ownpay.org/docs/api-reference/list-outbound-sms-queue.md): List outbound SMS delivery queue
+- [List Paired Companion Devices](https://ownpay.org/docs/api-reference/list-paired-companion-devices.md): List all paired companion devices
+- [List Refunds](https://ownpay.org/docs/api-reference/list-refunds.md): List all refunds for a brand
+- [List SMS Templates](https://ownpay.org/docs/api-reference/list-sms-templates.md): List SMS verification templates
+- [List Transactions](https://ownpay.org/docs/api-reference/list-transactions.md): List all transactions for a brand
+- [Pair Mobile Companion Device](https://ownpay.org/docs/api-reference/pair-mobile-companion-device.md): Pair a new companion device
+- [Refresh Access Token](https://ownpay.org/docs/api-reference/refresh-access-token.md): Refresh an expired access token
+- [Request Transaction Refund](https://ownpay.org/docs/api-reference/request-transaction-refund.md): Request a refund for a transaction
+- [Retrieve Customer](https://ownpay.org/docs/api-reference/retrieve-customer.md): Retrieve a customer by ID
+- [Retrieve Dashboard Summary](https://ownpay.org/docs/api-reference/retrieve-dashboard-summary.md): Get dashboard metrics summary
+- [Retrieve Device Connection Status](https://ownpay.org/docs/api-reference/retrieve-device-connection-status.md): Check companion device connection status
+- [Retrieve Payment Details](https://ownpay.org/docs/api-reference/retrieve-payment-details.md): Retrieve payment intent details
+- [Retrieve Refund](https://ownpay.org/docs/api-reference/retrieve-refund.md): Retrieve a refund by ID
+- [Retrieve SMS Filter Rules](https://ownpay.org/docs/api-reference/retrieve-sms-filter-rules.md): Retrieve SMS filter rules
+- [Retrieve Transaction](https://ownpay.org/docs/api-reference/retrieve-transaction.md): Retrieve a transaction by ID
+- [Retry Outbound SMS](https://ownpay.org/docs/api-reference/retry-outbound-sms.md): Retry a failed outbound SMS
+- [Revoke API Key](https://ownpay.org/docs/api-reference/revoke-api-key.md): Revoke an API key
+- [Revoke Paired Device](https://ownpay.org/docs/api-reference/revoke-paired-device.md): Revoke a paired companion device
+- [Submit Device Heartbeat](https://ownpay.org/docs/api-reference/submit-device-heartbeat.md): Submit companion device heartbeat
+- [Submit Received SMS](https://ownpay.org/docs/api-reference/submit-received-sms.md): Submit a received SMS for processing
+- [System Health Check](https://ownpay.org/docs/api-reference/system-health-check.md): Check system health status
+- [Update SMS Template](https://ownpay.org/docs/api-reference/update-sms-template.md): Update an SMS verification template
+- [Verify Custom Domain](https://ownpay.org/docs/api-reference/verify-custom-domain.md): Verify a custom domain configuration
+- [Webhook Delivery Log](https://ownpay.org/docs/api-reference/webhook-delivery-log.md): Retrieve webhook delivery logs
 
 ## Optional
 
