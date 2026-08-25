@@ -29,7 +29,7 @@ OwnPay is a **self-hosted, single-owner, multi-brand payment orchestrator** writ
 | Static analysis | PHPStan **level 9** |
 | Tests | PHPUnit |
 
-There is **no framework** (no Laravel/Symfony runtime). The kernel, router, container, and middleware pipeline are small, readable, first-party code under `src/`.
+The architecture uses **no framework** (no Laravel/Symfony runtime). The kernel, router, container, and middleware pipeline are small, readable, first-party code under `src/`.
 
 ---
 
@@ -129,7 +129,7 @@ Plugins are discovered via `manifest.json`, run through a **static code scanner*
 
 ### 4.5 White-label custom domains _(industry first)_
 
-OwnPay is the **first self-hosted payment platform** to support per-brand custom-domain checkout on a single installation. A brand maps its own domain (e.g. `pay.yourbrand.com`), which is DNS-verified (TXT ownership \+ A-record routing), then fully activated. From that point, every customer-facing URL uses the brand's domain - customers see the brand's logo, name, and colors; there is no trace of OwnPay.
+OwnPay is the **first self-hosted payment platform** to support per-brand custom-domain checkout on a single installation. A brand maps its own domain (for example `pay.yourbrand.com`), which is DNS-verified (TXT ownership \+ A-record routing), then fully activated. From that point, every customer-facing URL uses the brand's domain - customers see the brand's logo, name, and colors; there is no trace of OwnPay.
 
 `DomainMiddleware` resolves `HTTP_HOST` against the `op_domains` table, injects the `merchant_id`, and blocks `/admin/*` on custom domains. **Always** build customer-facing and gateway URLs through `DomainUrlService` (`buildCheckoutUrl()`, `buildCallbackUrl()`) - never hardcode a host.
 
@@ -163,7 +163,7 @@ flowchart LR
 
 ### 4.7 Configuration & settings
 
-Runtime settings live in `op_system_settings` (group/key/value, with an optional `merchant_id` for per-brand overrides). Access them through `EnvironmentService` / `SettingsRepository`; `EnvironmentService::get()` falls back to OS environment variables when no stored value exists. There is no separate config store.
+Runtime settings live in `op_system_settings` (group/key/value, with an optional `merchant_id` for per-brand overrides). Access them through `EnvironmentService` / `SettingsRepository`; `EnvironmentService::get()` falls back to OS environment variables when no stored value exists. The system includes no separate config store.
 
 ### 4.8 Self-update
 

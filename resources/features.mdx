@@ -21,7 +21,7 @@ Here is exactly what it means:
 - **One server, one installation** - owned by one super-admin.
 - **Multiple brands** - create unlimited stores (brands). Each is a fully isolated entity with its own custom domain, logo, name, color scheme, gateways, customers, ledgers, and staff.
 - **Custom domain per brand** - map `pay.yourbrand.com` to a brand. OwnPay verifies ownership via a DNS TXT record (`_ownpay-verification.{domain}`) and confirms routing via A-record check, then activates the domain.
-- **Invisible infrastructure** - when a customer reaches checkout, they land on `pay.yourbrand.com`. They see the brand's logo, name, and colors. There is no mention of OwnPay, no shared domain, no "powered by" indicator unless the brand explicitly adds one.
+- **Invisible infrastructure** - when a customer reaches checkout, they land on `pay.yourbrand.com`. They see the brand's logo, name, and colors. OwnPay is not mentioned at, no shared domain, no "powered by" indicator unless the brand explicitly adds one.
 - **Admin panel stays private** - the admin dashboard is only accessible on the master installation domain. Custom brand domains return 404 for all `/admin/*` paths.
 - **Complete data isolation** - every customer record, transaction, ledger entry, gateway credential, and webhook secret is scoped per brand via `merchant_id` in the database. Zero data bleed between brands.
 - **Brand-aware URLs** - all checkout URLs, gateway callback URLs, and webhook endpoints are automatically built using the brand's custom domain via `DomainUrlService`. The installation domain never leaks into customer-facing flows.
@@ -147,7 +147,7 @@ Here is exactly what it means:
 | Feature | Description |
 | :-- | :-- |
 | Reusable shareable links | Create URLs for recurring or product payments |
-| Custom slug | Memorable URL path (e.g., `/pay/annual-subscription`) |
+| Custom slug | Memorable URL path (for example, `/pay/annual-subscription`) |
 | Fixed or variable amount | Set exact amount or let customer choose within min/max bounds |
 | Custom fields | Collect name, email, account ID, or any data before payment |
 | Usage limits | Cap total accepted payments (link auto-expires after N uses) |
@@ -321,7 +321,7 @@ Here is exactly what it means:
 | Feature | Description |
 | :-- | :-- |
 | Actions (`doAction`) | Fire events; plugins and addons listen and react |
-| Filters (`applyFilter`) | Transform values in-flight (e.g., modify payment amount, alter checkout output) |
+| Filters (`applyFilter`) | Transform values in-flight (for example, modify payment amount, alter checkout output) |
 | Built-in events | `system.boot`, `system.shutdown`, `payment.intent.created`, `payment.intent.expired`, `payment.completed`, `payment.failed`, `refund.created`, `dispute.created`, `customer.created`, `domain.mapped`, `domain.verified`, `domain.removed` |
 | Plugin registration | Hooks declared in plugin manifest or registered programmatically |
 

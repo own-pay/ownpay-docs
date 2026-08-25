@@ -52,7 +52,7 @@ This glossary defines terms and concepts used throughout the OwnPay documentatio
 
 **HMAC-SHA256** A message authentication code algorithm used to sign outbound webhook deliveries. The signature is computed over `{timestamp}.{raw_body}` using the merchant's webhook secret, ensuring authenticity and integrity.
 
-**Hook (Action)** A point in OwnPay's execution flow where plugins can register callbacks via `doAction()` to react to events (e.g., `payment.completed`, `customer.created`). Actions do not return a value.
+**Hook (Action)** A point in OwnPay's execution flow where plugins can register callbacks via `doAction()` to react to events (for example, `payment.completed`, `customer.created`). Actions do not return a value.
 
 **Hook (Filter)** A point where plugins can modify data in-flight via `applyFilter()`. For example, the `payment.amount` filter allows a plugin to add a convenience fee before the payment is processed. Filters must return the (possibly modified) value.
 
@@ -72,7 +72,7 @@ This glossary defines terms and concepts used throughout the OwnPay documentatio
 
 ### M
 
-**Manual Gateway** A payment method that is not processed by an automated external API (e.g., bank transfer, cash on delivery, mobile money verified by SMS). Transactions on manual gateways require explicit verification by an admin or by the companion app's SMS parser.
+**Manual Gateway** A payment method that is not processed by an automated external API (for example, bank transfer, cash on delivery, mobile money verified by SMS). Transactions on manual gateways require explicit verification by an admin or by the companion app's SMS parser.
 
 ---
 

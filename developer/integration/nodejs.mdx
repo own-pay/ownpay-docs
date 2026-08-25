@@ -6,7 +6,7 @@ sidebarTitle: Node.js
 icon: braces
 ---
 
-The official OwnPay Node.js SDK is a zero-dependency, TypeScript-first package for integrating payments into your backend. It uses native `fetch` and `crypto` modules with built-in retries and webhook signature verification.
+The official OwnPay Node.js SDK is a zero-dependency, TypeScript-first package for integrating payments into your server-side. It uses native `fetch` and `crypto` modules with built-in retries and webhook signature verification.
 
 <CardGroup cols={2}>
   <Card title="npm" icon="box" href="https://www.npmjs.com/package/ownpay-nodejs">
@@ -107,7 +107,7 @@ console.log('Checkout URL:', payment.checkout_url);
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
 | `amount` | `string \| number` | Yes | Payment amount (positive number) |
-| `currency` | `string` | Yes | 3-letter ISO currency code (e.g., `BDT`, `USD`) |
+| `currency` | `string` | Yes | 3-letter ISO currency code (for example, `BDT`, `USD`) |
 | `callback_url` | `string` | No | Webhook notification URL |
 | `redirect_url` | `string` | No | Success redirect URL |
 | `cancel_url` | `string` | No | Cancel redirect URL |
@@ -281,7 +281,7 @@ app.listen(3000);
 
 ```typescript
 interface WebhookPayload {
-  event: string;              // e.g., 'payment.completed'
+  event: string;              // for example, 'payment.completed'
   transaction_id: string;     // OwnPay transaction reference
   gateway_trx_id: string;     // Gateway transaction ID
   amount: string;             // Transaction amount

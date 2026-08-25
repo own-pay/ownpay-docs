@@ -9,7 +9,7 @@ icon: file-code
 SMS templates define how OwnPay matches incoming **payment confirmation SMS** from the [companion app](/mobile/companion-app) to pending transactions. Each template binds a **gateway** to a **regex pattern** that extracts the payment amount and transaction ID from the SMS text.
 
 <Note>
-  The companion app's on-device privacy filter ensures only incoming payment receipt SMS (e.g., bKash/Nagad/Rocket confirmations) are forwarded. OTP messages, personal SMS, and all other non-payment SMS are never sent to the server, so templates only ever process payment confirmation messages.
+  The companion app's on-device privacy filter ensures only incoming payment receipt SMS (for example, bKash/Nagad/Rocket confirmations) are forwarded. OTP messages, personal SMS, and all other non-payment SMS are never sent to the server, so templates only ever process payment confirmation messages.
 </Note>
 
 <Info>
@@ -22,7 +22,7 @@ Each SMS template has these fields:
 
 | Field | Description |
 | --- | --- |
-| **Gateway Slug** | The payment gateway this template applies to (e.g., `bkash`, `nagad`, `citybank`) |
+| **Gateway Slug** | The payment gateway this template applies to (for example, `bkash`, `nagad`, `citybank`) |
 | **Regex Pattern** | A PCRE-compatible regular expression that captures the payment amount and/or transaction ID from the confirmation SMS |
 | **Code Field Mapping** | Which capture group contains the extracted value (default: group 1) |
 | **Label** | Human-readable name for the template |

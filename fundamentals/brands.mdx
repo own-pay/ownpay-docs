@@ -47,7 +47,7 @@ A **brand** is OwnPay's unit of multi-tenant isolation. When you create a brand,
 `}>
 </Mermaid>
 
-Every database query is scoped to the active brand's `merchant_id`. Staff in Brand A cannot see Brand B's transactions, customers, or settings. There is no cross-brand data leakage.
+Every database query is scoped to the active brand's `merchant_id`. Staff in Brand A cannot see Brand B's transactions, customers, or settings. No cross-brand data leakage is possible.
 
 ## Brand vs platform
 
@@ -81,7 +81,7 @@ Each brand independently controls:
 | Setting | Description |
 | :-- | :-- |
 | **Gateways** | Which payment providers are active and their credentials |
-| **Domain** | Custom checkout domain (e.g., `pay.acme.com`) |
+| **Domain** | Custom checkout domain (for example, `pay.acme.com`) |
 | **Branding** | Logo, favicon, color scheme, checkout templates |
 | **Currency & timezone** | Default currency and timezone for reports |
 | **Staff** | Team members with role-based permissions scoped to this brand |

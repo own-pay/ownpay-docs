@@ -34,8 +34,8 @@ graph TD
 
 - **Database Table (`op_languages`)**: Stores language profiles and translation catalogs. Contains the following columns:
 
-  - `code` (VARCHAR): The ISO 639-1 language code (e.g., `en`, `bn`, `es`).
-  - `name` (VARCHAR): The human-readable name of the language (e.g., `English`, `Bengali`, `Spanish`).
+  - `code` (VARCHAR): The ISO 639-1 language code (for example, `en`, `bn`, `es`).
+  - `name` (VARCHAR): The human-readable name of the language (for example, `English`, `Bengali`, `Spanish`).
   - `status` (ENUM): The state of the language (`active`, `inactive`). Only active languages can be resolved by the system.
   - `is_default` (TINYINT): Indicator for the system-wide fallback default language.
   - `translations` (JSON): The catalog of flat translation key-value mappings.
@@ -137,7 +137,7 @@ final class SettingsController extends BaseController
 
 When `$translationService->trans($key)` is called:
 
-1. It searches the cached translations for the active locale (e.g. `bn`).
+1. It searches the cached translations for the active locale (for example `bn`).
 2. If the key is missing or empty, it falls back to the baseline English (`en`) catalog.
 3. If the key is missing in English, the literal `$key` string is returned.
 
@@ -151,7 +151,7 @@ Admin views utilize the base translations loaded during runtime. You can bind tr
 
 ### 5.2 Checkout Templates
 
-Checkout views (e.g. `templates/checkout/checkout.twig`) represent white-labeled interfaces where merchants can customize standard messaging.
+Checkout views (for example `templates/checkout/checkout.twig`) represent white-labeled interfaces where merchants can customize standard messaging.
 
 - The customer-facing templates access translation and branding strings through the `lang` view variable:
 
@@ -182,7 +182,7 @@ When submitting a pull request to add or update language translations:
 
 ### Step 1: Create the Translation Catalog
 
-Create a translation JSON file using dot-notation. Placeholders (prefixed with `:`) must remain unchanged (e.g., `:name`, `:amount` must keep their colons). Example `es.json` (Spanish):
+Create a translation JSON file using dot-notation. Placeholders (prefixed with `:`) must remain unchanged (for example, `:name`, `:amount` must keep their colons). Example `es.json` (Spanish):
 
 ```json
 {
@@ -200,7 +200,7 @@ Create a translation JSON file using dot-notation. Placeholders (prefixed with `
 
 ### Step 3: Update Default Config (For core languages)
 
-If you are contributing a translation that should ship natively with OwnPay, place the file in the `config/languages/` directory of your branch (e.g., `config/languages/es.json`) and submit a pull request on GitHub.
+If you are contributing a translation that should ship natively with OwnPay, place the file in the `config/languages/` directory of your branch (for example, `config/languages/es.json`) and submit a pull request on GitHub.
 
 ---
 

@@ -9,7 +9,7 @@ icon: message-circle
 SMS auto-verification lets OwnPay confirm manual payments without you lifting a finger. When a customer pays via a mobile wallet or bank, the payment confirmation SMS is forwarded to OwnPay, parsed, and matched to the pending transaction.
 
 <Note>
-  **Privacy scope:** The companion app only forwards **incoming** SMS that look like payment transaction confirmations (e.g., bKash/Nagad/Rocket receipts). It applies an **on-device privacy filter** that silently discards all other SMS—including OTP codes, verification codes from other services, promotional messages, and personal messages. These non-payment SMS are **never sent to your OwnPay server**.
+  **Privacy scope:** The companion app only forwards **incoming** SMS that look like payment transaction confirmations (for example, bKash/Nagad/Rocket receipts). It applies an **on-device privacy filter** that silently discards all other SMS—including OTP codes, verification codes from other services, promotional messages, and personal messages. These non-payment SMS are **never sent to your OwnPay server**.
 </Note>
 
 ## How it works
@@ -59,7 +59,7 @@ Before setting up SMS verification, you need:
 The smart parser extracts payment data from SMS messages using a combination of regex patterns and heuristic rules. It does not require an external AI service.
 
 - **Regex templates** - you define patterns per gateway under [SMS templates](/mobile/sms-templates). Each template specifies how to extract amount, transaction ID, and sender.
-- **Heuristic rules** - when no template matches, the parser uses built-in rules to identify common SMS formats (e.g. "Tk 500 received from...").
+- **Heuristic rules** - when no template matches, the parser uses built-in rules to identify common SMS formats (for example "Tk 500 received from...").
 - **Confidence scoring** - each parse result gets a confidence score. Only matches above the threshold are auto-completed. Low-confidence matches stay in awaiting-verification for manual review.
 
 ## Supported gateways

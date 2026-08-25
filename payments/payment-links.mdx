@@ -20,11 +20,11 @@ Payment links are shareable checkout URLs you create from the admin dashboard. C
 
 | Option | Type | Required | Description |
 | --- | --- | --- | --- |
-| **Title** | Text | Yes | Name shown to the customer at checkout (e.g. "Consultation fee") |
+| **Title** | Text | Yes | Name shown to the customer at checkout (for example "Consultation fee") |
 | **Description** | Text area | No | Additional instructions or details displayed on the checkout page |
 | **Amount** | Number | No | Fixed price. Leave blank to let the customer enter their own amount |
 | **Currency** | Select | Yes | Billing currency (must match a gateway that supports it) |
-| **Custom fields** | JSON schema | No | Extra input fields the customer must fill out (e.g. "Order ID") |
+| **Custom fields** | JSON schema | No | Extra input fields the customer must fill out (for example "Order ID") |
 | **Max uses** | Number | No | Maximum number of times the link can be paid. `0` means unlimited |
 | **Expires at** | Date/time | No | Link automatically deactivates after this date |
 | **Redirect URL** | URL | No | Where to send the customer after successful payment |
@@ -37,7 +37,7 @@ Payment links are shareable checkout URLs you create from the admin dashboard. C
 
 ## Expiry and usage limits
 
-Set **Max uses** to `1` for single-use links (e.g. a specific invoice payment). Set an **Expires at** date to prevent stale links from being used weeks later. When a link expires or reaches its use limit, customers see a "Link expired" message.
+Set **Max uses** to `1` for single-use links (for example a specific invoice payment). Set an **Expires at** date to prevent stale links from being used weeks later. When a link expires or reaches its use limit, customers see a "Link expired" message.
 
 ## Redirect URLs
 
