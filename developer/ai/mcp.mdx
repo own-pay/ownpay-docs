@@ -41,7 +41,7 @@ Follow these steps to add the OwnPay MCP server to your preferred environment:
 
         - **Name:** `ownpay-docs`
         - **Type:** `sse`
-        - **URL:** `{{mcpUrl}}`
+        - **URL:** `{{mcp-url}}`
       </Step>
       <Step title="Verify Connection">
         In Cursor's chat pane, ask: _"What tools do you have available?"_ It should list `ownpay-docs` with the search and query tools active.
@@ -69,7 +69,7 @@ Follow these steps to add the OwnPay MCP server to your preferred environment:
               "args": [
                 "-y",
                 "@modelcontextprotocol/server-sse",
-                "{{mcpUrl}}"
+                "{{mcp-url}}"
               ]
             }
           }
@@ -95,7 +95,7 @@ Follow these steps to add the OwnPay MCP server to your preferred environment:
         {
           "mcpServers": {
             "ownpay-docs": {
-              "serverUrl": "{{mcpUrl}}"
+              "serverUrl": "{{mcp-url}}"
             }
           }
         }
@@ -118,7 +118,7 @@ Follow these steps to add the OwnPay MCP server to your preferred environment:
 
         - **Name:** `ownpay-docs`
         - **Type:** `sse`
-        - **URL:** `{{mcpUrl}}`
+        - **URL:** `{{mcp-url}}`
       </Step>
     </Steps>
   </Tab>
@@ -144,7 +144,7 @@ Follow these steps to add the OwnPay MCP server to your preferred environment:
 Copy and paste this system prompt into your custom GPT instructions, Claude Project, or Cursor system settings to instruct your AI on how to interact with OwnPay:
 
 ```text
-You are an expert developer assistant specialized in the OwnPay payment orchestration platform. You have access to the OwnPay documentation MCP server at "{{mcpUrl}}".
+You are an expert developer assistant specialized in the OwnPay payment orchestration platform. You have access to the OwnPay documentation MCP server at "{{mcp-url}}".
 
 When answering questions or generating code:
 1. Architecture Overview:
@@ -158,7 +158,7 @@ When answering questions or generating code:
      - POST `/api/v1/payments` (Create payment session redirect)
      - GET `/api/v1/payments/{trx_id}` (Verify payment status)
      - POST `/api/v1/refunds` (Refund transaction amount)
-   - Uses Bearer Token authentication: Authorization: Bearer op_live_abc123.def456
+   - Uses Bearer Token authentication: Authorization: Bearer op_abc123.def456
 
 3. Best Practices & Conventions:
    - Use PSR-12 coding style for all PHP code.
@@ -176,7 +176,7 @@ If a question requires precise file paths, settings schemas, or hooks details, p
 The MCP server supports automatic discovery. Systems that implement automated client connections can query the configuration metadata at:
 
 ```text
-{{mcpUrl}}/.well-known/mcp
+{{mcp-url}}/.well-known/mcp
 ```
 
 ### Server Rate Limits

@@ -1,9 +1,9 @@
 ---
-title: OwnPay Skills for AI Agents - Platform Knowledge Pack
+title: "OwnPay Skills for AI Agents - Platform Knowledge Pack"
 description: "Install OwnPay skills to give AI agents full knowledge of the OwnPay platform, payment gateway architecture, and development patterns."
 keywords: "AI skills, agent skills, OwnPay skill.md, Claude skills, Cursor skills, payment gateway AI, MCP skills"
-sidebarTitle: AI Skills
-icon: sparkles
+sidebarTitle: "AI Skills"
+icon: "sparkles"
 ---
 
 OwnPay provides **skills** that teach AI agents how to work with the OwnPay platform. A skill is a structured knowledge file that gives AI tools context about OwnPay's architecture, APIs, conventions, and best practices.
@@ -29,7 +29,7 @@ Skills are files that instruct AI agents how to use a product effectively. When 
 Run this command in your terminal:
 
 ```bash
-npx skills add {{docsUrl}}
+npx skills add {{docs-url}}
 ```
 
 This downloads and installs the OwnPay skill for all compatible AI tools on your system.
@@ -40,7 +40,7 @@ This downloads and installs the OwnPay skill for all compatible AI tools on your
   <Tab title="Claude Code">
     ```bash
     # Download the skill file
-    curl -o ~/.claude/skills/ownpay/SKILL.md {{skillsUrl}}
+    curl -o ~/.claude/skills/ownpay/SKILL.md {{skills-url}}
     
     # The skill is now available in Claude Code
     ```
@@ -50,7 +50,7 @@ This downloads and installs the OwnPay skill for all compatible AI tools on your
     2. Download the skill:
 
     ```bash
-    curl -o .cursor/skills/ownpay/SKILL.md {{skillsUrl}}
+    curl -o .cursor/skills/ownpay/SKILL.md {{skills-url}}
     ```
 
     3. Restart Cursor to load the skill
@@ -60,7 +60,7 @@ This downloads and installs the OwnPay skill for all compatible AI tools on your
     2. Download the skill:
 
     ```bash
-    curl -o .vscode/skills/ownpay/SKILL.md {{skillsUrl}}
+    curl -o .vscode/skills/ownpay/SKILL.md {{skills-url}}
     ```
 
     3. Reload VS Code to load the skill
@@ -71,7 +71,7 @@ This downloads and installs the OwnPay skill for all compatible AI tools on your
     mkdir -p ~/.gemini/skills/ownpay
     
     # Download the skill
-    curl -o ~/.gemini/skills/ownpay/SKILL.md {{skillsUrl}}
+    curl -o ~/.gemini/skills/ownpay/SKILL.md {{skills-url}}
     ```
   </Tab>
 </Tabs>
@@ -148,7 +148,7 @@ With the skill installed, try these prompts:
 The skill file is hosted at:
 
 ```text
-{{skillsUrl}}
+{{skills-url}}
 ```
 
 Mintlify automatically generates this file from your documentation structure and content. It includes:
