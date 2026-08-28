@@ -196,7 +196,7 @@ Formal API schema: **[docs.ownpay.org](https://docs.ownpay.org)**. Integration e
 ## 7. Conventions for contributors
 
 1. `declare(strict_types=1);` is the first line of every PHP file (no BOM).
-2. Keep PHPStan at **level 9** �� run `composer analyse` before pushing.
+2. Keep PHPStan at **level 9** - run `composer analyse` before pushing.
 3. Money is **bcmath strings**, never floats.
 4. Scoped DB access always goes through `forTenant()` / `*Scoped()`.
 5. Customer/gateway URLs always go through `DomainUrlService` - never hardcode a host.
