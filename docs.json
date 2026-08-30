@@ -73,7 +73,7 @@
     "prompt": "Search OwnPay docs..."
   },
   "banner": {
-    "content": "OwnPay v {{version}} is available. [See what's new](/resources/changelog).",
+    "content": "OwnPay v0.2.0 is available. [See what's new](/resources/changelog).",
     "dismissible": true,
     "type": "info"
   },
@@ -111,43 +111,43 @@
       {
         "header": "Product",
         "items": [
-          { "label": "Quickstart", "href": "/quickstart" },
+          { "label": "Quickstart", "href": "/docs/quickstart" },
           {
             "label": "Installation",
-            "href": "/installation"
+            "href": "/docs/installation"
           },
           {
             "label": "Download",
             "href": "https://update.ownpay.org"
           },
-          { "label": "Features", "href": "/resources/features" },
-          { "label": "Roadmap", "href": "/resources/roadmap" },
-          { "label": "Changelog", "href": "/resources/changelog" }
+          { "label": "Features", "href": "/docs/resources/features" },
+          { "label": "Roadmap", "href": "/docs/resources/roadmap" },
+          { "label": "Changelog", "href": "/docs/resources/changelog" }
         ]
       },
       {
         "header": "Developers",
         "items": [
-          { "label": "API Reference", "href": "/api/overview" },
-          { "label": "API Quick Start", "href": "/developer/quickstart" },
-          { "label": "Webhooks", "href": "/api/webhooks" },
-          { "label": "Plugins", "href": "/developer/plugins/overview" }
+          { "label": "API Reference", "href": "/docs/api/overview" },
+          { "label": "API Quick Start", "href": "/docs/developer/quickstart" },
+          { "label": "Webhooks", "href": "/docs/api/webhooks" },
+          { "label": "Plugins", "href": "/docs/developer/plugins/overview" }
         ]
       },
       {
         "header": "Resources",
         "items": [
-          { "label": "Architecture", "href": "/resources/architecture" },
-          { "label": "Security", "href": "/resources/security-compliance" },
+          { "label": "Architecture", "href": "/docs/resources/architecture" },
+          { "label": "Security", "href": "/docs/resources/security-compliance" },
           {
             "label": "FAQ",
-            "href": "/resources/faq"
+            "href": "/docs/resources/faq"
           },
           {
             "label": "Community",
             "href": "https://github.com/own-pay/OwnPay/discussions"
           },
-          { "label": "Contributing", "href": "/resources/contributing" }
+          { "label": "Contributing", "href": "/docs/resources/contributing" }
         ]
       }
     ]
