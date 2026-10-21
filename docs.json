@@ -314,7 +314,20 @@
     { "source": "/developer/plugin-types/addon-prompt", "destination": "/developer/ai/overview" },
     { "source": "/developer/plugin-types/theme-prompt", "destination": "/developer/ai/overview" },
     { "source": "/developer/plugin-types/integration-prompt", "destination": "/developer/ai/overview" },
-    { "source": "/core-concepts", "destination": "/fundamentals/how-ownpay-works" }
+    { "source": "/core-concepts", "destination": "/fundamentals/how-ownpay-works" },
+    { "source": "/deployment/installation", "destination": "/installation" },
+    { "source": "/deployment/upgrading", "destination": "/resources/migration-guide" },
+    { "source": "/guides/first-payment", "destination": "/quickstart" },
+    { "source": "/guides/gateway-setup", "destination": "/gateways/configuration" },
+    { "source": "/guides/custom-domains", "destination": "/system/domains" },
+    { "source": "/guides/email-notifications", "destination": "/notifications/email" },
+    { "source": "/mobile/overview", "destination": "/mobile/companion-app" },
+    { "source": "/mobile/pairing", "destination": "/mobile/companion-app" },
+    { "source": "/mobile/sms-verification", "destination": "/gateways/sms-verification" },
+    { "source": "/plugins/overview", "destination": "/developer/plugins/overview" },
+    { "source": "/plugins/hooks-reference", "destination": "/developer/plugins/hooks" },
+    { "source": "/plugins/gateway-plugins", "destination": "/developer/plugin-types/gateway" },
+    { "source": "/plugins/theme-plugins", "destination": "/developer/plugin-types/theme" }
   ],
   "navigation": {
     "global": {
