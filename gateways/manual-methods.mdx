@@ -48,16 +48,53 @@ Define a JSON schema for the fields customers must fill at checkout. For example
 
 These fields appear on the checkout page after the customer selects this manual method.
 
+## Offer manual gateways on a brand checkout
+
+Manual gateways are opt-in per brand. A brand's checkout only shows the manual gateways that the brand has configured with its own account details and activated. Gateways defined under **All Brands** act as templates and never appear on a brand's checkout automatically.
+
+When you view **Payment Gateways** under a specific brand, each manual gateway shows a badge:
+
+- **Not configured** with a **Template** badge: the brand hasn't set up its own account yet, so customers can't pay with it.
+- **Your account**: the brand's own account, which customers pay into.
+
 ## How manual payments work
 
 1. The customer selects the manual method at checkout.
 2. They see your **payment instructions** (bank account, phone number, etc.).
 3. They complete the payment on their own.
 4. They fill in the **custom fields** (for example enter their transaction ID).
-5. The transaction enters **awaiting verification** status.
-6. You review the proof and click **Mark Completed** or **Mark Failed**.
+5. OwnPay checks the submitted transaction ID against the brand's received payment SMS. If it finds a match, the transaction completes immediately (see [Instant verification on submission](#instant-verification-on-submission)).
+6. Otherwise, the transaction enters **awaiting verification** status.
+7. You review the proof and click **Mark Completed** or **Mark Failed**.
 
 For automatic verification via SMS, see [SMS verification](/gateways/sms-verification).
+
+## Instant verification on submission
+
+When the customer submits a manual payment, OwnPay looks up the submitted transaction ID in the payment SMS that your [companion app](/mobile/companion-app) has already forwarded for that brand. OwnPay completes the transaction right away only when all of these conditions hold:
+
+- Exactly one unmatched SMS carries that transaction ID.
+- The SMS amount matches the transaction amount to two decimal places.
+- OwnPay received the SMS between 5 minutes before and 30 minutes after the transaction was created.
+- The transaction is still awaiting verification.
+
+If any check fails, the transaction stays in awaiting verification for you to review. Each SMS can settle only one transaction.
+
+<Note>
+  Instant verification only searches SMS stored for the transaction's brand. SMS captured by a device paired for **All Brands** aren't matched at submission, so those payments wait for your manual review.
+</Note>
+
+## What the customer sees after submitting
+
+After a manual payment is submitted and not yet verified, the checkout shows an **Under Review** status page. The page refreshes every 5 seconds. After you approve the transaction, the next refresh moves the customer to the success page.
+
+To send customers back to your website instead of keeping them on the review page, enable **Auto-redirect after manual payment submission**:
+
+1. Select the brand, then go to **Brand Settings** → **Checkout Settings**.
+2. In the **Checkout Timer** card, turn on **Auto-redirect after manual payment submission**.
+3. Save your settings.
+
+With the toggle on, a 5-second countdown redirects the customer to your return URL with `status=pending`. Keep the order pending on your website until the transaction completes in OwnPay. The toggle is off by default and doesn't affect API gateways.
 
 ## Common mistakes
 
