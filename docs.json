@@ -620,46 +620,6 @@
             ]
           }
         ]
-      },
-      {
-        "language": "zh",
-        "tabs": [
-          {
-            "tab": "文档",
-            "icon": "book",
-            "groups": [
-              {
-                "group": "开始使用",
-                "icon": "rocket",
-                "pages": [
-                  "zh/introduction",
-                  "zh/quickstart",
-                  "zh/installation"
-                ]
-              },
-              {
-                "group": "核心概念",
-                "icon": "stack-2",
-                "pages": [
-                  "zh/fundamentals/how-ownpay-works"
-                ]
-              }
-            ]
-          },
-          {
-            "tab": "API 参考",
-            "icon": "terminal-2",
-            "groups": [
-              {
-                "group": "概览",
-                "icon": "book",
-                "pages": [
-                  "zh/api/overview"
-                ]
-              }
-            ]
-          }
-        ]
       }
     ]
   }
