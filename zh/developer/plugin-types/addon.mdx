@@ -1,0 +1,220 @@
+---
+title: "为 OwnPay 构建通用插件（Addon）"
+description: "使用 OwnPay 的 plugin.yaml 清单、事件钩子、过滤器和能力声明，搭建、注册并发布通用 Addon 插件。"
+keywords: "addon 插件, 插件开发, plugin.yaml, 事件钩子, 插件脚手架"
+sidebarTitle: "Addon 开发"
+icon: "package"
+---
+
+Addon 是 OwnPay 中的通用扩展类型。与网关（实现 `GatewayAdapterInterface`）或主题（覆盖结账模板）不同，Addon 通过事件钩子、自定义 HTTP 路由、定时任务、管理菜单项以及基于数据库的功能来扩展平台。
+
+## Addon 插件的工作原理 {#how-addon-plugins-work}
+
+`PluginLoader::loadActive()` 会扫描 `modules/addons/`，校验每个 `manifest.json`，对所有 PHP 文件进行 token 扫描，然后调用两阶段生命周期：
+
+1. **`register(EventManager $events, Container $container)`** - 在启动阶段调用。所有钩子和过滤器的注册都会归属到该插件的 slug。
+2. **`boot(Container $container)`** - 在所有插件都完成注册后调用。在此阶段获取容器服务。
+
+## 目录结构 {#directory-structure}
+
+```text
+modules/addons/my-addon/
++-- manifest.json           # Required. Plugin metadata.
++-- Plugin.php              # Required. Entrypoint class implementing PluginInterface.
++-- Service/                # Optional. Additional autoloaded classes.
++-- Cron/                   # Optional. Cron job classes.
++-- migrations/             # Optional. SQL files run on activation.
++-- assets/                 # Optional. CSS/JS for admin pages.
+```
+
+## manifest.json 文件 {#the-manifest-json-file}
+
+```json
+{
+    "name": "Example Kit",
+    "slug": "example-kit",
+    "version": "1.0.0",
+    "description": "Reference addon exercising multi-file classes, routes, cron, admin menu, and hooks.",
+    "author": "OwnPay Core",
+    "type": "addon",
+    "entrypoint": "Plugin.php",
+    "namespace": "OwnPay\\Modules\\Addons\\ExampleKit",
+    "capabilities": ["addon", "hooks", "cron"],
+    "requires": { "core": ">=0.1.0" },
+    "routes": [
+        ["GET", "/plugins/example-kit/ping", "ping"],
+        ["GET", "/admin/example-kit", "adminHome", "admin"]
+    ],
+    "cron": [
+        {
+            "name": "heartbeat",
+            "schedule": "every_5min",
+            "class": "OwnPay\\Modules\\Addons\\ExampleKit\\Cron\\HeartbeatJob"
+        }
+    ],
+    "admin_menu": [
+        { "label": "Example Kit", "url": "/admin/example-kit" }
+    ]
+}
+```
+
+## 入口类 {#the-entrypoint-class}
+
+入口类必须实现 `OwnPay\Plugin\PluginInterface`：
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace OwnPay\Modules\Addons\MyAddon;
+
+use OwnPay\Container;
+use OwnPay\Event\EventManager;
+use OwnPay\Plugin\Capability;
+use OwnPay\Plugin\PluginInterface;
+
+final class Plugin implements PluginInterface
+{
+    private ?Container $container = null;
+
+    public static function metadata(): array
+    {
+        return [
+            'name'        => 'My Addon',
+            'slug'        => 'my-addon',
+            'version'     => '1.0.0',
+            'description' => 'Describes what this addon does.',
+            'author'      => 'Your Name',
+            'type'        => 'addon',
+        ];
+    }
+
+    public function capabilities(): array
+    {
+        return [Capability::ADDON, Capability::HOOKS];
+    }
+
+    public function register(EventManager $events, Container $container): void
+    {
+        $events->addAction('payment.transaction.completed', [$this, 'onPaymentCompleted'], priority: 10);
+    }
+
+    public function boot(Container $container): void
+    {
+        $this->container = $container;
+    }
+
+    public function deactivate(Container $container): void {}
+
+    public function uninstall(Container $container): void {}
+
+    public function fields(): array
+    {
+        return [
+            [
+                'name'    => 'api_url',
+                'label'   => 'API Endpoint',
+                'type'    => 'text',
+                'default' => 'https://api.example.com',
+            ],
+            [
+                'name'    => 'api_key',
+                'label'   => 'API Key',
+                'type'    => 'password',
+                'default' => '',
+            ],
+        ];
+    }
+
+    public function onPaymentCompleted(array $txn): void
+    {
+        // Handle the payment event
+    }
+}
+```
+
+## 访问核心服务 {#accessing-core-services}
+
+插件不会自动接入 DI 容器。请从 `$container` 参数中手动解析服务：
+
+```php
+public function boot(Container $container): void
+{
+    $this->container = $container;
+}
+
+private function getSettings(): \OwnPay\Repository\SettingsRepository
+{
+    return $this->container->get(\OwnPay\Repository\SettingsRepository::class);
+}
+```
+
+## 路由 {#routes}
+
+在 `manifest.json` 的 `routes` 数组中声明的路由会注册到核心路由器中：
+
+```json
+["METHOD", "/path", "handlerMethod", "middlewareGroup"]
+```
+
+| 位置 | 值 | 说明 |
+| --- | --- | --- |
+| 0 | HTTP 方法 | `GET`、`POST`、`PUT`、`DELETE`、`PATCH` |
+| 1 | URL 路径 | 必须以 `/` 开头 |
+| 2 | 处理方法 | 入口类上的公共方法名 |
+| 3 | 中间件组 | 可选。`"admin"` 需要身份验证 |
+
+## 定时任务 {#cron-jobs}
+
+在 `manifest.json` 的 `cron` 数组中声明计划任务：
+
+```json
+"cron": [
+    {
+        "name": "sync",
+        "schedule": "every_5min",
+        "class": "OwnPay\\Modules\\Addons\\MyAddon\\Cron\\SyncJob"
+    }
+]
+```
+
+支持的调度周期：`every_minute`、`every_5min`、`every_15min`、`every_30min`、`hourly`、`every_6hours`、`daily`、`weekly`。
+
+## 管理菜单项 {#admin-menu-entries}
+
+```json
+"admin_menu": [
+    { "label": "My Addon", "url": "/admin/my-addon" }
+]
+```
+
+## 数据库迁移 {#database-migrations}
+
+创建一个包含 `.sql` 文件的 `migrations/` 目录。插件表必须以 `op_plugin_` 为前缀。
+
+## 安全要求 {#security-requirements}
+
+- 禁止使用 `eval()` 或操作系统命令
+- 禁止直接访问 `op_*` 表
+- 对所有输出进行转义
+- 使用参数化查询
+- 遵守租户隔离
+
+## 检查清单 {#checklist}
+
+- `manifest.json` 完整；`slug` 与目录名一致
+- 入口类实现 `PluginInterface` 的全部六个方法
+- 所有钩子都在 `register()` 中注册
+- `uninstall()` 删除所有 `op_plugin_` 表
+- 插件表命名为 `op_plugin_{slug}_*`
+- 管理路由使用 `"admin"` 中间件组
+- 定时任务实现 `CronJobInterface`
+- 不使用 `eval()`、`exec()`、`shell_exec()`
+
+## 相关页面 {#related-pages}
+
+- [网关插件开发](/zh/developer/plugin-types/gateway)
+- [主题插件开发](/zh/developer/plugin-types/theme)
+- [集成插件开发](/zh/developer/plugin-types/integration)
+- [钩子参考](/zh/developer/plugins/hooks)
+- [清单参考](/zh/developer/plugins/manifest)

@@ -1,0 +1,93 @@
+---
+title: "系统更新"
+description: "通过一键更新、自动备份以及出现问题时的回滚步骤，让您的 OwnPay 实例保持最新。"
+keywords: "系统更新, 升级, 回滚, 备份, 自动更新, 一键更新, CLI 更新, system update"
+sidebarTitle: "系统更新"
+icon: "refresh"
+---
+
+OwnPay 提供一键更新系统，让您的实例始终具备最新功能、安全补丁和错误修复。
+
+## 检查更新 {#check-for-updates}
+
+导航到 **System \> System Update**。该页面会显示您当前的版本以及是否有更新的版本可用。如果发现更新，将显示新版本号和变更摘要。
+
+<Info>
+  您也可以查看 [OwnPay GitHub 发布]({{github}})页面获取完整的更新日志。
+</Info>
+
+## 更新流程 {#update-process}
+
+<Steps>
+  <Step>
+    点击 **Check for Updates** 查询更新服务器。
+  </Step>
+  <Step>
+    如果有可用更新，请查看更新日志并点击 **Update Now**。
+  </Step>
+  <Step>
+    OwnPay 会在应用更新前自动为当前安装（文件和数据库）创建完整备份。
+  </Step>
+  <Step>
+    更新程序会下载并解压新版本、运行数据库迁移并清除缓存。
+  </Step>
+  <Step>
+    更新完成后，您将被重定向到登录页面。
+  </Step>
+</Steps>
+
+## 更新后步骤 {#post-update-steps}
+
+每次更新后，请执行以下检查：
+
+1. **登录**并确认仪表板正常加载
+2. 在[设置](/zh/system/settings)中**查看 Environment Info** 面板，确认新版本
+3. 至少在一个品牌上**测试结账**，确保支付流程正常
+4. **检查插件兼容性** - 在 OwnPay 主要版本发布后，部分插件可能需要更新
+
+<Tip>
+  OwnPay 会在更新后自动清除 Redis 缓存。如果您看到过时的数据，请手动刷新页面。
+</Tip>
+
+## 回滚步骤 {#rollback-procedure}
+
+如果更新后出现问题，您可以回滚到之前的版本：
+
+<Steps>
+  <Step>
+    导航到 **System \> System Update**。
+  </Step>
+  <Step>
+    如果可以回滚，请点击 **Rollback to v**{{version}}。
+  </Step>
+  <Step>
+    OwnPay 会恢复更新前创建的备份。
+  </Step>
+  <Step>
+    在 Settings \> Environment Info 中检查版本以确认回滚成功。
+  </Step>
+</Steps>
+
+<Warning>
+  回滚会将文件和数据库恢复到更新前的状态。在更新与回滚之间处理的任何交易都会保留在数据库中 - 它们不会被撤销。
+</Warning>
+
+## 通过 CLI 更新 {#update-via-cli}
+
+对于高级用户或自动化部署流水线，您可以从命令行更新 OwnPay：
+
+```bash
+php /path/to/ownpay/artisan update:run
+```
+
+此命令执行与 Web 界面相同的备份和更新流程。如果您有自己的备份策略，可使用 `--no-backup` 跳过自动备份。
+
+<Info>
+  有关主要版本之间的迁移指导，请参阅[迁移指南](/zh/resources/migration-guide)。
+</Info>
+
+## 相关页面 {#related-pages}
+
+- [设置](/zh/system/settings) - 更新后验证版本和环境
+- [备份与导出](/zh/resources/backup-export) - 手动备份步骤
+- [迁移指南](/zh/resources/migration-guide) - 主要版本升级说明

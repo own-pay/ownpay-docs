@@ -1,0 +1,69 @@
+---
+title: "插件目录结构"
+description: "OwnPay 插件的标准目录布局，列出每个文件和文件夹并解释各组成部分。"
+keywords: "插件结构, 插件文件, 插件目录, Plugin.php, manifest.json, 插件迁移, 插件视图"
+sidebarTitle: "目录结构"
+icon: "folders"
+---
+
+每个 OwnPay 插件都遵循此标准目录布局。插件加载器在扫描 `plugins/` 目录时会依赖此结构。
+
+<Tree />
+
+## 核心文件 {#core-files}
+
+### `manifest.json` {#manifest-json}
+
+必需。包含插件名称、slug、版本、类型、能力以及其他元数据。插件加载器会首先读取此文件。请参阅完整的[清单参考](/zh/developer/plugins/manifest)。
+
+### `Plugin.php` {#plugin-php}
+
+必需。入口文件。必须实现 `OwnPay\Plugin\PluginInterface` 及以下方法：
+
+- `register(EventManager $events, Container $container)` - 注册钩子和过滤器
+- `boot()` - 在所有插件注册完成后调用
+
+类名必须与目录名的 PascalCase 形式一致：`my-plugin` → `MyPlugin`。
+
+## 可选目录 {#optional-directories}
+
+### `config/` {#config/}
+
+默认配置值。插件管理器会读取这些值，并将覆盖值存储在数据库中。通过 `Plugin::config('my-plugin')` 访问。
+
+### `src/` {#src/}
+
+插件的 PHP 类。插件加载器会将此目录添加到自动加载器中。按职责组织：服务、控制器、模型。
+
+### `resources/views/` {#resources/views/}
+
+插件使用的 Twig 模板。管理设置页面、自定义仪表盘和报表视图都放在这里。
+
+### `resources/lang/` {#resources/lang/}
+
+插件 UI 字符串的语言文件。每个文件以语言代码命名（`en.json`、`bn.json`）。请参阅[翻译](/zh/developer/translations)。
+
+### `assets/` {#assets/}
+
+CSS 和 JavaScript 文件。通过 `checkout.head` 和 `checkout.footer` 动作钩子引入：
+
+```php
+$events->addAction('checkout.head', function (): void {
+    echo '<link rel="stylesheet" href="' . Plugin::asset('css/plugin.css') . '">';
+});
+```
+
+### `migrations/` {#migrations/}
+
+数据库迁移文件。每个文件定义 `up()` 和 `down()` 方法。迁移会在激活时自动运行，并在卸载时回滚。它们在事务中执行。
+
+### `routes/` {#routes/}
+
+自定义 API 和 Web 路由定义。需要 `api_routes` 能力。路由会限定在插件的 slug 下，以避免冲突。
+
+## 相关页面 {#related-pages}
+
+- [清单参考](/zh/developer/plugins/manifest)
+- [插件生命周期](/zh/developer/plugins/lifecycle)
+- [钩子参考](/zh/developer/plugins/hooks)
+- [能力参考](/zh/developer/plugins/capabilities)

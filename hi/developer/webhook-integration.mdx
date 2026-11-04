@@ -1,0 +1,39 @@
+---
+title: "Webhook इंटीग्रेशन ट्यूटोरियल"
+description: "payment.completed इवेंट सुनने वाला webhook रिसीवर बनाने के लिए शुरू से अंत तक का ट्यूटोरियल, पूरे PHP और Node.js कोड उदाहरणों के साथ।"
+keywords: "webhook tutorial, webhook receiver, payment completed, webhook integration, PHP webhook, Node.js webhook, Express webhook, वेबहुक ट्यूटोरियल"
+sidebarTitle: "Webhook इंटीग्रेशन"
+icon: "link"
+---
+
+इस ट्यूटोरियल में आप एक webhook रिसीवर बनाएंगे जो OwnPay से `payment.completed` इवेंट सुनता है और आपके ऑर्डर डेटाबेस को अपडेट करता है। अंत तक आपके पास PHP या Node.js में एक प्रोडक्शन-रेडी एंडपॉइंट होगा।
+
+## आप क्या बनाएंगे {#what-you-will-build}
+
+एक एकल एंडपॉइंट (`/webhooks/ownpay`) जो:
+
+1. HMAC-SHA256 सिग्नेचर को सत्यापित करता है
+2. इवेंट पेलोड को पार्स करता है
+3. आपके डेटाबेस में ऑर्डर की स्थिति अपडेट करता है
+4. सही HTTP रिस्पॉन्स कोड लौटाता है
+
+## पूर्वापेक्षाएँ {#prerequisites}
+
+- एक OwnPay इंस्टेंस जिसमें **Developers → Webhooks** में webhook एंडपॉइंट कॉन्फ़िगर किया गया हो
+- एक webhook साइनिंग सीक्रेट (एंडपॉइंट बनाते समय दिखाया जाता है)
+- PHP 8.1\+ या Express के साथ Node.js 18\+
+
+### सुरक्षा की सर्वोत्तम प्रथाएँ {#security-best-practices}
+
+- **हर** अनुरोध पर सिग्नेचर सत्यापित करें - इसे कभी न छोड़ें
+- रीप्ले हमलों को रोकने के लिए 5 मिनट से पुराने टाइमस्टैम्प वाले इवेंट अस्वीकार करें
+- केवल उन्हीं इवेंट को प्रोसेस करें जिनके लिए आपने रजिस्टर किया है - अज्ञात इवेंट प्रकारों को अनदेखा करें
+- केवल HTTPS का उपयोग करें - OwnPay कभी भी HTTP एंडपॉइंट पर webhook नहीं भेजता
+- अपने webhook सीक्रेट को एनवायरनमेंट वेरिएबल में रखें, कोड में कभी नहीं
+
+## संबंधित पेज {#related-pages}
+
+- [Webhooks](/hi/api/webhooks)
+- [API अवलोकन](/hi/api/overview)
+- [त्रुटि कोड](/hi/api/errors)
+- [पेमेंट का परीक्षण](/hi/developer/testing)

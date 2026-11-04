@@ -1,0 +1,277 @@
+---
+title: "常见错误"
+description: "修复 OwnPay 常见的安装、付款、Webhook、短信、插件和系统错误，每个问题都列出了症状、根本原因和解决方法。"
+keywords: "故障排除, 错误, 安装错误, 付款错误, Webhook 错误, 短信错误, 插件错误, 系统错误"
+sidebarTitle: "常见错误"
+icon: "message-report"
+---
+
+按类别整理的 OwnPay 最常见问题的解决方案。每个条目都包含症状、根本原因和解决方法。
+
+---
+
+## 安装错误 {#installation-errors}
+
+### 数据库连接被拒绝 {#database-connection-refused}
+
+**症状：** 安装程序显示“Could not connect to MySQL”，或管理面板返回带有数据库连接消息的 500 错误。
+
+**原因：** MySQL 未运行、`.env` 中的凭据不正确，或数据库用户缺少权限。
+
+**解决方法：**
+
+1. 确认 MySQL 正在运行：`sudo systemctl status mysql`
+2. 手动测试连接：`mysql -u db_user -p -h db_host db_name`
+3. 检查 `.env` 中的 `DB_HOST`、`DB_USER`、`DB_PASS` 和 `DB_NAME` 是否与你的 MySQL 配置一致
+
+完整的设置指南请参阅[安装](/zh/installation)。
+
+### 存储目录不可写 {#storage-directory-not-writable}
+
+**症状：** 安装程序在权限检查步骤失败，或出现“Failed to write to storage/”错误。
+
+**原因：** Web 服务器用户对 `storage/` 目录没有写入权限。
+
+**解决方法：**
+
+```bash
+sudo chown -R www-data:www-data /var/www/ownpay/storage
+sudo chmod -R 775 /var/www/ownpay/storage
+```
+
+### 缺少必需的 PHP 扩展 {#required-php-extensions-missing}
+
+**症状：** 页面空白，或出现提及缺少类或函数的致命错误。
+
+**原因：** 已启用 PHP 8.3，但未启用必需的扩展。
+
+**解决方法：** 安装必需的扩展：
+
+```bash
+sudo apt install php8.3-bcmath php8.3-mbstring php8.3-openssl php8.3-curl php8.3-zip php8.3-mysql
+sudo systemctl restart php8.3-fpm
+```
+
+### 存在安装程序锁文件 {#installer-lock-file-present}
+
+**症状：** 即使是全新安装，访问 `/install` 也显示“Already Installed”。
+
+**原因：** 之前的安装遗留了 `storage/.installed` 文件。
+
+**解决方法：** 删除锁文件：`rm storage/.installed`。仅在你有意重新安装时才执行此操作。
+
+---
+
+## 付款错误 {#payment-errors}
+
+### 网关超时 {#gateway-timeout}
+
+**症状：** 交易卡在 `processing` 状态。客户已被扣款，但 OwnPay 未显示完成。
+
+**原因：** 上游网关响应时间过长，或网关的回调被防火墙拦截或未能到达你的服务器。
+
+**解决方法：**
+
+1. 检查网关的仪表板，确认付款已被扣取
+2. 如果已确认，在管理面板中手动更新交易状态
+3. 确认网关回调 URL 可访问：`curl -v https://your-domain.com/webhook/{gateway-slug}`
+4. 检查防火墙规则是否允许来自网关 IP 范围的入站 POST 请求
+
+### 网关凭据无效 {#invalid-gateway-credentials}
+
+**症状：** 付款立即因网关错误而失败。管理后台显示“Authentication failed”或“Invalid API key”。
+
+**原因：** 为网关配置的 API 密钥或密钥不正确、已过期，或属于错误的环境（测试与正式）。
+
+**解决方法：**
+
+1. 前往 **网关 \> 支付网关**，从网关仪表板重新输入凭据
+2. 确保在生产环境中使用正式密钥，在沙箱模式中使用测试密钥
+3. 部分网关需要 IP 白名单——将你服务器的出站 IP 添加到网关的允许列表中
+
+### 不支持的货币 {#currency-not-supported}
+
+**症状：** 结账页面显示了该网关，但客户尝试付款时返回错误。
+
+**原因：** 支付意图的货币不在该网关支持的货币列表中。
+
+**解决方法：** 当网关不支持支付意图的货币时，OwnPay 会自动进行货币转换。如果转换失败，请检查是否已在 **设置 \> 货币** 中配置汇率，以及目标货币是否受该网关支持。
+
+### 金额验证错误 {#amount-validation-error}
+
+**症状：** API 返回“Amount must be greater than zero”或“Amount exceeds maximum”。
+
+**原因：** 金额为零、负数，或超过了网关的最大交易限额。
+
+**解决方法：** 以字符串形式的十进制值发送金额（例如 `"500.00"`），而不是整数或浮点数。对于大额交易，请查阅网关文档了解最大金额限制。
+
+### 支付意图已过期 {#expired-payment-intent}
+
+**症状：** 客户点击旧的结账链接，看到“Payment link has expired”。
+
+**原因：** 支付意图超过了其配置的过期时间。
+
+**解决方法：** 创建新的支付意图。你可以在 **设置 \> 付款** 中延长默认过期时间。
+
+---
+
+## Webhook 错误 {#webhook-errors}
+
+### 你的服务器上签名不匹配 {#signature-mismatch-on-your-server}
+
+**症状：** 你的 Webhook 端点以 401 状态拒绝 OwnPay 的投递。
+
+**原因：** 你使用了错误的 Webhook 密钥、在计算签名前重新编码了 JSON 正文，或未在签名载荷中包含时间戳。
+
+**解决方法：** 签名载荷为 `{timestamp}.{raw_body}`。请使用与接收时完全一致的原始请求正文字节，切勿使用重新序列化的 JSON。正确的验证代码请参阅[代码示例](/zh/resources/code-examples)页面。
+
+### Webhook 投递失败 {#webhook-delivery-failures}
+
+**症状：** OwnPay 在 Webhook 日志中显示投递失败。
+
+**原因：** 目标 URL 无法访问、返回非 2xx 状态或超时。
+
+**解决方法：**
+
+1. 确认该 URL 可公开访问，并对有效载荷返回 200
+2. 检查服务器的出站连接：`curl -X POST -d '{}' https://your-webhook-url.com`
+3. 在 **开发者 \> Webhook 投递日志** 中查看具体错误
+
+### 重试耗尽 / 死信队列 {#retry-exhausted-/-dead-letter-queue}
+
+**症状：** Webhook 投递显示 `status: dead_letter`。
+
+**原因：** 在使用指数退避的所有重试尝试后，投递仍然失败。
+
+**解决方法：** 修复接收端点，然后前往 **开发者 \> Webhook 投递日志**，找到失败的投递，并点击 **重放**。
+
+---
+
+## 短信错误 {#sms-errors}
+
+### 短信转发不工作 {#sms-forwarding-not-working}
+
+**症状：** 即使客户的短信已到达配对设备，手动网关付款仍停留在 `awaiting_verification` 状态。
+
+**原因：** 配套应用未转发短信，或转发权限已被撤销。
+
+**解决方法：**
+
+1. 打开配套应用，确认已启用短信转发
+2. 在管理面板的 **设备** 中检查设备是否显示为“在线”
+3. 如果 JWT 已过期，请重新配对设备
+
+### 正则表达式不匹配 {#regex-not-matching}
+
+**症状：** 短信已到达，但 `op_sms_data` 显示 `match_status: no_match`。
+
+**原因：** 该网关的短信模板正则表达式与服务商实际的短信格式不匹配。
+
+**解决方法：**
+
+1. 前往 **短信验证 \> 模板**，找到该网关的模板
+2. 点击 **测试** 并粘贴示例短信正文以调试正则表达式
+3. 更新正则表达式以匹配当前的短信格式（服务商有时会更改其格式）
+
+### 解析器置信度过低 {#parser-confidence-too-low}
+
+**症状：** 短信已被解析，但由于置信度低，交易未能自动匹配。
+
+**原因：** 多笔待处理交易的金额相近，因此解析器无法确定该短信对应哪一笔交易。
+
+**解决方法：** 在管理面板中手动验证该交易。减少相同金额的并发待处理交易数量，以提高自动匹配率。
+
+---
+
+## 插件错误 {#plugin-errors}
+
+### 沙箱扫描失败 {#sandbox-scan-failure}
+
+**症状：** 插件上传失败，提示“Plugin failed security scan”。
+
+**原因：** 插件源代码包含被禁止的函数调用（`exec`、`shell_exec`、`eval`、`passthru`、`system` 或原生 PDO）。
+
+**解决方法：** 移除被禁止的调用。如果需要执行外部命令，必须改用 OwnPay 批准的服务方法。完整的沙箱规则请参阅[插件开发概览](/zh/developer/plugins/overview)。
+
+### 清单验证失败 {#manifest-validation-failure}
+
+**症状：** 插件上传失败，提示“Invalid manifest.json”。
+
+**原因：** `manifest.json` 文件缺少必需字段、JSON 语法无效，或使用了不受支持的插件类型。
+
+**解决方法：** 对照规范检查清单。必需字段包括 `name`、`slug`、`version`、`type`（gateway/theme/addon）和 `entry`。
+
+### 迁移失败 {#migration-failure}
+
+**症状：** 插件安装成功，但激活时显示数据库错误。
+
+**原因：** 插件的迁移 SQL 存在语法错误，或引用了不存在的表。
+
+**解决方法：**
+
+1. 在 `storage/logs/` 中查看确切的错误
+2. 修复插件 `database/` 目录中的迁移 SQL
+3. 卸载并重新安装该插件
+
+---
+
+## 系统错误 {#system-errors}
+
+### 缓存驱动故障 {#cache-driver-failure}
+
+**症状：** 管理面板极其缓慢或返回 500 错误。日志显示“Cache driver not available”。
+
+**原因：** Redis 已停止运行，或文件缓存目录不可写。
+
+**解决方法：**
+
+1. 如果使用 Redis：运行 `sudo systemctl status redis`，并检查 `.env` 中的 `REDIS_HOST`/`REDIS_PORT`
+2. 如果使用文件缓存：确认 `storage/cache/` 可写
+3. 在 `.env` 中临时切换到文件缓存：`CACHE_DRIVER=file`
+
+### 队列工作进程崩溃 {#queue-worker-crash}
+
+**症状：** Webhook 投递、电子邮件或短信验证未被处理。
+
+**原因：** cron 任务未运行，或队列工作进程遇到了致命错误。
+
+**解决方法：**
+
+1. 确认已配置 cron：`crontab -l` 中应包含队列工作进程条目
+2. 检查错误：`tail -50 storage/logs/queue.log`
+3. 手动触发一次运行：`php /var/www/ownpay/public/index.php cron/run`
+
+### 维护模式卡住 {#maintenance-mode-stuck}
+
+**症状：** 更新后所有页面都显示“Under Maintenance”。
+
+**原因：** 更新过程未成功完成，也未退出维护模式。
+
+**解决方法：**
+
+1. 检查待执行的迁移：查看 `storage/logs/` 中的最新条目
+2. 如果更新卡住，可通过在 `.env` 中设置 `APP_MAINTENANCE=false` 手动禁用维护模式
+3. 访问管理面板，检查数据库结构版本是否与代码版本一致
+
+---
+
+## 获取帮助 {#getting-help}
+
+如果此处未涵盖你的问题：
+
+1. 在 [GitHub Issues](https://github.com/own-pay/OwnPay/issues) 中搜索已知问题
+2. 临时启用[调试模式](/zh/resources/debug-mode)以获取详细的错误输出
+3. 提交 [GitHub Issue](https://github.com/own-pay/OwnPay/issues/new)，并附上：
+   - OwnPay 版本：`php public/index.php --version`
+   - PHP 版本：`php -v`
+   - 完整的错误消息和堆栈跟踪
+   - 复现步骤
+
+---
+
+## 相关页面 {#related-pages}
+
+- [常见问题](/zh/resources/faq) - 常见问题解答
+- [调试模式](/zh/resources/debug-mode) - 启用详细的错误输出
+- [迁移指南](/zh/resources/migration-guide) - 版本升级故障排除
+- [性能与扩展](/zh/resources/performance-scaling) - 解决响应缓慢问题

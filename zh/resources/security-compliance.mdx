@@ -1,0 +1,188 @@
+---
+title: 安全与合规
+description: "OwnPay 如何通过 AES-256-GCM 加密、HMAC-SHA256 Webhook、CSRF 和 XSS 防护、速率限制、审计日志以及 PCI DSS 和 GDPR 来保护数据。"
+keywords: "安全, 合规, AES-256-GCM, HMAC-SHA256, PCI DSS, GDPR, 加密, 速率限制, CSRF, XSS, SQL 注入"
+sidebarTitle: 安全
+icon: shield-check
+---
+
+OwnPay 处理的是金融交易，因此安全并非事后考虑 - 它贯穿于架构的每一层。本页介绍 OwnPay 用于保护您的数据及客户数据的技术机制。
+
+---
+
+## 静态加密 {#encryption-at-rest}
+
+OwnPay 在将敏感数据写入 MySQL 之前，使用 **AES-256-GCM** 和存储在 `ENCRYPTION_KEY` 环境变量中的每个安装独有的密钥对其进行加密。
+
+<Columns>
+  <Column>
+    **加密的内容：**
+
+    - `op_gateway_configs` 中的网关 API 密钥和凭据
+    - `op_customers` 中的客户姓名、电子邮件和电话号码
+    - 用于双因素认证的 TOTP 密钥
+    - 插件通过加密辅助工具存储的任何密钥
+  </Column>
+  <Column>
+    **工作原理：**
+
+    - 每次加密操作都会生成一个随机的 12 字节 IV，并生成一个 16 字节的认证标签
+    - IV、认证标签和密文一起存储在单个 base64 编码的字符串中
+    - 解密时会先验证认证标签再返回明文，从而检测篡改
+  </Column>
+</Columns>
+
+<Warning>
+  如果丢失了 `ENCRYPTION_KEY`，所有加密数据都将永久无法恢复。请妥善保管，并将其纳入备份中。
+</Warning>
+
+---
+
+## Webhook 签名验证 {#webhook-signature-verification}
+
+每次出站 Webhook 投递都使用 **HMAC-SHA256** 签名。签名通过 `X-OwnPay-Signature` 头发送，格式为 `sha256={hex_digest}`。
+
+被签名的载荷构造为 `{timestamp}.{raw_body}`，其中 `timestamp` 是通过 `X-OwnPay-Timestamp` 头发送的 Unix 时间戳。这可以防止重放攻击 - 您应拒绝超过 5 分钟的 Webhook。
+
+```php
+$expected = hash_hmac('sha256', $timestamp . '.' . $rawBody, $webhookSecret);
+$valid = hash_equals('sha256=' . $expected, $signatureHeader);
+```
+
+有关多种语言的完整 Webhook 验证代码，请参阅[代码示例](/zh/resources/code-examples)页面。
+
+---
+
+## CSRF 防护 {#csrf-protection}
+
+OwnPay 使用 `SecurityHelpers::csrfToken()` 为每个会话生成唯一的 CSRF 令牌。`CsrfMiddleware` 会对 Web 路由的每个 `POST`、`PUT` 和 `DELETE` 请求强制校验令牌（API 路由除外，它们使用 Bearer/JWT 认证）。
+
+令牌存储在 HTTP-only、SameSite=Lax 的 Cookie 中。Twig 模板通过 `csrf_field()` 函数在每个表单中自动包含该令牌。AJAX 请求必须从 meta 标签或 Cookie 中读取令牌，并将其放入自定义请求头中。
+
+---
+
+## SQL 注入防护 {#sql-injection-prevention}
+
+OwnPay 中的每个数据库查询都通过 PDO 封装使用**参数化语句**。用户输入绝不会被拼接到 SQL 字符串中。`Database` 类不提供接受带插值原始 SQL 的 `query()` 方法。
+
+<Note>
+  编写插件时，请始终使用提供的仓储方法或 `Database` 封装。插件沙箱会拒绝任何尝试构造原始 PDO 语句的代码。
+</Note>
+
+---
+
+## XSS 防护 {#xss-prevention}
+
+Twig 模板中的所有输出默认都会自动转义。`|raw` 过滤器仅对您可控的内容（如系统生成的 HTML）是安全的。切勿对用户提交的数据、客户姓名或网关响应值使用 `|raw`。
+
+内容安全策略（CSP）中间件会为所有内联脚本和样式添加每个请求独有的 nonce。任何没有正确 nonce 的内联脚本都会被浏览器阻止，即使发现了 XSS 攻击向量，也能提供纵深防御。
+
+---
+
+## 速率限制 {#rate-limiting}
+
+OwnPay 使用 Redis（或作为后备的文件系统）实现**滑动窗口**速率限制器。对敏感端点按 IP 地址实施速率限制，对已认证端点按 API 密钥实施限制。
+
+有关限制等级、响应头和配置的完整参考，请参阅[速率限制](/zh/resources/rate-limiting)页面。
+
+---
+
+## 会话安全 {#session-security}
+
+在可用时，会话存储在 Redis 中，否则回退到文件系统。关键安全特性：
+
+- **HTTP-only Cookie** - JavaScript 无法访问会话 ID
+- **SameSite=Lax** - 防止通过 Cookie 进行跨站请求伪造
+- **IP 绑定** - 如果客户端 IP 发生变化，会话将失效
+- **空闲超时** - 会话在可配置的不活动时间后过期
+- **指纹识别** - 可选地在每次请求时验证浏览器指纹
+
+---
+
+## 密码哈希 {#password-hashing}
+
+OwnPay 使用 **Argon2id** 作为默认密码哈希算法，并为升级的安装保留 bcrypt 作为旧版后备。密码绝不会以明文或可逆形式存储。
+
+对于 API 密钥，OwnPay 会生成一个以 `op_live_` 或 `op_test_` 为前缀的 192 位随机字符串。明文密钥仅在创建时显示一次。静态存储时，密钥以 SHA-256 哈希形式保存，并使用 `hash_equals()` 进行比较，以防止时序攻击。
+
+---
+
+## 文件上传安全 {#file-upload-security}
+
+上传的文件（徽标、网站图标、争议证据）在存储前会经过验证：
+
+- 文件扩展名白名单（徽标/网站图标仅限图片）
+- 根据文件内容（而不仅仅是扩展名）验证 MIME 类型
+- 随机文件名可防止路径猜测和目录遍历
+- 文件尽可能存储在 Web 根目录之外，并通过控制器提供
+
+---
+
+## 安全响应头 {#security-headers}
+
+`SecurityHeadersMiddleware` 会为每个响应添加以下响应头：
+
+| 响应头 | 值 | 用途 |
+| :-- | :-- | :-- |
+| `Content-Security-Policy` | 带 nonce 的动态值 | 阻止未经授权的内联脚本和外部资源 |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | 强制所有后续请求使用 HTTPS |
+| `X-Frame-Options` | `DENY` | 防止点击劫持 |
+| `X-Content-Type-Options` | `nosniff` | 防止 MIME 类型嗅探 |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | 限制 Referrer 信息泄露 |
+
+---
+
+## 结账页内容安全策略 {#checkout-content-security-policy}
+
+结账页使用比管理面板更严格的 CSP。基于 nonce 的策略只允许来自 OwnPay 自身域名以及为该品牌配置的网关服务商域名的脚本。这可以防止被攻陷的管理员会话向面向客户的结账页注入恶意脚本。
+
+当为某个品牌启用网关时，网关特定的 CSP 来源会自动添加到策略中，无需手动配置。
+
+---
+
+## 审计日志 {#audit-logging}
+
+OwnPay 中的每个重要操作都会记录在 `op_audit_log` 表中，包括：
+
+- 操作者（用户 ID 或系统）
+- 受影响的实体类型和 ID
+- 执行的操作（创建、更新、删除、登录等）
+- 更新操作的旧值和新值
+- 客户端 IP 地址
+- 用于检测创建后篡改的加密签名
+
+管理面板包含一个完整性扫描器，可验证所有日志条目的签名。任何被修改的条目都会立即被标记。
+
+<Info>
+  客户电子邮件和电话号码等 PII 会通过 `LogSanitizer` 在审计日志输出中自动掩码。
+</Info>
+
+---
+
+## 合规注意事项 {#compliance-considerations}
+
+### PCI DSS {#pci-dss}
+
+OwnPay 采用**网关委托模型**来满足 PCI 合规要求。信用卡号、CVV 和支付卡数据绝不会存储在您的服务器上。相反，支付数据由上游网关（Stripe、Adyen 等）通过其自身经 PCI 认证的 iframe 或重定向流程直接收集并令牌化。
+
+这意味着 OwnPay 本身通常适用 **PCI DSS SAQ-A**（最简单的自我评估问卷），因为没有任何持卡人数据接触您的基础设施。不过，您应针对具体部署咨询合格安全评估师（QSA）。
+
+### GDPR {#gdpr}
+
+OwnPay 通过以下方式支持 GDPR 合规：
+
+- **数据最小化** - 结账时仅收集必要的 PII
+- **静态加密** - 客户数据使用 AES-256-GCM 加密
+- **基于哈希的查找** - 电子邮件和电话以哈希形式存储；仅在显示时才需要解密
+- **数据导出** - 可从管理面板以 CSV 格式导出客户数据
+- **数据删除** - 可删除客户记录及相关交易（账本分录会被匿名化，以保持会计完整性）
+- **审计跟踪** - 所有对客户数据的访问都会被记录并可供审查
+
+---
+
+## 相关页面 {#related-pages}
+
+- [双因素认证](/zh/security/two-factor) - 为员工账户启用 TOTP
+- [API 密钥](/zh/security/api-keys) - 生成、设置权限范围和撤销 API 密钥
+- [备份与导出](/zh/resources/backup-export) - 安全的备份步骤
+- [速率限制](/zh/resources/rate-limiting) - 完整的速率限制等级和配置

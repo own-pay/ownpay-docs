@@ -1,0 +1,96 @@
+---
+title: "OwnPay：自托管支付编排平台"
+description: "OwnPay 是一个开源、自托管的支付编排平台，提供 123+ 个网关、多品牌管理、复式记账账本和统一 API。"
+keywords: "OwnPay, 支付网关, 自托管支付, 开源支付平台, 多品牌支付编排, 白标结账, 支付编排"
+sidebarTitle: "简介"
+icon: "bolt"
+---
+
+import LlmsDirective from "/zh/snippets/llms-directive.mdx";
+
+欢迎使用 **OwnPay**——一个开源、自托管的支付编排平台，让您完全掌控企业的收款方式。您无需再将每笔交易都交由抽取分成并持有您数据的第三方处理商，而是在您信任的基础设施上运行自己的网关服务器。
+
+OwnPay 通过单一的统一 API 将您连接到 123\+ 个支付网络（Stripe、PayPal、bKash、Nagad、Razorpay、SSLCommerz 等），并让您在一个仪表板中管理多个相互隔离的商户品牌。每一笔付款都会记录在内置的复式记账账本中，便于进行可审计的会计核算。
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+## 核心功能 {#core-features}
+
+<CardGroup cols={2}>
+  <Card title="100+ 个支付网关" icon="wallet">
+    通过单一集成点，在 50\+ 个国家/地区接受银行卡、移动钱包、银行转账和本地支付方式。
+  </Card>
+
+  <Card title="多租户品牌" icon="building-store">
+    在单个 OwnPay 实例中运行相互隔离的商户租户——每个租户都有自己的网关、域名、品牌形象、员工、API 密钥和账本。
+  </Card>
+
+  <Card title="复式记账账本" icon="book">
+    每一笔付款、费用和转账都使用 `bcmath` 扩展进行精确的金额计算，并记录为平衡的借贷日记账分录。
+  </Card>
+
+  <Card title="白标域名" icon="world">
+    在 `pay.yourbrand.com` 等自定义域名上提供品牌化结账，支持自动 SSL 签发和 DNS 验证。
+  </Card>
+</CardGroup>
+
+## 文档导航 {#navigating-the-docs}
+
+<CardGroup cols={2}>
+  <Card title="快速开始" icon="rocket" href="/zh/quickstart">
+    5 分钟内运行起支付网关。创建品牌、启用网关，并接受您的第一笔测试付款。
+  </Card>
+
+  <Card title="API 参考" icon="code" href="/zh/api/overview">
+    使用 Merchant、Mobile 和 Admin REST API 将支付集成到您的应用中。包括 Webhook 验证和 SDK 示例。
+  </Card>
+
+  <Card title="开发者中心" icon="tool" href="/zh/developer/quickstart">
+    使用带有钩子、过滤器和事件回调的插件系统，构建自定义网关插件、主题和集成。
+  </Card>
+
+  <Card title="功能概览" icon="sparkles" href="/zh/resources/features">
+    探索完整的功能集——短信验证、开具发票、手动付款、多币种等。
+  </Card>
+</CardGroup>
+
+## OwnPay 的独特之处 {#what-makes-ownpay-different}
+
+- **自托管，完全的数据主权**——您的服务器、您的数据库、您的规则。没有任何第三方能看到您的客户数据或交易历史。
+- **开箱即用的 123\+ 个网关**——国际处理商（Stripe、PayPal）以及区域领先者（bKash、Nagad、GCash、Razorpay、SSLCommerz），每个版本都会新增更多网关。
+- **OwnPay 零交易费**——基于 AGPL-3.0 许可，不收取任何按交易计费的费用。您只需支付网关的处理费用。
+- **AGPL-3.0 许可，永久免费**——没有许可等级、没有功能限制、没有回传遥测。完整源代码见 [GitHub]({{github}})。
+- **可通过插件扩展的架构**——无需改动核心代码即可添加网关、主题、附加组件和集成。提供 60 多个钩子和类似 WordPress 的生命周期。
+- **复式记账账本**——会计级财务跟踪，提供借贷平衡校验、品牌隔离和内置对账功能。
+
+## 谁应该阅读这些文档？ {#who-should-read-these-docs}
+
+选择与您角色相符的路径：
+
+<CardGroup cols={2}>
+  <Card title="我是商户所有者" icon="building-store" href="/zh/quickstart">
+    您希望在网站上或通过支付链接接受付款。请从快速开始指南入手。
+  </Card>
+
+  <Card title="我是开发者" icon="code" href="/zh/developer/quickstart">
+    您希望集成 API、构建插件或将 OwnPay 嵌入现有应用。请前往开发者中心。
+  </Card>
+
+  <Card title="我是系统管理员" icon="server" href="/zh/installation">
+    您需要部署、配置和维护 OwnPay 实例。请阅读安装指南。
+  </Card>
+
+  <Card title="我是插件开发者" icon="puzzle" href="/zh/developer/plugins/overview">
+    您希望构建自定义网关适配器、主题或附加组件。请从插件系统概览开始。
+  </Card>
+</CardGroup>
+
+## 相关页面 {#related-pages}
+
+- [快速开始](/zh/quickstart) - 5 分钟内运行起来
+- [安装](/zh/installation) - 共享主机、VPS 和 Docker 的详细部署说明
+- [OwnPay 的工作原理](/zh/fundamentals/how-ownpay-works) - 全局架构概览
+- [功能特性](/zh/resources/features) - 完整功能列表
+- [开发者中心](/zh/developer/quickstart) - API 集成和插件开发

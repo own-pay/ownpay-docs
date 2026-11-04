@@ -1,0 +1,73 @@
+---
+title: "设备"
+description: "在管理面板中查看已配对的 Android 配套设备、监控其心跳健康状况并管理配对状态。"
+keywords: "设备管理, 已配对设备, 设备健康, 心跳, 解除配对, 移动设备"
+sidebarTitle: "设备"
+icon: "device-mobile"
+---
+
+管理面板中的设备页面可让您监控与 OwnPay 实例配对的所有 Android 配套应用。每台设备的连接状态、最近心跳和基本信息都会显示在一个表格中。
+
+## 如何进入 {#getting-here}
+
+在左侧边栏中前往 **Mobile \> Devices**。
+
+## 设备列表 {#device-list}
+
+每台已配对的设备都会显示在表格中，包含以下列：
+
+| 列 | 说明 |
+| --- | --- |
+| **Name** | 配对时分配的设备标签 |
+| **Phone Number** | 与设备中 SIM 卡关联的电话号码 |
+| **Last Heartbeat** | 最近一次收到心跳的时间戳 |
+| **Status** | Online、Offline 或 Timeout |
+| **Actions** | 解除配对按钮 |
+
+## 设备健康监控 {#device-health-monitoring}
+
+OwnPay 根据心跳频率将每台设备归入以下三种状态之一：
+
+<Columns>
+  <Column>
+    <Badge color="green">Online</Badge>
+
+    在过去 **10 分钟**内收到过心跳。设备处于活动连接状态并正在转发短信。
+  </Column>
+  <Column>
+    <Badge color="red">Offline</Badge>
+
+    **超过 10 分钟**未收到心跳。设备可能已断开网络、已关机，或其后台服务已被操作系统终止。
+  </Column>
+  <Column>
+    <Badge color="yellow">Timeout</Badge>
+
+    心跳时断时续——设备反复连接又断开。请检查网络稳定性和电池优化设置。
+  </Column>
+</Columns>
+
+## 解除设备配对 {#unpair-a-device}
+
+要移除设备，请点击该设备所在行的 **Unpair** 操作按钮。这会立即吊销该设备的 Mobile API 密钥。该设备上的配套应用将停止工作，直到使用新密钥重新配对。
+
+<Warning>
+  解除配对会立即生效且不可撤销。到达已解除配对设备上的任何短信都将不再转发到您的 OwnPay 实例。
+</Warning>
+
+## 多设备支持 {#multiple-device-support}
+
+OwnPay 支持将**多台 Android 设备**配对到同一个实例。当您使用多个电话号码或网关时，这非常有用。每台设备独立运行，并转发其自身收到的短信。
+
+<Tip>
+  如果您使用多台设备，请为其分配描述性名称（例如"City Bank - Office SIM"），以便轻松识别哪台设备处理哪个网关的验证短信。
+</Tip>
+
+## 生成 Mobile API 密钥 {#generate-a-mobile-api-key}
+
+要配对新设备，请点击设备页面顶部的 **Generate Key**。复制该密钥，并在设置过程中将其输入配套应用。每个密钥只能使用一次——设备使用某个密钥配对后，该密钥便不能再次使用。
+
+## 相关页面 {#related-pages}
+
+- [配套应用](/zh/mobile/companion-app) - 安装和配置 Android 应用
+- [短信模板](/zh/mobile/sms-templates) - 用于自动验证的正则模板
+- [短信中心](/zh/notifications/sms-center) - 集中式短信日志查看器

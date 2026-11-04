@@ -1,0 +1,49 @@
+---
+title: "账本界面"
+description: "如何在 OwnPay 中使用账本页面查看日记账分录、按账户类型和日期筛选，以及查看余额汇总。"
+keywords: "账本, 复式记账, 日记账分录, 余额汇总, 账本界面, ledger"
+sidebarTitle: "账本"
+icon: "book"
+---
+
+账本页面为您提供当前所选品牌所有复式记账日记账分录的可搜索视图。有关复式记账系统工作原理的概念性说明，请阅读[账本基础](/zh/fundamentals/ledger)。
+
+## 查看账本分录 {#view-ledger-entries}
+
+1. 前往 **Payments** → **Ledger**。
+2. 页面会加载当前品牌所有日记账分录的表格，按最新优先排序。
+3. 每行显示日期、参考 ID、分录类型（借方或贷方）、金额和描述。
+
+## 筛选账本分录 {#filter-ledger-entries}
+
+使用表格上方的工具栏缩小视图范围：
+
+| 筛选条件 | 描述 |
+| --- | --- |
+| **Account type** | 选择特定的账本账户（例如 Merchant Payable、Gateway Settlement） |
+| **Date range** | 选择起止日期以查看某一期间内的分录 |
+| **Brand selector** | 切换到其他品牌的账本（如果您拥有多品牌访问权限） |
+| **Reference** | 按交易 ID、发票编号或付款链接 ID 搜索 |
+
+## 余额汇总 {#balance-summaries}
+
+在页面顶部，您会看到一张汇总卡片，显示所选品牌的**当前余额**。该余额是品牌基础货币下所有已过账借方和贷方分录的净和。
+
+余额反映了：
+
+- 计入您商户应付账户贷方的已完成付款。
+- 计入您资产账户借方的网关手续费。
+- 冲销原始分录的已完成退款。
+
+待处理交易和等待验证的付款**不会**出现在账本中。只有当交易达到 **Completed** 状态时，分录才会过账。
+
+<Warning>
+  请勿直接编辑 `op_ledger_entries` 或 `op_ledger_accounts` 数据库表。手动更改会破坏复式记账的余额约束，并导致验证错误。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [账本基础](/zh/fundamentals/ledger) - 复式记账模型的概念性说明
+- [余额核对](/zh/reports/balance-verification) - 将您的账本与网关对账单进行核对
+- [交易](/zh/payments/transactions) - 查找账本分录背后的付款
+- [退款](/zh/payments/refunds) - 了解退款如何冲销账本分录

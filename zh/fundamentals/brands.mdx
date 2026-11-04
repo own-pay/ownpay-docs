@@ -1,0 +1,110 @@
+---
+title: "品牌 - 多租户商户隔离"
+description: "OwnPay 中的品牌是一个隔离的商户租户。每个品牌都拥有自己的网关、域名、品牌形象、员工、API 密钥、客户以及复式记账账本。"
+keywords: "品牌, 多租户, 商户隔离, 白标, 租户范围, 支付商户"
+sidebarTitle: "品牌"
+icon: "building-store"
+---
+
+import LlmsDirective from "/zh/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+**品牌**是 OwnPay 的多租户隔离单元。创建品牌后，您将获得一个完全独立的商户实体——拥有自己的支付网关、结账域名、视觉品牌形象、员工团队、API 密钥、客户数据库和复式记账账本——并与同一 OwnPay 实例上的其他所有品牌完全隔离。
+
+## 品牌隔离模型 {#brand-isolation-model}
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+graph TD
+subgraph "OwnPay 实例"
+subgraph "品牌 A - Acme Corp"
+A1[客户]
+A2[交易]
+A3[网关]
+A4[员工]
+A5[账本]
+A6[API 密钥]
+A7[自定义域名]
+end
+subgraph "品牌 B - TechCorp"
+B1[客户]
+B2[交易]
+B3[网关]
+B4[员工]
+B5[账本]
+B6[API 密钥]
+B7[自定义域名]
+end
+end
+
+A1 -.->|无访问权限| B2
+B3 -.->|无访问权限| A5
+style A1 fill:#e8f5e9,stroke:#2e7d32
+style B3 fill:#e3f2fd,stroke:#1565c0
+`}>
+</Mermaid>
+
+每一条数据库查询都限定在当前品牌的 `merchant_id` 范围内。品牌 A 的员工无法看到品牌 B 的交易、客户或设置。不可能发生跨品牌的数据泄露。
+
+## 品牌与平台 {#brand-vs-platform}
+
+<Columns>
+  <Column>
+    **平台（OwnPay 实例）**
+
+    - 主管理员账户
+    - 系统级设置和插件
+    - DNS 和 SSL 管理
+    - 数据库服务器和 Redis
+    - 运行一切的单一代码库
+  </Column>
+  <Column>
+    **品牌（商户租户）**
+
+    - 隔离的客户和交易
+    - 独立的网关凭据
+    - 独立的 API 密钥和 Webhook
+    - 自定义域名和品牌形象
+    - 自己的账本和余额报表
+  </Column>
+</Columns>
+
+平台是基础设施，品牌则是运行在该基础设施上的商户。
+
+## 按品牌配置 {#per-brand-configuration}
+
+每个品牌可独立控制：
+
+| 设置 | 说明 |
+| :-- | :-- |
+| **网关** | 启用哪些支付提供商及其凭据 |
+| **域名** | 自定义结账域名（例如 `pay.acme.com`） |
+| **品牌形象** | Logo、网站图标、配色方案、结账模板 |
+| **货币和时区** | 报表使用的默认货币和时区 |
+| **员工** | 拥有基于角色的权限、限定于该品牌的团队成员 |
+| **API 密钥** | 独立的 Merchant 和 Mobile API 密钥对 |
+| **Webhook** | 独立的 Webhook URL 和事件订阅 |
+| **邮件** | SMTP 设置、发件人名称和邮件模板 |
+
+<Info>
+  账本账户同样严格限定于某个品牌。品牌 A 现金账户中的余额永远不会出现在品牌 B 的报表中。
+</Info>
+
+## 常见用例 {#common-use-cases}
+
+| 场景 | 品牌如何运作 |
+| :-- | :-- |
+| **SaaS 平台运营商** | 每个客户公司都是一个品牌，拥有自己的结账体验和账本。 |
+| **支付代理机构** | 每个客户都获得一个品牌，配有白标域名和隔离的财务数据。 |
+| **多实体企业** | 不同部门或子公司作为独立品牌运营，使账务更清晰。 |
+
+## 相关页面 {#related-pages}
+
+- [人员 - 品牌](/zh/people/brands) - 在管理面板中创建和管理品牌
+- [自定义域名](/zh/fundamentals/domains) - 为每个品牌分配域名
+- [网关配置](/zh/gateways/configuration) - 按品牌启用网关
+- [人员 - 员工](/zh/people/staff) - 将团队成员分配到品牌
+- [外观 - 品牌形象](/zh/appearance/branding) - 自定义 Logo、颜色和结账设计

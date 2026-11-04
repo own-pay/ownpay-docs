@@ -1,0 +1,103 @@
+---
+title: "माइग्रेशन गाइड"
+description: "प्री-माइग्रेशन चेकलिस्ट, ऑटो-माइग्रेशन प्रक्रिया, पोस्ट-माइग्रेशन सत्यापन और रोलबैक प्रक्रियाओं के साथ OwnPay को संस्करणों के बीच सुरक्षित रूप से अपग्रेड करें।"
+keywords: "माइग्रेशन, अपग्रेड, संस्करण अपग्रेड, डेटाबेस माइग्रेशन, रोलबैक, ब्रेकिंग बदलाव, migration, upgrade, rollback"
+sidebarTitle: "माइग्रेशन गाइड"
+icon: "arrows-exchange"
+---
+
+OwnPay को संस्करणों के बीच अपग्रेड करने में डेटाबेस स्कीमा बदलाव, फ़ाइल अपडेट और कैश साफ़ करना शामिल है। यह गाइड आपको तैयारी से लेकर सत्यापन तक की प्रक्रिया से गुज़ारती है।
+
+---
+
+## संस्करण इतिहास {#version-history}
+
+| से | तक | मुख्य बदलाव |
+| :-- | :-- | :-- |
+| v0.1.0 | v0.2.0 | नई टेबल: `op_disputes`, `op_fee_rules`। `op_transactions`, `op_gateways` पर नए कॉलम। प्रति गेटवे CSP origin ट्रैकिंग। |
+
+<Note>
+  हर रिलीज़ में बदलावों की पूरी सूची के लिए [चेंजलॉग](/hi/resources/changelog) देखें।
+</Note>
+
+---
+
+## प्री-माइग्रेशन चेकलिस्ट {#pre-migration-checklist}
+
+अपग्रेड शुरू करने से पहले हर आइटम पूरा करें। इनमें से कोई भी चरण छोड़ने से डेटा हानि या टूटे हुए इंस्टॉलेशन का जोखिम होता है।
+
+<Steps>
+</Steps>
+
+---
+
+## माइग्रेशन प्रक्रिया {#migration-process}
+
+OwnPay एक **ऑटो-माइग्रेशन** सिस्टम का उपयोग करता है जो बूट समय पर चलता है। आपको माइग्रेशन कमांड मैन्युअल रूप से चलाने की आवश्यकता नहीं है।
+
+### ऑटो-माइग्रेशन कैसे काम करता है {#how-auto-migration-works}
+
+जब `Kernel::boot()` चलता है, तो यह वर्तमान स्कीमा संस्करण (`op_system_settings` में संग्रहीत) की तुलना कोड संस्करण से करता है। यदि वे भिन्न हैं, तो यह `database/migrations/` से लंबित माइग्रेशन फ़ाइलों को क्रम से निष्पादित करता है।
+
+हर माइग्रेशन फ़ाइल एक सुरक्षित पैटर्न का उपयोग करती है:
+
+```sql
+-- Migration: 001_add_disputes_table.sql
+
+CREATE TABLE IF NOT EXISTS op_disputes (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  -- ...
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Add column only if it does not exist
+SET @dbname = DATABASE();
+SET @tablename = 'op_transactions';
+SET @columnname = 'dispute_status';
+SET @preparedStatement = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+   WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = @tablename AND COLUMN_NAME = @columnname) > 0,
+  'SELECT 1',
+  CONCAT('ALTER TABLE ', @tablename, ' ADD COLUMN ', @columnname, ' VARCHAR(50) DEFAULT NULL')
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+```
+
+इस `SHOW COLUMNS / ALTER TABLE` पैटर्न का अर्थ है कि माइग्रेशन **idempotent** हैं - उन्हें कई बार चलाना सुरक्षित है।
+
+### अपग्रेड चलाना {#running-the-upgrade}
+
+<Steps>
+</Steps>
+
+---
+
+## पोस्ट-माइग्रेशन चरण {#post-migration-steps}
+
+माइग्रेशन पूरा होने के बाद, सत्यापित करें कि सब कुछ सही ढंग से काम कर रहा है।
+
+<Steps>
+</Steps>
+
+---
+
+## रोलबैक {#rollback}
+
+यदि अपग्रेड के बाद कुछ गलत हो जाता है, तो अपने प्री-माइग्रेशन बैकअप से रीस्टोर करें।
+
+<Steps>
+</Steps>
+
+<Warning>
+  नए संस्करण द्वारा ट्रांज़ैक्शन प्रोसेस किए जाने के बाद रोलबैक करने से डेटा में असंगति पैदा होगी। रीस्टोर किए गए डेटाबेस में वे ट्रांज़ैक्शन नहीं होंगे जो अपग्रेड और रोलबैक के बीच पूरे हुए थे। अपने गेटवे डैशबोर्ड के साथ मिलान करें।
+</Warning>
+
+---
+
+## संबंधित पेज {#related-pages}
+
+- [चेंजलॉग](/hi/resources/changelog) - हर संस्करण के लिए विस्तृत रिलीज़ नोट्स
+- [बैकअप और एक्सपोर्ट](/hi/resources/backup-export) - बैकअप प्रक्रियाएँ
+- [परफ़ॉर्मेंस और स्केलिंग](/hi/resources/performance-scaling) - अपग्रेड के बाद ऑप्टिमाइज़ेशन
+- [सामान्य त्रुटियाँ](/hi/resources/common-errors) - माइग्रेशन विफलताओं का समस्या निवारण

@@ -1,0 +1,193 @@
+---
+title: Webhooks
+description: "OwnPay webhook 参考：有效负载、事件类型、PHP/Node.js/Python 中的 HMAC-SHA256 签名验证、重放防护以及重试计划。"
+keywords: "webhooks, webhook 验证, HMAC-SHA256, webhook 签名, 支付事件, webhook 重试, 幂等性"
+sidebarTitle: Webhooks
+icon: webhook
+---
+
+当支付事件发生时，OwnPay 会向你的服务器发送 HTTP POST 请求。本页是 webhook 验证的权威参考——其他所有提及 webhook 的页面都会链接到这里。
+
+## Webhook 有效负载格式 {#webhook-payload-format}
+
+OwnPay 以 JSON POST 请求的形式发送 webhook，并附带三个自定义请求头：
+
+```http
+Content-Type: application/json
+X-OwnPay-Signature: sha256=abc123...
+X-OwnPay-Timestamp: 1718000000
+X-OwnPay-Event: payment.completed
+```
+
+请求体包含事件名称、时间戳和事件数据：
+
+```json
+{
+  "event": "payment.completed",
+  "created_at": "2024-06-15T10:30:00Z",
+  "data": {
+    "id": "pay_abc123",
+    "amount": "1500",
+    "currency": "USD",
+    "status": "completed",
+    "customer": {
+      "name": "Rahim Uddin",
+      "email": "rahim@example.com"
+    },
+    "metadata": {
+      "order_id": "1042"
+    }
+  }
+}
+```
+
+## 事件类型 {#event-types}
+
+| 事件 | 描述 |
+| --- | --- |
+| `payment.completed` | 支付已完全确认并结算 |
+| `payment.failed` | 支付尝试被拒绝或出错 |
+| `payment.expired` | 客户未在超时时限内完成支付 |
+| `refund.issued` | 已向客户发起退款 |
+| `refund.completed` | 退款已在网关完成结算 |
+| `refund.failed` | 退款被网关拒绝 |
+| `customer.created` | 创建了新的客户记录 |
+| `webhook.test` | 从 Developer Hub 发送的测试事件 |
+
+## 签名验证 {#signature-verification}
+
+<Warning>
+  在处理任何事件之前，务必验证 webhook 签名。跳过验证会让攻击者有机会伪造事件。
+</Warning>
+
+### 验证原理 {#how-verification-works}
+
+OwnPay 使用你的 webhook 密钥对原始请求体计算 HMAC-SHA256 哈希值。签名请求头的内容为 `sha256=` 后跟十六进制编码的 HMAC。
+
+```text
+HMAC-SHA256(webhook_secret, raw_request_body) → hex digest
+```
+
+### PHP 验证 {#php-verification}
+
+```php
+$signature = $_SERVER['HTTP_X_OWNPAY_SIGNATURE'] ?? '';
+$timestamp = (int) ($_SERVER['HTTP_X_OWNPAY_TIMESTAMP'] ?? 0);
+$rawBody = file_get_contents('php://input');
+$secret = getenv('OWNPAY_WEBHOOK_SECRET');
+
+// Prevent replay attacks (reject events older than 5 minutes)
+if (abs(time() - $timestamp) > 300) {
+    http_response_code(403);
+    exit('Timestamp outside tolerance');
+}
+
+$expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
+
+if (!hash_equals($expected, $signature)) {
+    http_response_code(401);
+    exit('Invalid signature');
+}
+
+$event = json_decode($rawBody, true);
+// Process $event...
+http_response_code(200);
+```
+
+### Node.js 验证 {#nodejs-verification}
+
+```javascript
+import crypto from 'crypto';
+
+function verifyWebhook(req, secret) {
+  const signature = req.headers['x-ownpay-signature'];
+  const timestamp = parseInt(req.headers['x-ownpay-timestamp'], 10);
+  const rawBody = req.rawBody.toString('utf8');
+
+  // Reject timestamps older than 5 minutes
+  if (Math.abs(Date.now() / 1000 - timestamp) > 300) {
+    return false;
+  }
+
+  const hmac = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex');
+
+  const expected = `sha256=${hmac}`;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+}
+```
+
+### Python 验证 {#python-verification}
+
+```python
+import hmac
+import hashlib
+import time
+import json
+
+def verify_webhook(signature: str, timestamp: int, raw_body: bytes, secret: str) -> bool:
+    # Reject timestamps older than 5 minutes
+    if abs(int(time.time()) - timestamp) > 300:
+        return False
+
+    expected = 'sha256=' + hmac.new(
+        secret.encode('utf-8'), raw_body, hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(expected, signature)
+```
+
+## 时间戳与重放攻击防护 {#timestamp-and-replay-attack-prevention}
+
+每个 webhook 都包含 `X-OwnPay-Timestamp` 请求头。你的接收端应当：
+
+1. 将时间戳与服务器时钟进行比较
+2. 拒绝任何时间戳早于 **5 分钟**的事件
+3. 可选：存储已处理的事件 ID，以便在容差时间窗口内识别重复投递
+
+## 幂等性 {#idempotency}
+
+Webhook 投递采用**至少一次**语义。你的处理程序可能会多次收到同一事件。请始终确保处理程序是幂等的：
+
+```php
+function handlePaymentCompleted(array $data): void
+{
+    $orderId = $data['metadata']['order_id'] ?? '';
+    $order = Order::where('id', $orderId)->first();
+
+    if ($order?->status === 'paid') {
+        return; // Already processed
+    }
+
+    $order?->update(['status' => 'paid']);
+}
+```
+
+## 预期响应 {#expected-response}
+
+当你的端点在 **10 秒**内返回任意 **HTTP 2xx** 状态时，OwnPay 即认为投递成功。其他任何情况都会触发重试。
+
+## 重试计划 {#retry-schedule}
+
+| 尝试次数 | 失败后的延迟 |
+| --- | --- |
+| 1 | 立即 |
+| 2 | 1 分钟 |
+| 3 | 5 分钟 |
+| 4 | 30 分钟 |
+| 5 | 2 小时 |
+| 6 | 6 小时 |
+| 7\+ | 进入死信队列（记录日志，不再重试） |
+
+<Note>
+  你可以在 **Developers → Webhooks → Delivery Log** 中查看并重放失败的投递。
+</Note>
+
+## 相关页面 {#related-pages}
+
+- [API 概览](/zh/api/overview)
+- [Webhook 集成教程](/zh/developer/webhook-integration)
+- [错误码](/zh/api/errors)
+- [Developer Hub](/zh/security/developer-hub)

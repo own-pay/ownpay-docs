@@ -1,0 +1,76 @@
+---
+title: "发起退款"
+description: "如何在 OwnPay 中发起全额或部分退款、了解各网关特定的退款行为，以及排查失败的退款。"
+keywords: "退款, 部分退款, 退款状态, 网关退款, RefundReconciliationJob"
+sidebarTitle: "退款"
+icon: "rotate"
+---
+
+退款用于为已完成的交易向客户退还款项。您可以从管理界面或 API 发起退款。OwnPay 会将退款状态与原始交易分开跟踪。
+
+## 如何发起退款 {#how-to-issue-a-refund}
+
+1. 前往 **Payments** → **Transactions**。
+2. 找到并打开您要退款的交易。
+3. 点击 **Refund**。
+4. 输入退款金额（不得超过原始交易金额）。
+5. 可选择添加内部备注说明原因。
+6. 点击 **Confirm Refund**。
+
+## 退款状态 {#refund-statuses}
+
+| 状态 | 含义 |
+| --- | --- |
+| **Pending** | 退款请求已提交至网关，等待确认 |
+| **Completed** | 网关已确认退款；资金已退还给客户 |
+| **Failed** | 网关拒绝了退款（例如余额不足、超出时限） |
+
+## 退款规则 {#refund-rules}
+
+- 您只能对 **Completed** 状态的交易进行退款。
+- 退款金额不能超过原始交易金额。
+- 允许部分退款，您可以退还不超过原始金额的任意金额。
+- 您无法对已全额退款的交易再次退款。
+- 原始交易的网关手续费**不会**退还给客户。
+
+## 网关特定行为 {#gateway-specific-behavior}
+
+| 网关 | 退款类型 | 速度 | 部分退款 | 时限 |
+| --- | --- | --- | --- | --- |
+| **Stripe** | API 发起 | 即时 | 是 | 180 天 |
+| **PayPal** | API 发起 | 即时 | 是 | 180 天 |
+| **bKash** | API 发起 | 延迟（最长 24 小时） | 是 | 30 天 |
+| **Nagad** | API 发起 | 延迟（最长 24 小时） | 是 | 30 天 |
+| **SSLCommerz** | API 发起 | 延迟（最长 48 小时） | 是 | 90 天 |
+| **Razorpay** | API 发起 | 即时 | 是 | 180 天 |
+
+对于标记为**延迟**的网关，退款会保持 **Pending** 状态，直到网关发送确认 webhook。`RefundReconciliationJob` 会定期运行（通过 cron 或队列 worker），将待处理退款的状态与网关同步。
+
+## 对账本的影响 {#ledger-impact}
+
+退款完成后，OwnPay 会在账本中记录一笔冲销的复式分录。原先计入您商户应付账户的贷方金额会被借回，相应的资产账户也会被调整。您的账本余额会减少退款金额。
+
+<Warning>
+  发起退款会减少您的账本余额。退款前请确认您有足够的余额，尤其是大额退款。
+</Warning>
+
+## API 访问 {#api-access}
+
+您可以通过向 `/payments/{id}/refund` 发送 `POST` 请求以编程方式发起退款。完整的请求和响应结构请参阅[商户 API 参考](/zh/api/overview)。
+
+## 故障排除 {#troubleshooting}
+
+| 问题 | 原因 | 解决方法 |
+| --- | --- | --- |
+| 退款一直处于 Pending | 未收到网关 webhook | 检查 webhook 日志；手动运行队列 worker |
+| 退款失败 | 超出时限 | 在上表中查看该网关的退款时限 |
+| 无法点击 Refund | 交易不是 Completed 状态 | 只有 Completed 状态的交易才能退款 |
+| 退款金额被拒绝 | 金额超过原始金额 | 输入小于或等于原始交易金额的数值 |
+| 退款后账本余额显示错误 | `RefundReconciliationJob` 未运行 | 确保您的 cron 任务或队列 worker 处于活动状态 |
+
+## 相关页面 {#related-pages}
+
+- [交易](/zh/payments/transactions) - 查找需要退款的交易
+- [账本](/zh/payments/ledger) - 查看退款对会计的影响
+- [付款流程](/zh/fundamentals/payment-flow) - 完整的交易生命周期说明
+- [商户 API](/zh/api/overview) - 编程式退款端点

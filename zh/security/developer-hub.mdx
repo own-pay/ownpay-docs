@@ -1,0 +1,66 @@
+---
+title: 开发者中心
+description: "在集中的开发者工具区域中管理 Webhook 端点、查看投递日志、使用测试工具以及查看 API 请求日志。"
+keywords: "开发者中心, webhook 日志, API 日志, 测试 webhook, 开发者工具, webhook 管理, developer hub"
+sidebarTitle: 开发者中心
+icon: terminal
+---
+
+开发者中心是您将 OwnPay 与外部系统集成的中心工作区。它提供管理 Webhook、测试端点和查看 API 活动的工具。
+
+## Webhook 管理 {#webhook-management}
+
+开发者中心的 Webhooks 标签页可让您创建、编辑和删除 Webhook 端点。有关包括事件选择和签名验证在内的完整 Webhook 设置指南，请参阅 [Webhook](/zh/notifications/webhooks)。
+
+## Webhook 投递日志 {#webhook-delivery-logs}
+
+每次 Webhook 投递尝试都会记录在这里，无论成功还是失败。
+
+| 列 | 描述 |
+| --- | --- |
+| **Endpoint** | 目标 URL |
+| **Event** | 触发投递的事件类型 |
+| **Status** | Success（2xx）、Failed（非 2xx）或 Pending（已安排重试） |
+| **Attempts** | 已尝试投递的次数 |
+| **Timestamp** | 最近一次尝试的时间 |
+
+点击任意日志行，可查看完整的请求载荷、响应体和响应头。
+
+<Info>
+  投递日志保留 30 天。如需永久记录，请在您的 Webhook 端点上实现服务器端日志记录。
+</Info>
+
+## 测试 Webhook {#test-webhook}
+
+点击任意端点旁的 **Test Webhook**，即可发送一个示例 `payment.completed` 载荷。这会向您的端点发送真实的 HTTP 请求，以便您验证：
+
+- 您的服务器可以访问
+- 签名验证工作正常
+- 您的路由和处理逻辑能够处理该载荷
+
+测试投递也会出现在投递日志中，便于调试。
+
+## API 请求日志 {#api-request-logs}
+
+API Logs 标签页记录发往您的 OwnPay API 端点（全部三个层）的每个请求。
+
+| 列 | 描述 |
+| --- | --- |
+| **API Layer** | Admin、Merchant 或 Mobile |
+| **Endpoint** | 请求的 URI |
+| **Method** | GET、POST、PUT、DELETE |
+| **Status Code** | HTTP 响应状态 |
+| **IP Address** | 请求方的源 IP |
+| **Timestamp** | 发出请求的时间 |
+
+使用搜索和筛选控件，可按端点、状态码或日期范围查找特定请求。
+
+<Tip>
+  API 日志对于调试集成问题非常有用。如果第三方集成报告了意外的响应，请查看 API 日志，确切了解 OwnPay 返回了什么。
+</Tip>
+
+## 相关页面 {#related-pages}
+
+- [Webhook](/zh/notifications/webhooks) - 完整的 Webhook 配置和事件参考
+- [API 密钥](/zh/security/api-keys) - 生成和管理 API 凭据
+- [API 概览](/zh/api/overview) - 全部三个 API 层的文档

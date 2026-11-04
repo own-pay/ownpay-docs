@@ -1,0 +1,70 @@
+---
+title: "登录"
+description: "使用电子邮件和密码登录 OwnPay 管理面板。了解会话管理、速率限制和登录故障排除。"
+keywords: "管理员登录, 仪表板登录, 员工登录, 会话管理, 速率限制, 暴力破解防护, admin login"
+sidebarTitle: "登录"
+icon: "login"
+---
+
+登录页面是 OwnPay 平台的主要安全关口。只有预先注册的员工和超级管理员才能登录。暴力破解防护和安全的会话管理可保护您的财务数据。
+
+## 访问登录页面 {#access-the-login-page}
+
+打开浏览器，导航到您的 OwnPay 域名，并在其后加上登录路径：
+
+```text
+https://your-domain.com/login
+```
+
+<Note>
+  默认路径为 `login`，但您可以在[品牌设置](/zh/appearance/branding)中自定义它，通过隐蔽性获得额外的安全性。
+</Note>
+
+## 登录流程 {#login-process}
+
+1. 输入您注册的**电子邮件地址或用户名**
+2. 输入您的**密码**（区分大小写）
+3. 可选择勾选 **Remember me** 以延长会话时长
+4. 点击 **Sign In**
+5. 如果已启用 2FA，请输入身份验证器应用中的代码（请参阅[双因素认证](/zh/security/two-factor)）
+
+## 速率限制 {#rate-limiting}
+
+OwnPay 对每个 IP 地址实施**每 5 分钟 10 次失败尝试**的登录速率限制。超过此阈值后：
+
+- 来自该 IP 的后续登录尝试将被阻止 5 分钟
+- 警告消息会显示剩余的冷却时间
+- 该尝试会记录在[审计日志](/zh/reports/audit-log)中
+
+<Warning>
+  来自同一 IP 的反复锁定可能表明存在暴力破解攻击。请查看审计日志，并考虑在服务器层面封禁该 IP。
+</Warning>
+
+## 会话管理 {#session-management}
+
+| 设置 | 默认值 | 描述 |
+| --- | --- | --- |
+| **会话超时** | 2 小时 | 会话过期前的空闲时间 |
+| **"Remember me" 时长** | 30 天 | 勾选 "Remember me" 时延长的会话时长 |
+| **并发会话** | 允许 | 多台设备可同时登录 |
+
+会话存储在服务器端的 Redis 中。会话 Cookie 设置为 `HttpOnly` 和 `SameSite=Strict`，以防止跨站攻击。
+
+## 并发会话 {#concurrent-sessions}
+
+默认情况下，员工可以同时从多个浏览器和设备登录。您可以在[我的账户](/zh/security/my-account)中查看并终止活跃会话。
+
+## 登录故障排除 {#login-troubleshooting}
+
+| 症状 | 原因 | 解决方法 |
+| --- | --- | --- |
+| `Invalid credentials` | 电子邮件或密码错误 | 核实您的凭据。密码区分大小写 |
+| `Account temporarily locked` | 失败尝试次数过多 | 等待 5 分钟，直到锁定解除 |
+| `/login` 返回 `404 Not Found` | 已配置自定义登录路径 | 使用品牌设置中的正确路径 |
+| 会话立即过期 | 服务器时钟不一致 | 检查服务器的 NTP 同步 |
+
+## 相关页面 {#related-pages}
+
+- [双因素认证](/zh/security/two-factor) - 使用 TOTP 保护您的账户
+- [密码重置](/zh/security/password-reset) - 恢复对账户的访问
+- [我的账户](/zh/security/my-account) - 管理会话和个人设置

@@ -1,0 +1,198 @@
+---
+title: "क्विकस्टार्ट - 5 मिनट में अपना पहला पेमेंट स्वीकार करें"
+description: "OwnPay डिप्लॉय करें, एक ब्रांड बनाएँ, एक पेमेंट गेटवे सक्रिय करें, और एक टेस्ट पेमेंट स्वीकार करें। शून्य से पेमेंट प्रोसेसिंग तक का सबसे तेज़ रास्ता।"
+keywords: "quickstart, payment gateway setup, first payment, self-hosted payments, payment tutorial, OwnPay setup, क्विकस्टार्ट"
+sidebarTitle: "क्विकस्टार्ट"
+icon: "rocket"
+---
+
+import LlmsDirective from "/hi/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+अपना self-hosted पेमेंट गेटवे चलाएँ और पाँच मिनट से कम समय में एक टेस्ट पेमेंट स्वीकार करें। यह गाइड आपको हर चरण से गुज़ारती है - OwnPay डिप्लॉय करने से लेकर एक ट्रांज़ैक्शन पूरा करने तक।
+
+<Info>
+  जो डेवलपर API इंटीग्रेट करना चाहते हैं, उन्हें इसके बजाय [डेवलपर क्विकस्टार्ट](/hi/developer/quickstart) से शुरुआत करनी चाहिए।
+</Info>
+
+## पूर्वापेक्षाएँ {#prerequisites}
+
+शुरू करने से पहले, सुनिश्चित करें कि आपके पास है:
+
+- `bcmath`, `pdo_mysql`, `mbstring`, `curl`, `gd`, `zip`, `json`, `openssl`, `intl` के साथ **PHP 8.3\+**
+- **MySQL 8\+** (या MariaDB 10.4\+)
+- **HTTPS वाला एक डोमेन** - पेमेंट प्रोसेसिंग के लिए SSL आवश्यक है
+- लगभग **5 मिनट** का केंद्रित समय
+
+## चरण 1: OwnPay डिप्लॉय करें {#step-1-deploy-ownpay}
+
+अपना होस्टिंग वातावरण चुनें। प्रत्येक टैब आवश्यक बातें कवर करता है - पूरी गाइड के लिए [इंस्टॉलेशन](/hi/installation) देखें।
+
+<Tabs>
+  <Tab title="शेयर्ड होस्टिंग" icon="world">
+    cPanel, Plesk, DirectAdmin और अधिकांश शेयर्ड होस्ट के साथ काम करता है।
+
+    1. [GitHub Releases]({{github}}/releases) से नवीनतम रिलीज़ डाउनलोड करें।
+    2. `.zip` को अपने वेब रूट (`public_html/`) में अपलोड करें और एक्सट्रैक्ट करें।
+    3. अपने होस्टिंग कंट्रोल पैनल में PHP को **8.3** पर सेट करें।
+    4. **ALL PRIVILEGES** के साथ एक MySQL डेटाबेस और यूज़र बनाएँ।
+
+    <Tip>
+      यदि एक्सट्रैक्शन से कोई नेस्टेड फ़ोल्डर बनता है (उदाहरण के लिए, `public_html/ownpay-v0.2.0/`), तो सभी फ़ाइलों को एक स्तर ऊपर सीधे `public_html/` में ले जाएँ।
+    </Tip>
+  </Tab>
+  <Tab title="Nginx के साथ VPS" icon="server">
+    पूर्ण root एक्सेस वाले Ubuntu/Debian सर्वर के लिए।
+
+    ```bash
+    # Install dependencies
+    sudo apt update && sudo apt install -y nginx mysql-server \
+      php8.3-fpm php8.3-mysql php8.3-mbstring php8.3-curl \
+      php8.3-xml php8.3-zip php8.3-gd php8.3-bcmath \
+      php8.3-intl certbot python3-certbot-nginx
+    
+    # Clone and configure
+    cd /var/www
+    sudo git clone {{github}}.git ownpay
+    cd ownpay
+    sudo chown -R www-data:www-data .
+    sudo chmod -R 775 storage public/assets/uploads
+    ```
+
+    अपने Nginx server block को `/var/www/ownpay/public` पर पॉइंट करें और `certbot` से SSL प्रोविज़न करें। पूरा विवरण [इंस्टॉलेशन गाइड](/hi/installation) में है।
+  </Tab>
+  <Tab title="Docker" icon="box">
+    लोकल डेवलपमेंट या क्लाउड ऑर्केस्ट्रेशन के लिए कंटेनराइज़्ड डिप्लॉयमेंट।
+
+    ```bash
+    git clone {{github}}.git && cd OwnPay
+    cp .env.example .env
+    # Edit .env with your database credentials
+    docker-compose up -d
+    docker-compose exec app php bin/migrate
+    docker-compose exec app php bin/seed
+    ```
+
+    सेटअप विज़ार्ड पूरा करने के लिए `http://localhost:8080/install` पर जाएँ।
+  </Tab>
+</Tabs>
+
+## चरण 2: वेब इंस्टॉलर चलाएँ {#step-2-run-the-web-installer}
+
+अपना ब्राउज़र खोलें और `https://yourdomain.com/install` पर जाएँ। सेटअप विज़ार्ड आपको चार चरणों से गुज़ारता है:
+
+<Steps>
+  <Step title="अपना डेटाबेस कनेक्ट करें">
+    चरण 1 में बनाए गए MySQL होस्ट, डेटाबेस नाम, यूज़रनेम और पासवर्ड दर्ज करें। विज़ार्ड कनेक्शन का परीक्षण करता है और पुष्टि करता है कि वह पढ़ और लिख सकता है।
+  </Step>
+  <Step title="स्कीमा इम्पोर्ट करें">
+    OwnPay स्वचालित रूप से सभी आवश्यक तालिकाएँ बनाता है - लेजर खाते, ब्रांड, गेटवे, ट्रांज़ैक्शन और सेटिंग्स। किसी मैन्युअल SQL की ज़रूरत नहीं।
+  </Step>
+  <Step title="अपना एडमिन खाता बनाएँ">
+    अपने ईमेल और एक मज़बूत पासवर्ड के साथ एक मास्टर एडमिनिस्ट्रेटर रजिस्टर करें। इस खाते के पास सभी ब्रांड में पूर्ण सिस्टम एक्सेस होता है।
+  </Step>
+  <Step title="API keys जनरेट करें">
+    विज़ार्ड Merchant, Mobile और Admin API के लिए आपकी API keys का पहला सेट जनरेट करता है। इन्हें सुरक्षित रूप से संग्रहीत करें - आप सीक्रेट दोबारा नहीं देख पाएँगे।
+  </Step>
+</Steps>
+
+<Warning>
+  पहली बार लॉग इन करने के बाद, **My Account** के अंतर्गत अपना एडमिन पासवर्ड बदलें और टू-फ़ैक्टर प्रमाणीकरण सक्षम करें।
+</Warning>
+
+## चरण 3: अपना पहला ब्रांड बनाएँ {#step-3-create-your-first-brand}
+
+एक **ब्रांड** आपका पृथक मर्चेंट टेनेंट है - इसके अपने गेटवे, ग्राहक, ट्रांज़ैक्शन और लेजर होते हैं।
+
+1. साइडबार में **People \> Brands** पर जाएँ।
+2. **Add Brand** पर क्लिक करें।
+3. भरें:
+   - **Brand name** - ग्राहकों को दिखने वाला नाम (उदाहरण के लिए, "Acme Store")
+   - **Default currency** - इस ब्रांड की प्राथमिक मुद्रा
+   - **Timezone** - रिपोर्ट और टाइमस्टैम्प के लिए उपयोग होता है
+   - **Logo** - चेकआउट पेज के लिए अपने ब्रांड का लोगो अपलोड करें
+
+<Note>
+  आप बाद में कभी भी और ब्रांड जोड़ सकते हैं। प्रत्येक ब्रांड बाकी ब्रांड से पूरी तरह अलग काम करता है।
+</Note>
+
+## चरण 4: एक पेमेंट गेटवे सक्रिय करें {#step-4-activate-a-payment-gateway}
+
+1. साइडबार में **Gateways** पर जाएँ।
+2. **Add Gateway** पर क्लिक करें और उपलब्ध प्रदाताओं में से चुनें:
+   <CardGroup cols={3}>
+     <Card title="Stripe" icon="credit-card">
+       कार्ड, Apple Pay, Google Pay - वैश्विक कवरेज।
+     </Card>
+     <Card title="bKash" icon="device-mobile">
+       मोबाइल मनी - बांग्लादेश।
+     </Card>
+     <Card title="PayPal" icon="wallet">
+       PayPal खाते और कार्ड - दुनिया भर में।
+     </Card>
+     <Card title="Nagad" icon="device-mobile">
+       मोबाइल पेमेंट - बांग्लादेश।
+     </Card>
+     <Card title="SSLCommerz" icon="shield">
+       कार्ड और बैंक ट्रांसफ़र - दक्षिण एशिया।
+     </Card>
+     <Card title="Razorpay" icon="credit-card">
+       कार्ड, UPI, वॉलेट - भारत।
+     </Card>
+   </CardGroup>
+3. अपने प्रदाता के क्रेडेंशियल्स (API key, secret, merchant ID) दर्ज करें।
+4. अपने ब्रांड के लिए गेटवे सक्षम करने हेतु **Active** को टॉगल करें।
+
+<Info>
+  सभी गेटवे क्रेडेंशियल्स AES-256-GCM का उपयोग करके at rest एन्क्रिप्ट किए जाते हैं। OwnPay कभी भी डेटाबेस में मूल सीक्रेट संग्रहीत नहीं करता।
+</Info>
+
+## चरण 5: एक पेमेंट लिंक बनाएँ {#step-5-create-a-payment-link}
+
+1. **Payments \> Payment Links** पर जाएँ।
+2. **Create Payment Link** पर क्लिक करें।
+3. भरें:
+   - **Title** - पेमेंट का विवरण (उदाहरण के लिए, "Pro Plan - Monthly")
+   - **Amount** - शुल्क की राशि
+   - **Currency** - डिफ़ॉल्ट रूप से आपके ब्रांड की मुद्रा
+4. लिंक सहेजें।
+
+OwnPay एक अद्वितीय URL जनरेट करता है जिसे आप ईमेल, चैट के माध्यम से साझा कर सकते हैं या अपनी वेबसाइट पर एम्बेड कर सकते हैं।
+
+## चरण 6: चेकआउट का परीक्षण करें {#step-6-test-the-checkout}
+
+1. पेमेंट लिंक को incognito ब्राउज़र विंडो में खोलें।
+2. चेकआउट पेज से अपना सक्रिय किया गया गेटवे चुनें।
+3. अपने गेटवे के sandbox/test mode क्रेडेंशियल्स का उपयोग करके एक टेस्ट पेमेंट पूरा करें।
+4. पुष्टि करें कि आपको सफलता पेज दिखाई देता है।
+
+<Tip>
+  इस चरण के लिए अपने गेटवे के **test mode** का उपयोग करें। `4242 4242 4242 4242` जैसे Stripe टेस्ट कार्ड पूरी तरह काम करते हैं। कोई असली पैसा लेन-देन नहीं होता।
+</Tip>
+
+## आगे क्या? {#what’s-next}
+
+<CardGroup cols={3}>
+  <Card title="अपनी वेबसाइट पर पेमेंट स्वीकार करें" icon="code" href="/hi/developer/quickstart">
+    Merchant API, webhooks और SDKs का उपयोग करके OwnPay को अपने ऐप में इंटीग्रेट करें।
+  </Card>
+
+  <Card title="कस्टम डोमेन सेट अप करें" icon="world" href="/hi/system/domains">
+    स्वचालित SSL और white-label ब्रांडिंग के साथ अपना चेकआउट `pay.yourbrand.com` पर चलाएँ।
+  </Card>
+
+  <Card title="अपनी टीम को आमंत्रित करें" icon="users" href="/hi/people/staff">
+    role-based अनुमतियों के साथ स्टाफ़ सदस्य जोड़ें ताकि आपकी टीम मिलकर पेमेंट प्रबंधित कर सके।
+  </Card>
+</CardGroup>
+
+## संबंधित पेज {#related-pages}
+
+- [इंस्टॉलेशन](/hi/installation) - सभी वातावरणों के लिए विस्तृत डिप्लॉयमेंट
+- [OwnPay कैसे काम करता है](/hi/fundamentals/how-ownpay-works) - आर्किटेक्चर और अवधारणाओं का अवलोकन
+- [गेटवे कॉन्फ़िगरेशन](/hi/gateways/configuration) - प्रत्येक प्रदाता के लिए पूर्ण सेटअप गाइड
+- [पेमेंट फ़्लो](/hi/fundamentals/payment-flow) - ट्रांज़ैक्शन स्थितियों और जीवनचक्र को समझें
+- [डेवलपर क्विकस्टार्ट](/hi/developer/quickstart) - API इंटीग्रेशन गाइड

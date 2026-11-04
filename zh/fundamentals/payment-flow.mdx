@@ -1,0 +1,125 @@
+---
+title: "支付流程 - 交易状态与生命周期"
+description: "OwnPay 交易状态的权威参考：created、pending、processing、completed、failed、expired、cancelled、refunded，以及各状态对应的 Webhook。"
+keywords: "支付流程, 交易状态, 支付生命周期, 支付处理, 交易状态机, 支付状态"
+sidebarTitle: "支付流程"
+icon: "cash"
+---
+
+import LlmsDirective from "/zh/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+本页是 OwnPay 交易状态的**权威参考**。每个支付链接、API 付款和发票付款都会经过同一个状态机。在构建集成或排查交易问题时，请查阅本页。
+
+## 交易状态图 {#transaction-state-diagram}
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+stateDiagram-v2
+[*] --> Created
+Created --> Pending: 访问支付链接 / API 调用
+Pending --> Processing: 客户提交付款
+Processing --> Completed: 网关批准
+Processing --> Failed: 网关拒绝
+Pending --> Expired: 自动过期计时器触发
+Pending --> Cancelled: 商户取消
+Completed --> Refunded: 商户发起退款
+Failed --> Pending: 客户重试
+Refunded --> [*]
+Completed --> [*]
+Failed --> [*]
+Expired --> [*]
+Cancelled --> [*]
+
+style Created fill:#E8F4FD,stroke:#0F97ED,color:#102963
+style Pending fill:#E8F4FD,stroke:#0F97ED,color:#102963
+style Processing fill:#E8F4FD,stroke:#0F97ED,color:#102963
+style Completed fill:#0F97ED,stroke:#102963,color:#ffffff
+style Failed fill:#c62828,stroke:#102963,color:#ffffff
+style Expired fill:#f9a825,stroke:#102963,color:#102963
+style Cancelled fill:#f9a825,stroke:#102963,color:#102963
+style Refunded fill:#102963,stroke:#0F97ED,color:#ffffff
+`}>
+</Mermaid>
+
+## 状态说明 {#state-descriptions}
+
+### Created（已创建） {#created}
+
+支付意图已存在于数据库中，但客户尚未与之交互。这是通过 API 创建的付款和新生成的支付链接的初始状态。不会触发 Webhook。
+
+<Badge color="blue">过渡状态</Badge>
+
+### Pending（待处理） {#pending}
+
+客户已访问结账页面并看到付款表单。尚未授权任何资金。付款会一直处于此状态，直到客户提交支付信息或自动过期计时器触发。
+
+<Badge color="blue">过渡状态</Badge>
+
+### Processing（处理中） {#processing}
+
+客户已提交支付信息，OwnPay 已向网关发送授权请求。客户会看到加载指示器。OwnPay 正在等待网关的响应。
+
+<Badge color="blue">过渡状态</Badge>
+
+### Completed（已完成） {#completed}
+
+网关已批准付款。OwnPay 在复式记账账本中记录该交易，触发 `payment.completed` 事件，并向您配置的 URL 发送 Webhook。客户会看到成功页面。
+
+<Badge color="green">终态：是</Badge>
+
+### Failed（失败） {#failed}
+
+网关拒绝了付款——原因可能是余额不足、卡无效、欺诈检测或临时网络错误。系统会发送 `payment.failed` Webhook。客户可以从 Pending 状态重试。
+
+<Badge color="red">终态：是</Badge>
+
+### Expired（已过期） {#expired}
+
+支付链接或结账会话在客户无操作的情况下超时。可配置的自动过期计时器会触发一个计划任务，将付款移至 Expired 状态。不会发送 Webhook。
+
+<Badge color="yellow">终态：是</Badge>
+
+### Cancelled（已取消） {#cancelled}
+
+商户或员工在付款完成之前手动取消了该付款。系统会发送 `payment.cancelled` Webhook。
+
+<Badge color="yellow">终态：是</Badge>
+
+### Refunded（已退款） {#refunded}
+
+先前已完成的付款被退款（全额或部分）。网关已将资金退还给客户，OwnPay 记录了冲销账本分录。系统会发送 `payment.refunded` Webhook。
+
+<Badge color="blue">终态：是</Badge>
+
+## 各状态的 Webhook 事件 {#webhook-events-per-state}
+
+| 状态 | Webhook 事件 | 负载包含 |
+| :-- | :-- | :-- |
+| Completed | `payment.completed` | 交易 ID、金额、货币、网关、费用 |
+| Failed | `payment.failed` | 交易 ID、错误码、错误信息、网关 |
+| Cancelled | `payment.cancelled` | 交易 ID、取消人、原因 |
+| Refunded | `payment.refunded` | 交易 ID、退款金额、退款 ID |
+
+<Note>
+  **Pending**、**Processing** 和 **Expired** 状态**不会**触发 Webhook。您的集成应依赖终态（Completed、Failed、Cancelled、Refunded）来确认付款结果。
+</Note>
+
+## 自动过期 {#auto-expiry}
+
+未支付的付款会在可配置的超时时间（默认：24 小时）后自动移至 **Expired**。cron 任务（`php public/index.php cron`）每分钟运行一次，检查过期的待处理付款。可在 **System \> Settings** 中调整过期时间窗口。
+
+<Info>
+  如果您需要在 Processing 阶段获取实时状态更新，请使用轮询或依赖网关自身的回调。OwnPay 只在终态时触发 Webhook。
+</Info>
+
+## 相关页面 {#related-pages}
+
+- [交易](/zh/payments/transactions) - 在仪表板中查看和筛选交易历史
+- [Webhooks](/zh/api/webhooks) - 配置 Webhook URL 并验证 HMAC-SHA256 签名
+- [网关](/zh/fundamentals/gateways) - 了解网关路由如何影响处理过程
+- [开发者快速开始](/zh/developer/quickstart) - 将 Webhook 集成到您的应用程序中
+- [常见错误](/zh/resources/common-errors) - 排查付款失败问题

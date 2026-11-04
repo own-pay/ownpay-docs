@@ -1,0 +1,152 @@
+---
+title: 为 OwnPay 做贡献
+description: "如何为 OwnPay 做贡献：fork 仓库、搭建开发环境、遵循编码规范、提交 pull request 以及报告 issue。"
+keywords: "贡献, 开源, pull request, 开发环境搭建, 编码规范"
+sidebarTitle: 贡献指南
+icon: git-pull-request
+---
+
+首先——**感谢**你考虑为 OwnPay 做贡献！🎉 无论是错误报告、新的支付网关、翻译、文档修正还是新功能，每一份贡献都有助于让自托管的开源支付基础设施变得更好，惠及每一个人。
+
+本指南介绍如何高效地参与其中。
+
+---
+
+## 📜 行为准则 {#📜-code-of-conduct}
+
+本项目及其所有参与者均受我们的[行为准则](https://github.com/own-pay/OwnPay/blob/main/CODE_OF_CONDUCT.md)约束。参与即表示你应遵守该准则。请将不可接受的行为报告至 **[ping@ownpay.org](mailto:ping@ownpay.org)**。
+
+---
+
+## 🧭 贡献方式 {#🧭-ways-to-contribute}
+
+- **🐛 报告错误** - 提交清晰、可复现的 [issue](https://github.com/own-pay/OwnPay/issues)。
+- **💡 建议功能** - 发起[讨论](https://github.com/own-pay/OwnPay/discussions)或功能请求。
+- **🔌 构建网关/插件** - 添加支付网关或附加组件（见下文）。
+- **🌍 翻译** - 添加或改进语言目录（参见 [TRANSLATIONS.md](/zh/developer/translations)）。
+- **📖 改进文档** - 修正错别字、澄清指南、扩充示例。
+- **🧹 改进代码** - 修复错误、添加测试、谨慎重构。
+
+> 不确定从哪里开始？请查找标有 **`good first issue`** 或 **`help wanted`** 的 issue。
+
+---
+
+## 🚀 环境搭建 {#🚀-getting-set-up}
+
+1. **Fork** 仓库并克隆你的 fork。
+2. 按照 **[LOCAL_SETUP.md](/zh/resources/local-setup)** 运行本地实例（约 2 分钟）。
+3. 从 `dev`（PR 的目标集成分支）创建功能分支：
+
+   ```bash
+   git checkout dev
+   git checkout -b feat/short-description
+   ```
+
+**要求：** PHP 8.3+（`bcmath`、`json`、`mbstring`、`openssl`、`pdo_mysql`、`curl`）、Composer 2、MySQL 8 / MariaDB 10.4+。
+
+---
+
+## 🔁 开发工作流程 {#🔁-development-workflow}
+
+1. 在专注的分支中进行更改（每个 PR 只包含一个逻辑变更）。
+2. 为你更改的任何行为添加或更新测试。
+3. 运行完整的本地检查套件（与 CI 运行的内容相同）：
+
+   ```bash
+   composer test       # PHPUnit - all tests must pass
+   composer analyse    # PHPStan - must stay clean at level 9
+   composer lint       # Twig + JS + CSS linting
+   ```
+
+4. 使用清晰的消息提交，并附上 **DCO 签署**（见下文）。
+5. 推送到你的 fork，并针对 `dev` 提交 Pull Request。
+
+> ✅ **PR 在评审前必须通过 `composer test`、`composer analyse` 和 `composer lint`。** 检查全部通过的 PR 会更快得到评审。
+
+---
+
+## 🎯 编码规范 {#🎯-coding-standards}
+
+OwnPay 保持着很高的质量标准。请与现有代码保持一致并遵循以下规则：
+
+- **处处使用严格类型。** 每个 PHP 文件的第一条语句都是 `declare(strict_types=1);`（不带 BOM）。
+- **PHPStan 9 级必须保持通过。** 不要使用基线、`@phpstan-ignore` 或不必要的类型转换来压制错误——要修复根本原因。
+- **金额始终使用 bcmath 字符串，绝不使用浮点数。** 财务正确性不容妥协。
+- **租户作用域是强制性的。** 切勿在没有 `forTenant()` / `*Scoped()` 的情况下运行作用域查询；仅在有意的所有者级视图中使用 `forAllTenants()`。
+- **通过 `DomainUrlService` 构建 URL**（`buildCheckoutUrl()`、`buildCallbackUrl()`）——切勿硬编码主机（白标域名依赖于此）。
+- **通过 `SecurityHelpers::csrfToken()` 获取 CSRF 令牌**——切勿直接读取 `$_SESSION`。
+- **仅使用预处理语句。** 任何时候都不要使用字符串插值的 SQL。
+- **转义输出。** 保持 Twig 自动转义开启；切勿对不可信数据使用 `|raw`。
+- **保持精简。** 未经讨论不要引入新的重量级依赖；优先使用现有的第一方工具。
+- **注释解释*为什么*，而不是*做什么*。** 记录不明显的决策。
+
+完整的功能清单请参阅 **[功能参考](/zh/resources/features)**。如需了解整体架构，请阅读 **[架构指南](/zh/resources/architecture)**。
+
+---
+
+## 🔌 贡献支付网关或插件 {#🔌-contributing-a-payment-gateway-or-plugin}
+
+网关和附加组件是位于 `modules/` 下的插件：
+
+1. 创建 `modules/gateways/<slug>/`，并包含 `manifest.json`（元数据、功能、CSP 来源、图标）。
+2. 添加一个实现 `OwnPay\Gateway\GatewayAdapterInterface` 的适配器类（使用 `GatewayDefaults` trait 获取空操作默认实现）。
+3. 准确声明 `supportedCurrencies()`（返回 `[]` 表示“任意货币”）。
+4. 使插件遵守沙箱规则——不得使用 `exec`、`shell_exec`、`eval`、原生 PDO 等。
+5. 在本地测试完整流程（发起 → 回调 → 验证 → 退款）。
+
+完整的契约和示例请参阅 **[网关开发者指南](https://ownpay.org/docs/developer/plugin-types/gateway-development)**。
+
+---
+
+## 🌍 贡献翻译 {#🌍-contributing-translations}
+
+OwnPay 为管理面板和客户结账页面都提供了完整的国际化支持。要添加或更新语言，请按照 **[docs/TRANSLATIONS.md](/zh/developer/translations)** 操作——创建点表示法的 JSON 目录（保持 `:placeholders` 不变），并将核心语言放在 `config/languages/` 中。
+
+---
+
+## ✍️ 提交消息与 DCO 签署 {#✍️-commit-messages-&-dco-sign-off}
+
+我们使用 **[开发者原创证书](https://developercertificate.org/)**（DCO）。签署即表示你证明自己有权在项目许可证下提交该贡献。
+
+使用 `-s` 标志为每次提交添加签署行：
+
+```bash
+git commit -s -m "feat(gateway): add Acme Pay adapter"
+```
+
+这会追加：
+
+```text
+Signed-off-by: Your Name <your.email@example.com>
+```
+
+请编写清晰的提交消息。我们鼓励使用 [Conventional Commits](https://www.conventionalcommits.org/) 风格（`feat:`、`fix:`、`docs:`、`refactor:`、`test:`、`chore:`），但并不强制要求。
+
+---
+
+## 📥 Pull Request 指南 {#📥-pull-request-guidelines}
+
+- 保持 PR 专注——每个 PR 只包含一个逻辑变更。将大型工作拆分为便于评审的部分。
+- 填写 PR 描述：更改了**什么**、**为什么**更改，以及**如何测试**。
+- 关联相关 issue（例如 `Closes #123`）。
+- 在修改代码的同时更新文档和测试。
+- 积极回应评审反馈——由于这是支付软件，我们会仔细评审。
+- 确保所有 CI 检查均已通过。
+
+---
+
+## ⚖️ 贡献的许可 {#⚖️-licensing-of-contributions}
+
+OwnPay 采用 **[GNU AGPL-3.0](https://github.com/own-pay/OwnPay/blob/main/LICENSE)** 许可证。提交贡献即表示你同意你的作品以与项目**相同的 AGPL-3.0** 许可证授权（入站 = 出站），并通过你的 **DCO 签署**证明其来源。无需另行签署 CLA。
+
+---
+
+## 🙏 致谢 {#🙏-thank-you}
+
+每一个 issue、PR、翻译和想法都在推动 OwnPay 向前发展。我们正在为社区公开构建这个项目——很高兴有你的加入。
+
+对贡献有疑问？请联系 **[ping@ownpay.org](mailto:ping@ownpay.org)** 或发起[讨论](https://github.com/own-pay/OwnPay/discussions)。
+
+---
+
+❤️ 由**社区**构建，为**社区**服务。

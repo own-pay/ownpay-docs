@@ -1,0 +1,75 @@
+---
+title: 附加组件
+description: "安装和管理内置及市场附加组件，为 OwnPay 扩展电子邮件、Telegram 等功能。"
+keywords: "附加组件, 附加组件管理器, mail-gateway, telegram-bot, 市场附加组件, 安装附加组件, addons"
+sidebarTitle: 附加组件
+icon: package
+---
+
+附加组件是一种专门的插件类型，为 OwnPay 提供功能性能力 - 例如电子邮件投递、Telegram 通知和其他集成。为方便起见，它们在单独的区域中进行管理。
+
+<Info>
+  从技术上讲，附加组件是类型为 `addon` 的插件。有关通用的插件管理界面，请参阅[插件](/zh/system/plugins)。
+</Info>
+
+## 内置附加组件 {#built-in-addons}
+
+OwnPay 附带两个内置附加组件，安装后即可立即使用：
+
+<CardGroup>
+  <Card title="mail-gateway" icon="mail">
+    为交易通知、密码重置和自定义模板提供 SMTP 电子邮件投递。有关配置，请参阅[电子邮件通知](/zh/notifications/email)。
+  </Card>
+
+  <Card title="telegram-bot" icon="message">
+    针对支付和退款事件，向 Telegram 聊天发送实时推送通知。有关设置，请参阅 [Telegram 通知](/zh/notifications/telegram)。
+  </Card>
+</CardGroup>
+
+## 从市场安装 {#install-from-marketplace}
+
+<Steps>
+  <Step>
+    导航到 **System \> Addons** 并点击 **Browse Marketplace**。
+  </Step>
+  <Step>
+    浏览可用的附加组件。每个条目都会显示描述、版本和兼容性。
+  </Step>
+  <Step>
+    在您需要的附加组件上点击 **Install**。OwnPay 会自动下载并安装它。
+  </Step>
+  <Step>
+    激活该附加组件并为您的品牌进行配置。
+  </Step>
+</Steps>
+
+## 上传附加组件 {#upload-an-addon}
+
+如果您有附加组件的 ZIP 文件（来自开发者或自定义构建），请点击 **Upload Addon** 并选择该文件。附加组件上传同样会使用适用于插件的[沙箱扫描](/zh/system/plugins#plugin-sandbox-scanning)。
+
+## 按品牌激活 {#activate-per-brand}
+
+在任意附加组件行上点击 **Settings** 以打开其配置面板。您可以在这里：
+
+- 全局切换附加组件为 **Active** 或 **Inactive**
+- 选择该附加组件适用的**品牌**
+- 配置附加组件特定的设置（API 令牌、聊天 ID 等）
+
+## 附加组件生命周期 {#addon-lifecycle}
+
+| 操作 | 效果 |
+| --- | --- |
+| **Activate** | 为所选品牌启用该附加组件 |
+| **Deactivate** | 禁用该附加组件，但不删除配置 |
+| **Update** | 在有新版本时应用更新 |
+| **Uninstall** | 删除该附加组件、其文件以及所有已存储的设置 |
+
+<Warning>
+  卸载 mail-gateway 附加组件将停止所有电子邮件投递。卸载 telegram-bot 附加组件将停止所有 Telegram 通知。卸载前请确保您有替代的通知渠道。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [电子邮件通知](/zh/notifications/email) - 通过 mail-gateway 附加组件配置 SMTP
+- [Telegram 通知](/zh/notifications/telegram) - 设置 Telegram 机器人通知
+- [插件](/zh/system/plugins) - 通用插件管理，包括网关和主题

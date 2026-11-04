@@ -1,0 +1,108 @@
+---
+title: "WHMCS 集成"
+description: "安装并配置官方 OwnPay WHMCS 支付网关模块，在主机账单上接受银行卡和移动钱包付款。"
+keywords: "WHMCS 支付模块, 主机账单, WHMCS 网关, 银行卡支付, WHMCS 集成"
+sidebarTitle: "WHMCS"
+icon: "server"
+---
+
+将 OwnPay 与你的 WHMCS 计费平台集成，直接在主机和服务账单上接受信用卡、借记卡以及本地移动支付。
+
+<CardGroup cols={2}>
+  <Card title="WHMCS Marketplace" href="https://marketplace.whmcs.com/product/8845-ownpay-whmcs">
+    从 WHMCS Marketplace 下载官方模块。
+  </Card>
+
+  <Card title="GitHub" href="https://github.com/own-pay/OwnPay-WHMCS">
+    查看源代码、报告错误或参与贡献。
+  </Card>
+</CardGroup>
+
+## 前提条件 {#prerequisites}
+
+- WHMCS 8.0\+
+- 一个正在运行的 OwnPay 实例
+- 从 **Developers → API Keys** 获取的 API 密钥和 webhook 密钥
+
+## 安装 {#installation}
+
+## 配置 {#configuration}
+
+### 启用网关 {#enable-the-gateway}
+
+1. 登录 WHMCS 管理后台
+2. 前往 **System Settings → Payment Gateways**
+3. 点击 **OwnPay** 将其激活
+
+### 配置网关设置 {#configure-gateway-settings}
+
+在 **Manage Active Gateways** 下填写：
+
+| 字段 | 说明 |
+| --- | --- |
+| Display Name | 向客户显示的名称（例如 "Credit/Debit Card / Mobile Banking"） |
+| API URL | 你的 OwnPay 基础 URL（例如 `https://pay.yourdomain.com`） |
+| API Key | 从 **Developers → API Keys** 获取的 OwnPay API 密钥 |
+| Webhook Secret | 用于 webhook 验证的签名密钥 |
+| Test Mode | 启用后使用沙盒网关 |
+
+## 支付流程 {#payment-flow}
+
+```text
+WHMCS invoice created
+       |
+       v
+Customer clicks "Pay Now"
+       |
+       v
+Module creates payment via OwnPay API
+       |
+       v
+Customer redirected to OwnPay checkout
+       |
+       v
+Payment completed → OwnPay sends webhook
+       |
+       v
+Callback marks WHMCS invoice as paid
+```
+
+## Webhook 配置 {#webhook-configuration}
+
+1. 你的回调 URL 为：
+
+```text
+https://your-whmcs-domain.com/modules/gateways/callback/ownpay.php
+```
+
+2. 在 OwnPay 中，前往 **Developers → Webhooks** 并添加此 URL
+3. 选择 `payment.completed` 事件
+4. 将 webhook 签名密钥复制到 WHMCS 网关设置中
+
+## 测试模式 {#test-mode}
+
+在 WHMCS 网关设置中启用 **Test Mode** 以使用沙盒网关。使用卡号 `4242 4242 4242 4242` 测试成功支付。
+
+## 支持的功能 {#supported-features}
+
+- 在 webhook 回调时自动支付账单
+- 每次回调都进行签名验证
+- 测试模式开关
+- 多币种支持
+- 从 WHMCS 管理后台处理退款
+
+## 故障排查 {#troubleshooting}
+
+如果付款未自动应用到账单：
+
+1. 前往 **Billing → Gateway Log** 并按 `ownpay` 筛选
+2. 检查 OwnPay 和 WHMCS 中的 webhook 密钥是否完全一致
+3. 确认你的 OwnPay 实例能够访问回调 URL
+4. 在 WHMCS 中启用调试日志以获取详细的请求/响应日志
+
+## 相关页面 {#related-pages}
+
+- [PHP SDK](/zh/developer/integration/php)
+- [WooCommerce 插件](/zh/developer/integration/woocommerce)
+- [Webhooks](/zh/api/webhooks)
+- [测试支付](/zh/developer/testing)

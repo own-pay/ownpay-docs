@@ -1,0 +1,87 @@
+---
+title: "域名"
+description: "为每个品牌添加并验证自定义域名，配置 DNS 记录，并启用 SSL 证书自动配置。"
+keywords: "自定义域名, DNS, SSL, 域名验证, CNAME, 域名设置, 多域名, custom domains"
+sidebarTitle: "域名"
+icon: "world"
+---
+
+OwnPay 中的每个品牌都可以拥有一个或多个自定义域名。客户在结账时会被重定向到这些域名，从而为您提供完全品牌化的支付体验。
+
+## 添加域名 {#add-a-domain}
+
+<Steps>
+  <Step>
+    导航到 **System \> Domains** 并点击 **Add Domain**。
+  </Step>
+  <Step>
+    选择该域名所属的 **Brand**。
+  </Step>
+  <Step>
+    输入域名（例如 `pay.yourmerchant.com`）。
+  </Step>
+  <Step>
+    点击 **Save**。OwnPay 会显示您需要配置的 DNS 记录。
+  </Step>
+</Steps>
+
+## 配置 DNS {#configure-dns}
+
+OwnPay 会显示您需要在域名注册商处添加的确切 DNS 记录：
+
+<Columns>
+  <Column>
+### CNAME 方式（推荐） {#cname-method-recommended}
+
+    | 类型 | 名称 | 值 |
+    | --- | --- | --- |
+    | CNAME | `pay` | `your-ownpay-instance.com` |
+  </Column>
+  <Column>
+### A 记录方式 {#a-record-method}
+
+    | 类型 | 名称 | 值 |
+    | --- | --- | --- |
+    | A | `pay` | `203.0.113.10` |
+
+    请将该 IP 替换为您服务器的实际地址。
+  </Column>
+</Columns>
+
+<Tip>
+  推荐使用 CNAME 方式，因为在您迁移服务器时，它会自动跟随 IP 变化。
+</Tip>
+
+## 验证域名 {#verify-a-domain}
+
+设置好 DNS 记录后，在列表中点击该域名旁的 **Verify**。OwnPay 会执行 DNS 查询以确认记录是否正确。
+
+<Info>
+  DNS 传播最长可能需要 48 小时，不过大多数注册商会在几分钟内完成传播。如果验证立即失败，请稍候再试。
+</Info>
+
+## SSL 自动配置 {#ssl-auto-provisioning}
+
+域名验证通过后，OwnPay 会自动通过 Let's Encrypt（或您配置的 ACME 提供商）申请免费的 SSL 证书。证书会在到期前自动续期。
+
+<Warning>
+  SSL 配置要求端口 **80** 可从互联网访问，以完成 HTTP-01 质询。如果您的服务器位于防火墙或反向代理之后，请确保端口 80 的流量能够到达 OwnPay。
+</Warning>
+
+## 每个品牌多个域名 {#multiple-domains-per-brand}
+
+您可以为单个品牌分配多个域名。第一个验证通过的域名将成为生成支付链接时使用的**主域名**。其他域名作为别名 - 在任何已验证的域名上都可以进行支付。
+
+## 故障排除 {#troubleshooting}
+
+| 症状 | 原因 | 解决方法 |
+| --- | --- | --- |
+| 验证失败 | DNS 尚未传播 | 稍候再试，或使用 `dig` 或 `nslookup` 检查 |
+| SSL 配置失败 | 端口 80 被阻止 | 开放端口 80，或配置反向代理以转发 ACME 质询 |
+| 域名显示 "mixed content" | 硬编码的 HTTP 链接 | 确保 Settings 中的 Application URL 使用 `https://` |
+
+## 相关页面 {#related-pages}
+
+- [品牌](/zh/people/brands) - 创建和管理使用这些域名的品牌
+- [设置](/zh/system/settings) - 配置应用 URL 和时区
+- [客户体验](/zh/checkout/customer-experience) - 客户如何看到您的品牌化结账页

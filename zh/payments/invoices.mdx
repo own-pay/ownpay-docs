@@ -1,0 +1,65 @@
+---
+title: 创建和管理发票
+description: "如何在 OwnPay 中创建带有明细项的发票、将其发送给客户、跟踪付款状态并生成 PDF 收据。"
+keywords: "发票, 创建发票, 发票 PDF, 发票状态, 发票编号, invoices"
+sidebarTitle: 发票
+icon: file-text
+---
+
+发票是您发送给客户的结构化付款请求。每张发票都会生成一个唯一的结账链接，客户可以使用任何已启用的网关进行付款。发票与付款链接的区别在于，发票包含明细项、到期日和正式的发票编号。
+
+## 发票与付款链接的关系 {#how-invoices-relate-to-payment-links}
+
+当您创建发票时，OwnPay 会在后台生成一个付款链接。客户点击发票链接，查看分项合计，然后通过结账页面完成付款。您也可以创建不含明细项的独立付款链接，请参阅[付款链接](/zh/payments/payment-links)。
+
+## 创建发票 {#create-an-invoice}
+
+1. 前往 **Payments** → **Invoices**。
+2. 点击 **\+ Create Invoice**。
+3. 填写发票详细信息（见下表）。
+4. 添加一个或多个**明细项**，包括描述、数量和单价。
+5. 点击 **Create Invoice**。
+
+| 字段 | 必填 | 描述 |
+| --- | --- | --- |
+| **Invoice number** | 是 | 唯一序列号（例如 `INV-2025-0042`）。系统不会自动生成，编号方案由您控制 |
+| **Customer** | 是 | 从现有客户档案中选择 |
+| **Currency** | 是 | 此发票的结算货币 |
+| **Due date** | 是 | 付款截止日期 |
+| **Notes** | 否 | 在结账页面上向客户显示的说明 |
+| **Line item description** | 是 | 向客户收费的项目 |
+| **Quantity** | 是 | 单位数量（默认为 1） |
+| **Unit price** | 是 | 每单位价格 |
+
+## 发票状态 {#invoice-statuses}
+
+| 状态 | 含义 |
+| --- | --- |
+| **Draft** | 已保存但尚未分享给客户 |
+| **Sent** | 已生成结账链接，可以分享 |
+| **Paid** | 客户已通过结账链接完成付款 |
+| **Overdue** | 已过到期日但未付款 |
+| **Cancelled** | 发票已作废，不再可付款 |
+
+## 生成发票 PDF {#generate-invoice-pdfs}
+
+打开发票并点击 **Download PDF** 即可获取格式化的收据。PDF 包含您的品牌标志、客户详细信息、所有明细项、总金额和付款状态。可将其用于会计记录，或作为收据通过电子邮件发送给客户。
+
+## 通过电子邮件发送发票 {#send-invoices-via-email}
+
+对任何处于 Sent 或 Draft 状态的发票点击 **Send via Email**。OwnPay 会向客户发送一封包含发票详细信息和付款链接的电子邮件。该邮件使用您品牌的 SMTP 配置，并以支持邮箱作为发件人。
+
+## 发票编号 {#invoice-numbering}
+
+OwnPay 不会自动递增发票编号。您需要在创建每张发票时手动设置编号。这使您能够灵活匹配现有的会计系统（例如 `INV-2025-0042`、`REC-0042` 或您喜欢的任何格式）。
+
+<Warning>
+  每张发票必须至少包含一个数量和单价均大于零的明细项。没有明细项或总额为 0.00 的发票无法付款。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [付款链接](/zh/payments/payment-links) - 创建简单的可分享付款 URL
+- [交易](/zh/payments/transactions) - 查看已付发票的付款
+- [客户](/zh/people/customers) - 管理用于开票的客户档案
+- [账本](/zh/payments/ledger) - 发票付款产生的会计分录

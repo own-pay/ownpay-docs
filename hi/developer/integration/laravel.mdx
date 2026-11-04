@@ -1,0 +1,549 @@
+---
+title: "Laravel SDK - PHP ऐप्स के लिए फ़्लूएंट पेमेंट इंटीग्रेशन"
+description: "फ़साड सपोर्ट, वेबहुक सत्यापन और टाइप-सेफ़ वैल्यू ऑब्जेक्ट वाले आधिकारिक SDK के साथ OwnPay को Laravel 11+ एप्लिकेशन में इंटीग्रेट करें।"
+keywords: "Laravel payment SDK, PHP payment integration, Laravel webhook, OwnPay Laravel, Laravel payment gateway, Composer payment package"
+sidebarTitle: "Laravel"
+icon: "layout-grid"
+tag: "NEW"
+---
+
+आधिकारिक OwnPay Laravel SDK आपके Laravel एप्लिकेशन में पेमेंट इंटीग्रेट करने के लिए एक साफ़, फ़्लूएंट इंटरफ़ेस प्रदान करता है। यह प्रमाणीकरण, पुनः प्रयास, वेबहुक सत्यापन और त्रुटि हैंडलिंग को शुरू से ही संभालता है।
+
+<CardGroup cols={2}>
+  <Card title="Packagist" icon="box" href="https://packagist.org/packages/ownpay/ownpay-laravel">
+    Packagist से Composer के माध्यम से इंस्टॉल करें।
+  </Card>
+
+  <Card title="GitHub" icon="brand-github" href="https://github.com/own-pay/ownpay-laravel">
+    सोर्स कोड देखें, बग रिपोर्ट करें, या योगदान दें।
+  </Card>
+</CardGroup>
+
+## पूर्वापेक्षाएँ {#prerequisites}
+
+- PHP 8.3 या उससे ऊपर
+- Laravel 11.x, 12.x, या 13.x
+- Admin \> Developer Hub से एक OwnPay API कुंजी
+
+## इंस्टॉलेशन {#installation}
+
+<Steps>
+  <Step>
+    **पैकेज इंस्टॉल करें**
+
+    ```bash
+    composer require ownpay/ownpay-laravel
+    ```
+
+    पैकेज अपने service provider और facade को स्वचालित रूप से रजिस्टर करता है।
+  </Step>
+  <Step>
+    **कॉन्फ़िगरेशन पब्लिश करें**
+
+    ```bash
+    php artisan vendor:publish --tag=ownpay-config
+    ```
+
+    यह आपके एप्लिकेशन में `config/ownpay.php` बनाता है।
+  </Step>
+  <Step>
+    **माइग्रेशन पब्लिश करें (वैकल्पिक)**
+
+    यदि आप वेबहुक को डेटाबेस टेबल में लॉग करना चाहते हैं:
+
+    ```bash
+    php artisan vendor:publish --tag=ownpay-migrations
+    php artisan migrate
+    ```
+  </Step>
+  <Step>
+    **एनवायरनमेंट वेरिएबल जोड़ें**
+
+    इन्हें अपनी `.env` फ़ाइल में जोड़ें:
+
+    ```env
+    OWNPAY_API_KEY=op_live_abc123.def456
+    OWNPAY_WEBHOOK_SECRET=your_webhook_secret_here
+    OWNPAY_BASE_URL=https://pay.ownpay.org
+    OWNPAY_TIMEOUT=30
+    OWNPAY_RETRY_ATTEMPTS=3
+    OWNPAY_RETRY_DELAY=100
+    OWNPAY_VERIFY_SSL=true
+    ```
+  </Step>
+</Steps>
+
+## कॉन्फ़िगरेशन {#configuration}
+
+`config/ownpay.php` में सभी विकल्प:
+
+| विकल्प | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- |
+| `api_key` | `null` | आपकी OwnPay API कुंजी (`op_` से शुरू होती है) |
+| `webhook_secret` | `null` | सत्यापन के लिए वेबहुक साइनिंग सीक्रेट |
+| `base_url` | `https://pay.ownpay.org` | आपके OwnPay इंस्टेंस का URL |
+| `timeout` | `30` | सेकंड में अनुरोध टाइमआउट |
+| `retry_attempts` | `3` | विफल अनुरोधों के लिए पुनः प्रयासों की संख्या |
+| `retry_delay` | `100` | पुनः प्रयासों के बीच मिलीसेकंड में बेस देरी |
+| `verify_ssl` | `true` | SSL सर्टिफ़िकेट सत्यापित करने हैं या नहीं |
+| `log_channel` | `null` | SDK लॉगिंग के लिए लॉग चैनल |
+| `cache_ttl` | `0` | सेकंड में कैश TTL (अक्षम करने के लिए 0) |
+
+## पेमेंट बनाना {#creating-payments}
+
+`OwnPay` facade का उपयोग करें या `OwnPayClient` को सीधे inject करें।
+
+<Tabs>
+  <Tab title="Facade">
+    ```php
+    use OwnPay\Laravel\Facades\OwnPay;
+    
+    $payment = OwnPay::createPayment([
+        'amount'         => '1250.00',
+        'currency'       => 'BDT',
+        'description'    => 'Premium Subscription',
+        'redirect_url'   => 'https://example.com/success',
+        'cancel_url'     => 'https://example.com/cancel',
+        'callback_url'   => 'https://example.com/webhook',
+        'customer_name'  => 'John Doe',
+        'customer_mail'  => 'john@example.com',
+    ]);
+    
+    // Redirect the customer to checkout
+    return redirect($payment->checkoutUrl);
+    ```
+  </Tab>
+  <Tab title="Dependency Injection">
+    ```php
+    use OwnPay\Laravel\Client\OwnPayClient;
+    
+    class PaymentController extends Controller
+    {
+        public function __construct(
+            private readonly OwnPayClient $ownpay,
+        ) {}
+    
+        public function store(Request $request)
+        {
+            $payment = $this->ownpay->createPayment([
+                'amount'       => $request->input('amount'),
+                'currency'     => $request->input('currency'),
+                'callback_url' => route('webhook.ownpay'),
+            ]);
+    
+            return response()->json([
+                'checkout_url' => $payment->checkoutUrl,
+                'payment_id'   => $payment->paymentId,
+            ]);
+        }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## पेमेंट फ़्लो {#payment-flow}
+
+एक सामान्य चेकआउट फ़्लो इस तरह दिखता है:
+
+```text
+Customer clicks "Pay"
+       |
+       v
+createPayment() -> get checkoutUrl
+       |
+       v
+Redirect customer to OwnPay checkout
+       |
+       v
+Customer completes or cancels payment
+       |
+       v
+OwnPay sends webhook -> VerifyWebhookSignature middleware
+       |
+       v
+Your listener updates order status
+```
+
+### पूरा उदाहरण {#full-example}
+
+```php
+use OwnPay\Laravel\Facades\OwnPay;
+use OwnPay\Laravel\Exception\OwnPayExceptionInterface;
+
+class CheckoutController extends Controller
+{
+    public function initiate(Request $request)
+    {
+        try {
+            $payment = OwnPay::createPayment([
+                'amount'        => $request->input('amount'),
+                'currency'      => $request->input('currency'),
+                'description'   => $request->input('description'),
+                'redirect_url'  => route('payment.success'),
+                'cancel_url'    => route('payment.cancel'),
+                'callback_url'  => route('webhook.ownpay'),
+                'customer_name' => $request->input('customer_name'),
+                'customer_mail' => $request->input('customer_email'),
+                'metadata'      => [
+                    'order_id' => $request->input('order_id'),
+                ],
+            ]);
+
+            // Store payment_id in your database
+            // Redirect to checkout
+            return redirect($payment->checkoutUrl);
+
+        } catch (OwnPayExceptionInterface $e) {
+            return back()->withErrors([
+                'payment' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function success(Request $request)
+    {
+        $paymentId = $request->query('payment_id');
+        $payment = OwnPay::getPayment($paymentId);
+
+        if ($payment->isSuccess()) {
+            return view('payment.success', ['payment' => $payment]);
+        }
+
+        return view('payment.pending', ['payment' => $payment]);
+    }
+}
+```
+
+## पेमेंट स्टेटस प्राप्त करना {#retrieving-payment-status}
+
+```php
+$payment = OwnPay::getPayment($paymentId);
+
+echo $payment->status->label(); // "Pending", "Completed", "Failed"
+echo $payment->isSuccess();     // true or false
+```
+
+## वेबहुक हैंडलिंग {#webhook-handling}
+
+### रूट सेटअप {#route-setup}
+
+पैकेज `/webhooks/ownpay` पर एक वेबहुक रूट स्वचालित रूप से रजिस्टर करता है। आप इसे कस्टमाइज़ कर सकते हैं:
+
+```php
+use OwnPay\Laravel\Laravel\Middleware\VerifyWebhookSignature;
+
+Route::post('/webhooks/ownpay', [WebhookController::class, 'handle'])
+    ->middleware(VerifyWebhookSignature::class);
+```
+
+<Info>
+  `VerifyWebhookSignature` middleware हर आने वाले वेबहुक पर HMAC-SHA256 सिग्नेचर को वैलिडेट करता है। किसी मैन्युअल सत्यापन की आवश्यकता नहीं है।
+</Info>
+
+### इवेंट सुनना {#listening-for-events}
+
+अपने `EventServiceProvider` में एक इवेंट listener रजिस्टर करें:
+
+```php
+protected $listen = [
+    \OwnPay\Laravel\Laravel\Events\WebhookReceived::class => [
+        \App\Listeners\HandleOwnPayWebhook::class,
+    ],
+];
+```
+
+### उदाहरण listener {#example-listener}
+
+```php
+namespace App\Listeners;
+
+use OwnPay\Laravel\Laravel\Events\WebhookReceived;
+
+class HandleOwnPayWebhook
+{
+    public function handle(WebhookReceived $event): void
+    {
+        match ($event->event) {
+            'payment.completed' => $this->handlePaymentCompleted($event),
+            'payment.failed'    => $this->handlePaymentFailed($event),
+            'refund.completed'  => $this->handleRefundCompleted($event),
+            default             => null,
+        };
+    }
+
+    private function handlePaymentCompleted(WebhookReceived $event): void
+    {
+        $transactionId = $event->getTransactionId();
+        $amount = $event->getAmount();
+        $currency = $event->getCurrency();
+
+        // Update your database, send confirmation email, etc.
+    }
+
+    private function handlePaymentFailed(WebhookReceived $event): void
+    {
+        // Handle failed payment
+    }
+
+    private function handleRefundCompleted(WebhookReceived $event): void
+    {
+        // Handle completed refund
+    }
+}
+```
+
+## ट्रांज़ैक्शन प्रबंधन {#transaction-management}
+
+```php
+use OwnPay\Laravel\Facades\OwnPay;
+
+// List all transactions
+$transactions = OwnPay::listTransactions();
+
+// List with filters
+$transactions = OwnPay::listTransactions([
+    'status'   => 'completed',
+    'gateway'  => 'bkash',
+    'from'     => '2024-01-01',
+    'to'       => '2024-12-31',
+    'page'     => 1,
+    'per_page' => 50,
+]);
+
+// Get a specific transaction
+$transaction = OwnPay::getTransaction('OP-XXXXX');
+
+// Check if refundable
+if ($transaction->isRefundable()) {
+    // Can create refund
+}
+```
+
+## रिफ़ंड {#refunds}
+
+```php
+$refund = OwnPay::createRefund([
+    'trx_id' => 'OP-XXXXX',
+    'amount' => '500.00',
+    'reason' => 'Customer request',
+]);
+
+// List refunds
+$refunds = OwnPay::listRefunds(['page' => 1]);
+
+// Get refund by ID
+$refund = OwnPay::getRefund('OP-XXXXX');
+```
+
+## ग्राहक प्रबंधन {#customer-management}
+
+```php
+use OwnPay\Laravel\Facades\OwnPay;
+
+// Create customer
+$customer = OwnPay::createCustomer([
+    'name'  => 'John Doe',
+    'email' => 'john@example.com',
+    'phone' => '+8801700000000',
+]);
+
+// List customers
+$customers = OwnPay::listCustomers(['page' => 1]);
+
+// Get customer by email or phone
+$customer = OwnPay::getCustomer('john@example.com');
+```
+
+## API कुंजी प्रबंधन {#api-key-management}
+
+```php
+use OwnPay\Laravel\Facades\OwnPay;
+
+// List API keys
+$keys = OwnPay::listApiKeys();
+
+// Generate new key
+$result = OwnPay::generateApiKey([
+    'name'   => 'Production Key',
+    'scopes' => ['read', 'write'],
+]);
+
+echo $result['key']; // Show this to the user ONCE
+
+// Revoke key
+OwnPay::revokeApiKey($keyId);
+```
+
+## वैल्यू ऑब्जेक्ट {#value-objects}
+
+SDK रॉ ऐरे के बजाय टाइप-सेफ़ वैल्यू ऑब्जेक्ट का उपयोग करता है।
+
+### Money {#money}
+
+```php
+use OwnPay\Laravel\ValueObjects\Money;
+
+$price = new Money('100.00', 'USD');
+$price->toFloat();  // 100.0
+$price->toCents();  // 10000
+$price->format();   // "USD 100.00"
+
+// Arithmetic
+$a = new Money('100.00', 'USD');
+$b = new Money('50.00', 'USD');
+$sum = $a->add($b);       // Money('150.00', 'USD')
+$diff = $a->subtract($b); // Money('50.00', 'USD')
+
+// Comparison
+$a->isGreaterThan($b); // true
+$a->equals(new Money('100.00', 'USD')); // true
+```
+
+### स्टेटस enums {#status-enums}
+
+```php
+use OwnPay\Laravel\ValueObjects\PaymentStatus;
+use OwnPay\Laravel\ValueObjects\TransactionStatus;
+
+$status = PaymentStatus::from('completed');
+$status->isSuccess();  // true
+$status->isTerminal(); // true
+$status->isActive();   // false
+$status->label();      // "Completed"
+
+$trxStatus = TransactionStatus::from('completed');
+$trxStatus->isRefundable(); // true
+```
+
+## त्रुटि हैंडलिंग {#error-handling}
+
+SDK एक संरचित exception पदानुक्रम प्रदान करता है:
+
+```php
+use OwnPay\Laravel\Exception\OwnPayExceptionInterface;
+use OwnPay\Laravel\Exception\AuthenticationException;
+use OwnPay\Laravel\Exception\InvalidRequestException;
+use OwnPay\Laravel\Exception\NotFoundException;
+use OwnPay\Laravel\Exception\RateLimitException;
+use OwnPay\Laravel\Exception\ConnectionException;
+
+try {
+    $payment = OwnPay::createPayment([...]);
+} catch (AuthenticationException $e) {
+    Log::error('OwnPay auth error: ' . $e->getMessage());
+} catch (InvalidRequestException $e) {
+    $errors = $e->getErrorDetails(); // Array of {code, message, field}
+} catch (NotFoundException $e) {
+    // Resource not found
+} catch (RateLimitException $e) {
+    $retryAfter = $e->getRetryAfter();
+} catch (ConnectionException $e) {
+    // Network error
+} catch (OwnPayExceptionInterface $e) {
+    // Catch all OwnPay exceptions
+}
+```
+
+<Accordion title="Exception संदर्भ">
+  | Exception | HTTP कोड | कब थ्रो होता है |
+  | --- | --- | --- |
+  | `AuthenticationException` | 401 | अमान्य या अनुपस्थित API कुंजी |
+  | `InvalidRequestException` | 422 | अनुरोध बॉडी में वैलिडेशन त्रुटियाँ |
+  | `NotFoundException` | 404 | रिसोर्स मौजूद नहीं है |
+  | `RateLimitException` | 429 | बहुत अधिक अनुरोध |
+  | `ConnectionException` | - | नेटवर्क या टाइमआउट त्रुटियाँ |
+</Accordion>
+
+## Artisan कमांड {#artisan-commands}
+
+SDK टेस्टिंग और डीबगिंग के लिए CLI कमांड के साथ आता है:
+
+```bash
+# Test connection to your OwnPay instance
+php artisan ownpay:test
+php artisan ownpay:test --json
+
+# Verify a webhook payload signature
+php artisan ownpay:verify-webhook \
+    --payload='{"event":"payment.completed"}' \
+    --signature='abc123...' \
+    --timestamp=1234567890
+```
+
+## टेस्टिंग {#testing}
+
+### HTTP कॉल को मॉक करना {#mocking-http-calls}
+
+```php
+use Illuminate\Support\Facades\Http;
+
+Http::fake([
+    'test.ownpay.org/api/v1/payments' => Http::response([
+        'success' => true,
+        'data' => [
+            'payment_id'   => 'pay_123',
+            'token'        => 'tok_123',
+            'checkout_url' => 'https://checkout.ownpay.org/pay_123',
+            'status'       => 'pending',
+        ],
+    ], 201),
+]);
+
+$payment = OwnPay::createPayment([...]);
+$this->assertSame('pay_123', $payment->paymentId);
+```
+
+### टेस्ट में वेबहुक सत्यापित करना {#verifying-webhooks-in-tests}
+
+```php
+use OwnPay\Laravel\Webhook\WebhookVerifier;
+
+$verifier = new WebhookVerifier('test-secret');
+$payload = '{"event":"payment.completed","transaction_id":"OP-12345"}';
+$signature = $verifier->sign($payload);
+
+$result = $verifier->verify($payload, $signature);
+$this->assertSame('payment.completed', $result['event']);
+```
+
+## सुरक्षा सर्वोत्तम प्रथाएँ {#security-best-practices}
+
+<Warning>
+  API कुंजियों को कभी भी वर्ज़न कंट्रोल में कमिट न करें। हमेशा एनवायरनमेंट वेरिएबल का उपयोग करें।
+</Warning>
+
+1. API कुंजियों को सीधे `config/ownpay.php` में नहीं, बल्कि `.env` में संग्रहीत करें
+2. सभी API संचार के लिए HTTPS का उपयोग करें
+3. SDK `VerifyWebhookSignature` middleware के माध्यम से वेबहुक सिग्नेचर स्वचालित रूप से सत्यापित करता है
+4. API कुंजियाँ `#[\SensitiveParameter]` attribute के साथ संग्रहीत होती हैं - वे कभी लॉग नहीं होतीं और न ही त्रुटि संदेशों में दिखाई देती हैं
+5. महत्वपूर्ण पेमेंट ऑपरेशन के लिए idempotency लागू करें
+6. ऑडिट ट्रेल के लिए सभी पेमेंट इवेंट लॉग करें
+
+## API संदर्भ {#api-reference}
+
+| श्रेणी | मेथड | विवरण |
+| --- | --- | --- |
+| Payments | `createPayment(array $data)` | एक नया payment intent बनाएँ |
+| Payments | `getPayment(string $id)` | ID द्वारा पेमेंट प्राप्त करें |
+| Transactions | `listTransactions(array $params)` | फ़िल्टर के साथ ट्रांज़ैक्शन की सूची |
+| Transactions | `getTransaction(string $id)` | ID द्वारा ट्रांज़ैक्शन प्राप्त करें |
+| Refunds | `createRefund(array $data)` | एक रिफ़ंड बनाएँ |
+| Refunds | `listRefunds(array $params)` | फ़िल्टर के साथ रिफ़ंड की सूची |
+| Refunds | `getRefund(string $id)` | ट्रांज़ैक्शन ID द्वारा रिफ़ंड प्राप्त करें |
+| Customers | `createCustomer(array $data)` | एक ग्राहक बनाएँ |
+| Customers | `listCustomers(array $params)` | ग्राहकों की सूची |
+| Customers | `getCustomer(string $id)` | ईमेल या फ़ोन द्वारा ग्राहक प्राप्त करें |
+| Webhooks | `testWebhook()` | वेबहुक एंडपॉइंट टेस्ट करें |
+| Webhooks | `listWebhookDeliveries()` | वेबहुक डिलीवरी की सूची |
+| API Keys | `listApiKeys()` | API कुंजियों की सूची |
+| API Keys | `generateApiKey(array $params)` | नई API कुंजी जनरेट करें |
+| API Keys | `revokeApiKey(int $id)` | API कुंजी रद्द करें |
+| Health | `health()` | API हेल्थ स्टेटस जाँचें |
+
+## संबंधित पेज {#related-pages}
+
+- [PHP SDK](/hi/developer/integration/php)
+- [API अवलोकन](/hi/api/overview)
+- [वेबहुक](/hi/api/webhooks)
+- [प्रमाणीकरण](/hi/api/authentication)
+- [पेमेंट टेस्ट करना](/hi/developer/testing)

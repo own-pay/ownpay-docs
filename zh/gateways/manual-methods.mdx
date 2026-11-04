@@ -1,0 +1,80 @@
+---
+title: "手动支付方式"
+description: "如何在 OwnPay 中创建手动（线下）支付方式，例如银行转账、货到付款和移动货币，并附带付款说明。"
+keywords: "手动网关, 线下支付, 银行转账, 货到付款, 移动货币, 自定义字段"
+sidebarTitle: "手动方式"
+icon: "cash"
+---
+
+手动支付方式是客户在 OwnPay 之外完成付款的线下渠道——例如向您的银行账户转账、发送移动货币或货到付款。您定义付款说明和自定义字段，然后手动或通过短信自动验证付款。
+
+## 什么是手动网关 {#what-manual-gateways-are}
+
+与实时处理付款的 API 网关（Stripe、bKash API）不同，手动网关依赖客户自行完成付款并提交凭证。OwnPay 提供结账界面和跟踪功能，但由您确认付款是否真正到账。
+
+常见示例：
+
+- **银行转账**——客户向您的账号转账并上传截图。
+- **货到付款（COD）**——客户在收到货物时付款。
+- **附带说明的移动货币**——客户向您的手机号码汇款并输入交易 ID。
+
+## 创建手动网关 {#create-a-manual-gateway}
+
+1. 前往 **Gateways & Currencies** → **Payment Gateways**。
+2. 点击 **Add Manual Gateway**。
+3. 填写基本设置（见下表）。
+4. 点击 **Create Gateway**。
+
+| 设置 | 类型 | 说明 |
+| --- | --- | --- |
+| **Name** | 文本 | 结账时显示的名称（例如"Bank Transfer - IBBL"） |
+| **Slug** | 文本 | URL 安全的标识符（仅限小写字母和连字符） |
+| **Icon** | 文件上传 | 结账时显示的 Logo 或图标 |
+| **Payment instructions** | 富文本 | 客户选择此方式后看到的说明 |
+| **Custom fields** | JSON schema | 客户必须填写的字段（例如交易 ID、账号） |
+| **QR code** | 文件上传 | 可选的二维码，客户可扫码付款 |
+| **Min / Max amount** | 数字 | 此方式的交易限额 |
+
+## 自定义字段 {#custom-fields}
+
+为客户在结账时必须填写的字段定义 JSON schema。例如：
+
+```json
+[
+  { "name": "trx_id", "label": "Transaction ID", "type": "text", "required": true },
+  { "name": "sender_account", "label": "Sender Account Number", "type": "text", "required": false }
+]
+```
+
+客户选择此手动方式后，这些字段会显示在结账页面上。
+
+## 手动付款的工作方式 {#how-manual-payments-work}
+
+1. 客户在结账时选择手动方式。
+2. 客户看到您的**付款说明**（银行账户、电话号码等）。
+3. 客户自行完成付款。
+4. 客户填写**自定义字段**（例如输入交易 ID）。
+5. 交易进入**等待验证**状态。
+6. 您审核凭证后点击 **Mark Completed** 或 **Mark Failed**。
+
+如需通过短信自动验证，请参阅[短信验证](/zh/gateways/sms-verification)。
+
+## 常见错误 {#common-mistakes}
+
+| 错误 | 影响 | 修复方法 |
+| --- | --- | --- |
+| 付款说明含糊不清 | 客户不知道该把钱汇到哪里 | 编写清晰的分步说明，并写明确切的账号 |
+| 没有用于交易 ID 的自定义字段 | 您无法确定哪笔付款对应哪笔交易 | 始终至少要求填写交易 ID 字段 |
+| 最低金额高于最高金额 | 结账会拒绝所有金额 | 确保最低金额小于或等于最高金额 |
+| Slug 中含有空格 | 会破坏结账 URL | 仅使用小写字母、数字和连字符 |
+
+<Warning>
+  手动付款会一直处于"等待验证"状态，直到您或短信自动验证系统对其进行处理。如果您未使用短信验证，请定期查看 Transactions 页面。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [配置支付网关](/zh/gateways/configuration) - 设置基于 API 的网关
+- [短信验证](/zh/gateways/sms-verification) - 通过短信自动验证手动付款
+- [交易](/zh/payments/transactions) - 审核并批准等待验证的交易
+- [短信模板](/zh/mobile/sms-templates) - 管理短信解析模板

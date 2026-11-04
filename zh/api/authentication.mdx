@@ -1,0 +1,143 @@
+---
+title: "API 身份验证"
+description: "OwnPay API 身份验证的权威参考，涵盖 Bearer 令牌、API 密钥作用域以及超级管理员覆盖请求头。"
+keywords: "API 身份验证, Bearer 令牌, API 密钥, 密钥作用域, 超级管理员, REST API 认证, op_live"
+sidebarTitle: "身份验证"
+icon: "lock"
+---
+
+OwnPay 通过 `Authorization` 请求头中的 Bearer 令牌对每个 API 请求进行身份验证。API 密钥在管理面板中生成——完整的密钥管理指南请参阅 [API 密钥](/zh/security/api-keys)。
+
+## 如何获取 API 密钥 {#how-to-get-an-api-key}
+
+1. 登录 OwnPay 管理面板
+2. 前往 **Developers → API Keys**
+3. 点击 **Generate API Key**
+4. 选择访问作用域（read、write 或 admin）
+5. 立即复制密钥——它只会显示一次
+
+<Warning>
+  请将 API 密钥存储在环境变量中。切勿将其提交到版本控制系统。
+</Warning>
+
+## 请求头格式 {#header-format}
+
+每个 API 请求都必须以 Bearer 令牌的形式携带密钥：
+
+```http
+Authorization: Bearer op_live_abc123.def456
+```
+
+密钥前缀 `op_live_` 表示正式环境密钥。测试模式密钥使用 `op_test_` 前缀。
+
+## 密钥作用域 {#key-scopes}
+
+API 密钥具有以下三种作用域之一，作用域决定了该密钥可以访问哪些端点：
+
+| 作用域 | 可读取 | 可写入 | 可管理 | 典型用途 |
+| --- | --- | --- | --- | --- |
+| `read` | 是 | 否 | 否 | 仪表板、报表机器人 |
+| `write` | 是 | 是 | 否 | 创建支付、结账流程 |
+| `admin` | 是 | 是 | 是 | 完整的平台管理 |
+
+<Info>
+  作用域在生成密钥时设定，之后无法更改。请为不同的应用程序创建单独的密钥。
+</Info>
+
+## 超级管理员操作 {#super-admin-operations}
+
+少数平台级操作（创建品牌、管理系统用户）除了需要 `admin` 作用域的密钥外，还需要额外的请求头：
+
+```http
+Authorization: Bearer op_live_abc123.def456
+X-Super-Admin-Email: admin@your-domain.com
+```
+
+只有安装时注册的超级管理员邮箱才能使用此请求头。缺少该请求头时，admin 作用域的端点会返回 403。
+
+## 身份验证错误响应 {#authentication-error-response}
+
+如果密钥缺失、无效、已过期或缺少所需作用域，API 将返回：
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid or has been revoked."
+  }
+}
+```
+
+常见的身份验证错误码：
+
+| 错误码 | HTTP 状态 | 含义 |
+| --- | --- | --- |
+| `invalid_api_key` | 401 | 未找到密钥或格式错误 |
+| `expired_api_key` | 401 | 密钥已超过有效期 |
+| `revoked_api_key` | 401 | 密钥已被手动撤销 |
+| `insufficient_permissions` | 403 | 密钥作用域不足以访问此端点 |
+
+## 代码示例 {#code-examples}
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://your-domain.com/api/v1/payments/pay_abc123 \
+  -H "Authorization: Bearer op_live_abc123.def456"
+```
+
+```php PHP
+$ch = curl_init('https://your-domain.com/api/v1/payments/pay_abc123');
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        'Authorization: Bearer ' . $_ENV['OWNPAY_API_KEY'],
+        'Content-Type: application/json',
+    ],
+]);
+
+$response = json_decode(curl_exec($ch), true);
+curl_close($ch);
+```
+
+```javascript Node.js
+const response = await fetch('https://your-domain.com/api/v1/payments/pay_abc123', {
+  headers: {
+    'Authorization': `Bearer ${process.env.OWNPAY_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+});
+
+const data = await response.json();
+```
+
+```python Python
+import os
+import requests
+
+resp = requests.get(
+    'https://your-domain.com/api/v1/payments/pay_abc123',
+    headers={
+        'Authorization': f'Bearer {os.environ["OWNPAY_API_KEY"]}',
+        'Content-Type': 'application/json',
+    },
+)
+data = resp.json()
+```
+
+</CodeGroup>
+
+## 最佳实践 {#best-practices}
+
+- 每 90 天轮换一次密钥
+- 每个环境（开发、预发布、生产）使用一个密钥
+- 每个应用程序使用一个密钥
+- 在 **Developers → API Keys** 中监控使用情况，及时发现异常
+- 立即撤销不再使用的密钥
+
+## 相关页面 {#related-pages}
+
+- [API 密钥](/zh/security/api-keys)
+- [API 概览](/zh/api/overview)
+- [错误码](/zh/api/errors)

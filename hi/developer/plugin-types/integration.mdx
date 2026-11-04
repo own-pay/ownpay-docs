@@ -1,0 +1,198 @@
+---
+title: इंटीग्रेशन प्लगइन डेवलपमेंट
+description: "पेमेंट हुक और आउटबाउंड API कॉल का उपयोग करके QuickBooks, HubSpot और Slack जैसे थर्ड-पार्टी प्लेटफ़ॉर्म के लिए इंटीग्रेशन प्लगइन बनाएँ।"
+keywords: "integration plugin, CRM integration, ERP integration, Slack notifications, QuickBooks sync, HubSpot integration, third-party plugin"
+sidebarTitle: इंटीग्रेशन डेवलपमेंट
+icon: plug
+---
+
+इंटीग्रेशन प्लगइन OwnPay को बाहरी प्लेटफ़ॉर्म से जोड़ते हैं: CRM, ERP, अकाउंटिंग सॉफ़्टवेयर, एनालिटिक्स डैशबोर्ड और नोटिफ़िकेशन सेवाएँ। ये पेमेंट प्रोसेस नहीं करते - ये पेमेंट इवेंट पर प्रतिक्रिया देते हैं और डेटा को बाहर भेजते हैं।
+
+## सामान्य उपयोग के मामले {#common-use-cases}
+
+| उपयोग का मामला | उदाहरण | ट्रिगर |
+| --- | --- | --- |
+| अकाउंटिंग सिंक | QuickBooks, Xero | `payment.completed`, `refund.issued` |
+| CRM पुश | HubSpot, Salesforce | `customer.created`, `payment.completed` |
+| नोटिफ़िकेशन | Slack, Discord, Telegram | `payment.completed`, `payment.failed` |
+| एनालिटिक्स | Google Analytics, Mixpanel | `payment.completed` |
+| फ़्रॉड अलर्ट | PagerDuty, OpsGenie | `payment.failed` |
+
+## डायरेक्टरी संरचना {#directory-structure}
+
+```text
+plugins/integration-slack/
+├── manifest.json
+├── Plugin.php
+├── src/
+│   └── SlackNotifier.php
+├── config/
+│   └── settings.php
+└── resources/
+    └── views/
+        └── settings.twig
+```
+
+## मैनिफ़ेस्ट {#manifest}
+
+```json
+{
+  "name": "Slack Notifications",
+  "slug": "integration-slack",
+  "version": "1.0.0",
+  "type": "integration",
+  "description": "Send payment events to a Slack channel",
+  "author": "Your Name",
+  "capabilities": ["addon", "hooks", "http_outbound", "settings"],
+  "minimumOwnPayVersion": "0.2.0"
+}
+```
+
+## पूर्ण उदाहरण: Slack नोटिफ़िकेशन प्लगइन {#complete-example-slack-notification-plugin}
+
+यह प्लगइन जब भी कोई पेमेंट पूर्ण या विफल होता है, तो Slack पर एक संदेश भेजता है।
+
+### Plugin.php {#plugin-php}
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace OwnPay\Plugins\IntegrationSlack;
+
+use OwnPay\Container;
+use OwnPay\Event\EventManager;
+use OwnPay\Plugin\Capability;
+use OwnPay\Plugin\PluginInterface;
+
+final class Plugin implements PluginInterface
+{
+    public static function metadata(): array
+    {
+        return [
+            'name'        => 'Slack Notifications',
+            'slug'        => 'integration-slack',
+            'version'     => '1.0.0',
+            'description' => 'Send payment events to Slack.',
+            'author'      => 'Your Name',
+            'type'        => 'integration',
+        ];
+    }
+
+    public function capabilities(): array
+    {
+        return [Capability::ADDON, Capability::HOOKS, Capability::HTTP_OUTBOUND];
+    }
+
+    public function register(EventManager $events, Container $container): void
+    {
+        $notifier = new SlackNotifier($container);
+
+        $events->addAction('payment.transaction.completed', function (array $txn) use ($notifier): void {
+            $notifier->send(":white_check_mark: Payment *{$txn['amount']} {$txn['currency']}*\n"
+                . "Transaction: `{$txn['trx_id']}`\n"
+                . "Gateway: {$txn['gateway']}"
+            );
+        });
+
+        $events->addAction('payment.transaction.failed', function (array $txn) use ($notifier): void {
+            $notifier->send(":x: Payment *failed*\n"
+                . "Amount: {$txn['amount']} {$txn['currency']}\n"
+                . "Transaction: `{$txn['trx_id']}`\n"
+                . "Gateway: {$txn['gateway']}"
+            );
+        });
+
+        $events->addAction('refund.issued', function (array $txn) use ($notifier): void {
+            $notifier->send(":arrows_counterclockwise: Refund issued\n"
+                . "Amount: {$txn['amount']} {$txn['currency']}"
+            );
+        });
+    }
+
+    public function boot(Container $container): void {}
+    public function deactivate(Container $container): void {}
+    public function uninstall(Container $container): void {}
+
+    public function fields(): array
+    {
+        return [
+            [
+                'name'     => 'webhook_url',
+                'label'    => 'Slack Webhook URL',
+                'type'     => 'text',
+                'required' => true,
+            ],
+        ];
+    }
+}
+```
+
+### SlackNotifier.php {#slacknotifier-php}
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace OwnPay\Plugins\IntegrationSlack;
+
+use OwnPay\Container;
+use OwnPay\Repository\SettingsRepository;
+
+class SlackNotifier
+{
+    private string $webhookUrl;
+
+    public function __construct(Container $container)
+    {
+        $settings = $container->get(SettingsRepository::class);
+        $this->webhookUrl = $settings->get('integration-slack', 'webhook_url') ?? '';
+    }
+
+    public function send(string $message): void
+    {
+        if ($this->webhookUrl === '') {
+            return;
+        }
+
+        $payload = json_encode(['text' => $message]);
+
+        $ch = curl_init($this->webhookUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 5,
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_POSTFIELDS     => $payload,
+        ]);
+        curl_exec($ch);
+        curl_close($ch);
+    }
+}
+```
+
+## कॉन्फ़िगरेशन UI {#configuration-ui}
+
+`fields()` मेथड उस सेटिंग्स फ़ॉर्म को परिभाषित करता है जो एडमिन पैनल में दिखाई देता है। मान प्रति-ब्रांड संग्रहीत किए जाते हैं और `SettingsRepository` के माध्यम से एक्सेस किए जाते हैं।
+
+## एरर हैंडलिंग की सर्वोत्तम प्रथाएँ {#error-handling-best-practices}
+
+- आउटबाउंड कॉल करने से पहले हमेशा जाँचें कि वेबहुक URL कॉन्फ़िगर है या नहीं
+- एक छोटा HTTP टाइमआउट (5 सेकंड) सेट करें ताकि आपका हुक कॉलबैक चेकआउट को ब्लॉक न करे
+- हुक कॉलबैक से कभी भी एक्सेप्शन थ्रो न करें - एरर आइसोलेशन रैपर इसे पकड़ लेता है, लेकिन लॉग करना बेहतर है
+- डीबगिंग के लिए विफल आउटबाउंड कॉल को लॉग करें
+
+## टेस्टिंग {#testing}
+
+1. प्लगइन इंस्टॉल और सक्रिय करें
+2. प्लगइन सेटिंग्स में Slack वेबहुक URL कॉन्फ़िगर करें
+3. टेस्ट कार्ड का उपयोग करके एक टेस्ट पेमेंट बनाएँ
+4. सत्यापित करें कि Slack संदेश पहुँचता है
+
+## संबंधित पेज {#related-pages}
+
+- [गेटवे प्लगइन डेवलपमेंट](/hi/developer/plugin-types/gateway)
+- [ऐडऑन प्लगइन डेवलपमेंट](/hi/developer/plugin-types/addon)
+- [थीम प्लगइन डेवलपमेंट](/hi/developer/plugin-types/theme)
+- [हुक संदर्भ](/hi/developer/plugins/hooks)
+- [मैनिफ़ेस्ट संदर्भ](/hi/developer/plugins/manifest)

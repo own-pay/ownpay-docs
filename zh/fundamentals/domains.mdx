@@ -1,0 +1,105 @@
+---
+title: "自定义域名 - 白标结账 URL"
+description: "通过 DomainMiddleware 路由、DNS 配置、域名验证、自动 SSL 和 URL 生成，让每个 OwnPay 品牌在自己的自定义域名上提供服务。"
+keywords: "自定义域名, SSL 证书签发, DNS 验证, 品牌域名, 结账隔离, 白标域名"
+sidebarTitle: "域名"
+icon: "world"
+---
+
+import LlmsDirective from "/zh/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay 是一个白标支付引擎。您的客户应该看到**您的**品牌，而不是一个共享的平台 URL。域名系统让每个品牌都能在自己的完全限定域名下运营，并提供自动 SSL，且不存在任何跨租户泄露。
+
+## 自定义域名的工作原理 {#how-custom-domains-work}
+
+当请求到达时，OwnPay 的 `DomainMiddleware` 会检查 `HTTP_HOST` 请求头，并在 `op_domains` 表中进行解析。如果它与某个品牌的自定义域名匹配，OwnPay 会将该品牌的 `merchant_id` 注入请求上下文，并加载其视觉形象。
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+sequenceDiagram
+participant C as 客户浏览器
+participant DNS as DNS 解析器
+participant N as Nginx
+participant DM as DomainMiddleware
+participant BT as BrandThemeService
+participant CO as 结账页面
+
+C->>DNS: 解析 pay.acme.com
+DNS-->>C: A 记录 -> OwnPay 服务器 IP
+C->>N: GET /pay/inv_123 (Host: pay.acme.com)
+N->>DM: 转发请求
+DM->>DM: 按 HTTP_HOST 查询 op_domains
+DM->>DM: 注入 merchant_id、domain_type
+DM->>BT: 加载品牌 Logo、颜色、CSS
+BT-->>CO: 返回品牌资源
+CO-->>C: 渲染品牌化结账页面
+`}>
+</Mermaid>
+
+## 域名类型 {#domain-types}
+
+| 类型 | 用途 | 示例 |
+| :-- | :-- | :-- |
+| **checkout** | 提供结账、发票和支付页面 | `pay.yourbrand.com` |
+| **api** | 仅提供 API 端点 | `api.yourbrand.com` |
+
+**主域名**（通过 `APP_DOMAIN` 环境变量配置）是唯一可以访问管理面板（`/admin/*`）的域名。自定义域名访问管理路由时会返回 404——这是一项安全特性，而不是 bug。
+
+## DNS 配置 {#dns-configuration}
+
+使用以下任一记录将您的自定义域名指向 OwnPay 服务器：
+
+| 记录类型 | 名称 | 值 |
+| :-- | :-- | :-- |
+| **A** | `pay` | `203.0.113.10`（您的服务器 IP） |
+| **CNAME** | `pay` | `ownpay.yourdomain.com` |
+
+<Info>
+  如果根域名上已有 A 记录，为 `pay` 子域名添加 CNAME 通常是最简洁的做法。
+</Info>
+
+## 域名验证流程 {#domain-verification-flow}
+
+<Steps>
+  <Step title="在 OwnPay 中添加域名">
+    前往 **System \> Domains**，点击 **Add Domain**，然后输入 `pay.yourbrand.com`。将域名类型设置为 `checkout` 并将其分配给您的品牌。
+  </Step>
+  <Step title="配置 DNS">
+    在您的 DNS 提供商处添加 A 或 CNAME 记录。DNS 传播通常需要几分钟到几小时。
+  </Step>
+  <Step title="验证 DNS">
+    在 OwnPay 域名设置中点击 **Verify DNS**。OwnPay 会执行 DNS 查询，检查记录是否指向您的服务器。验证通过后，`dns_verified` 会被设置为 `1`。
+  </Step>
+  <Step title="签发 SSL">
+    DNS 验证通过后，OwnPay 会为该域名签发 SSL 证书。结账页面将自动通过 HTTPS 提供服务。
+  </Step>
+</Steps>
+
+<Warning>
+  在 DNS 验证通过之前，自定义域名会返回 **503 Service Unavailable** 响应。请在验证前确保 DNS 记录配置正确。
+</Warning>
+
+## URL 生成 {#url-generation}
+
+所有面向客户和面向网关的 URL 都由 `DomainUrlService` 构建——绝不硬编码。优先级顺序如下：
+
+1. `GATEWAY_CALLBACK_URL` 环境变量
+2. 品牌的自定义域名
+3. `.env` 中的 `APP_URL`
+4. 当前请求的主机
+
+<Note>
+  如果您需要在代码中生成结账或回调 URL，请始终使用 `DomainUrlService` 的方法，例如 `buildCheckoutUrl()` 和 `buildCallbackUrl()`。当品牌使用自定义域名时，硬编码的 URL 将会失效。
+</Note>
+
+## 相关页面 {#related-pages}
+
+- [系统 - 域名](/zh/system/domains) - 包含故障排查的分步设置指南
+- [外观 - 品牌形象](/zh/appearance/branding) - 自定义 Logo、颜色和结账设计
+- [品牌](/zh/fundamentals/brands) - 了解品牌级隔离和设置
+- [OwnPay 的工作原理](/zh/fundamentals/how-ownpay-works) - 完整的架构概览
+- [支付流程](/zh/fundamentals/payment-flow) - 结账页面在交易生命周期中的位置

@@ -1,0 +1,155 @@
+---
+title: WooCommerce 插件 - 在 WordPress 上接受付款
+description: 安装并配置 OwnPay WooCommerce 插件，在 WordPress 店铺和结账页面上接受银行卡和移动钱包付款。
+keywords: "WooCommerce 支付插件, WordPress 支付, WooCommerce 网关, 银行卡支付, WooCommerce 移动钱包"
+sidebarTitle: WooCommerce
+icon: shopping-cart
+---
+
+本指南介绍如何使用 OwnPay Gateway Plugin for WooCommerce，将 OwnPay 作为支付网关集成到 **WordPress WooCommerce** 商店中。
+
+## 前提条件 {#prerequisites}
+
+- WordPress 6.0\+
+- WooCommerce 8.0\+
+- PHP 8.2\+
+- 拥有有效 API 密钥的 OwnPay 实例
+- OwnPay Gateway Plugin for WooCommerce - 从 [GitHub Releases](https://github.com/own-pay/OwnPay-WordPress/releases/) 下载
+
+## 工作原理 {#how-it-works}
+
+```text
+Customer Checkout
+       |
+       v
+ WooCommerce Order Created
+       |
+       v
+ OwnPay Plugin -> POST /api/v1/payment-intents
+       |
+       v
+ Customer Redirected -> OwnPay Checkout Page
+       |
+       v
+ Payment Completed / Failed
+       |
+       v
+ OwnPay Webhook -> WooCommerce Order Status Updated
+```
+
+## 安装 {#installation}
+
+### 第 1 步：安装插件 {#step-1-install-the-plugin}
+
+**方式 A：手动上传 ZIP**
+
+1. 从 [GitHub Releases](https://github.com/own-pay/OwnPay-WordPress/releases/) 下载最新的插件 ZIP
+2. 前往 **WordPress Admin \> Plugins \> Add New \> Upload Plugin**
+3. 上传 ZIP 并点击 **Install Now**
+4. 点击 **Activate Plugin**
+
+**方式 B：通过 WP-CLI 安装**
+
+```bash
+wp plugin install ownpay-woocommerce --activate
+```
+
+### 第 2 步：配置网关 {#step-2-configure-the-gateway}
+
+1. 前往 **WooCommerce \> Settings \> Payments**
+2. 找到 **OwnPay** 并点击 **Manage**
+3. 填写：
+
+| 字段 | 说明 |
+| --- | --- |
+| **Enable/Disable** | 切换以在结账时启用 OwnPay |
+| **Title** | 向客户显示的支付方式标签 |
+| **Description** | 在结账页面显示的简短说明 |
+| **API Base URL** | 你的 OwnPay 实例 URL |
+| **API Key** | 从 Admin \> Developer Hub 获取的 OwnPay API 密钥 |
+| **Brand ID** | 你的 OwnPay 品牌/店铺 ID |
+| **Webhook Secret** | 用于验证传入 webhook 的密钥 |
+| **Test Mode** | 启用后使用沙盒环境 |
+
+4. 点击 **Save Changes**
+
+### 第 3 步：在 OwnPay 中配置 webhook {#step-3-configure-webhooks-in-ownpay}
+
+1. 登录 OwnPay 管理面板
+2. 前往 **Developer Hub \> Webhooks**
+3. 添加新的 webhook 端点：
+
+```text
+https://yourstore.com/?wc-api=ownpay_gateway
+```
+
+4. 选择事件：`payment.transaction.completed`、`payment.transaction.failed`、`payment.transaction.cancelled`
+5. 复制 **Webhook Secret** 并粘贴到 WooCommerce 插件设置中
+
+## 订单状态映射 {#order-status-mapping}
+
+| OwnPay 事件 | WooCommerce 状态 |
+| --- | --- |
+| `payment.transaction.completed` | `processing`（虚拟商品为 `completed`） |
+| `payment.transaction.failed` | `failed` |
+| `payment.transaction.cancelled` | `cancelled` |
+| `payment.intent.expired` | `cancelled` |
+
+## 自定义 {#customization}
+
+### 更改重定向行为 {#change-redirect-behavior}
+
+```php
+add_filter('ownpay_redirect_url', function (string $url, \WC_Order $order): string {
+    return add_query_arg('ref', $order->get_order_key(), $url);
+}, 10, 2);
+```
+
+### 自定义 payment intent 负载 {#customize-payment-intent-payload}
+
+```php
+add_filter('ownpay_payment_intent_payload', function (array $payload, \WC_Order $order): array {
+    $payload['metadata']['wc_order_id'] = $order->get_id();
+    $payload['metadata']['customer_note'] = $order->get_customer_note();
+    return $payload;
+}, 10, 2);
+```
+
+### 自定义完成时的订单状态 {#customize-order-status-on-completion}
+
+```php
+add_filter('ownpay_completed_order_status', function (string $status, \WC_Order $order): string {
+    if ($order->has_downloadable_item()) {
+        return 'completed';
+    }
+    return $status;
+}, 10, 2);
+```
+
+## 故障排查 {#troubleshooting}
+
+### 未收到 webhook {#webhooks-not-received}
+
+- 确保你的 OwnPay 实例能够访问 `https://yourstore.com/?wc-api=ownpay_gateway`
+- 查看 **WooCommerce \> Status \> Logs** 并按 `ownpay` 筛选
+- 确认两个系统中的 Webhook Secret 一致
+
+### 订单停留在 "Pending Payment" 状态 {#orders-stuck-in-“pending-payment”}
+
+这通常意味着 webhook 未送达。你可以手动同步：
+
+1. 在 WooCommerce 管理后台打开该订单
+2. 点击 **OwnPay \> Sync Payment Status**
+
+或通过 WP-CLI：
+
+```bash
+wp ownpay sync-order --order-id=1234
+```
+
+## 相关页面 {#related-pages}
+
+- [PHP SDK](/zh/developer/integration/php)
+- [Node.js SDK](/zh/developer/integration/nodejs)
+- [Webhooks](/zh/api/webhooks)
+- [测试支付](/zh/developer/testing)

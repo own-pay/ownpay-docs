@@ -1,0 +1,102 @@
+---
+title: "插件架构：类型、沙盒与钩子"
+description: "OwnPay 插件架构概览，涵盖四种插件类型、沙盒、能力以及用于扩展核心行为的钩子系统。"
+keywords: "插件系统, 插件架构, 网关插件, addon 插件, 主题插件, 集成插件, 插件沙盒"
+sidebarTitle: 概览
+icon: puzzle
+---
+
+插件可以在不修改核心代码的情况下扩展 OwnPay。你可以编写插件来添加支付网关、构建自定义功能、重新设计结账页面或与外部平台集成。
+
+## 四种插件类型 {#four-plugin-types}
+
+<Columns>
+  <Column>
+### 网关插件 {#gateway-plugins}
+
+    添加新的支付方式：Stripe、PayPal、bKash、银行转账、加密货币。实现 `GatewayInterface` 来处理支付处理、验证、退款和 webhook。
+
+    [构建网关](/zh/developer/plugin-types/gateway)
+  </Column>
+  <Column>
+### Addon 插件 {#addon-plugins}
+
+    在不涉及支付处理的情况下扩展功能：报表仪表盘、订阅管理、CRM 同步、邮件自定义、计划任务。
+
+    [构建 Addon](/zh/developer/plugin-types/addon)
+  </Column>
+  <Column>
+### 主题插件 {#theme-plugins}
+
+    自定义结账体验：Twig 模板、CSS、JavaScript、品牌覆盖。
+
+    [构建主题](/zh/developer/plugin-types/theme)
+  </Column>
+  <Column>
+### 集成插件 {#integration-plugins}
+
+    连接外部平台：QuickBooks 同步、HubSpot 推送、Slack 通知、ERP 集成。
+
+    [构建集成](/zh/developer/plugin-types/integration)
+  </Column>
+</Columns>
+
+## 插件沙盒 {#plugin-sandbox}
+
+每个插件都运行在强制执行安全约束的沙盒中：
+
+- 不得直接访问插件目录之外的文件系统
+- 不得调用 `eval()`、`exec()` 或 `system()`
+- 只能通过提供的查询构建器进行数据库查询
+- 出站 HTTP 需通过插件 HTTP 客户端，并使用可配置的允许列表
+
+<Info>
+  沙盒在 PHP 层面强制执行。尝试执行受限操作的插件会收到 `PluginSandboxException`。
+</Info>
+
+## 能力 {#capabilities}
+
+插件在其 `manifest.json` 中声明能力。能力是权限闸门，决定插件可以访问哪些系统资源：
+
+| 能力 | 启用的功能 |
+| --- | --- |
+| `payment_process` | 处理支付和退款 |
+| `webhook_receive` | 注册 webhook 端点 |
+| `admin_page` | 向管理面板添加页面 |
+| `api_routes` | 注册自定义 API 端点 |
+| `database` | 创建并运行迁移 |
+| `assets` | 提供 CSS 和 JavaScript 文件 |
+
+请参阅完整的[能力](/zh/developer/plugins/capabilities)参考。
+
+## 钩子系统 {#hook-system}
+
+插件通过由 `EventManager` 驱动的 WordPress 风格动作和过滤器钩子系统与 OwnPay 核心交互：
+
+- **动作** - 触发即忘的回调（响应事件）
+- **过滤器** - 转换数据的管道回调
+
+```php
+// React to a payment completion (action)
+$events->addAction('payment.transaction.completed', function (array $txn): void {
+    sendNotification($txn);
+});
+
+// Add a surcharge (filter)
+$events->addFilter('payment.fee.calculate', function (string $fee, array $ctx): string {
+    return bcadd($fee, '1.00', 2);
+});
+```
+
+请参阅包含 60\+ 个钩子点的完整[钩子](/zh/developer/plugins/hooks)目录。
+
+## 文档目录树 {#documentation-tree}
+
+<Tree />
+
+## 相关页面 {#related-pages}
+
+- [目录结构](/zh/developer/plugins/directory-structure)
+- [清单参考](/zh/developer/plugins/manifest)
+- [钩子参考](/zh/developer/plugins/hooks)
+- [插件生命周期](/zh/developer/plugins/lifecycle)

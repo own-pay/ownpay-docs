@@ -1,0 +1,127 @@
+---
+title: 术语表
+description: "OwnPay 文档、代码库和生态系统中使用的 OwnPay 及支付行业术语的定义。"
+keywords: "术语表, 支付术语, 术语, OwnPay 词汇, 账本, 网关, webhook, glossary"
+sidebarTitle: 术语表
+icon: book
+---
+
+本术语表定义了 OwnPay 文档、代码库和生态系统中使用的术语和概念。
+
+---
+
+### A {#a}
+
+**AES-256-GCM** 一种认证加密算法，OwnPay 使用它对数据库中静态存储的敏感数据（客户 PII、网关凭据、TOTP 密钥）进行加密。GCM 模式同时提供机密性和完整性校验。
+
+**Addon（附加组件）** 一种扩展 OwnPay 核心功能的插件类型。附加组件可以添加管理后台页面、注册 API 端点、创建数据库表或运行后台任务。
+
+---
+
+### B {#b}
+
+**bcmath** 一个用于任意精度算术运算的 PHP 扩展。OwnPay 在所有货币计算（金额、手续费、汇率）中使用 bcmath 字符串运算，以避免浮点精度损失。金额始终是字符串，绝不是浮点数。
+
+**Brand（品牌）** 单个 OwnPay 安装中的一个独立业务实体（商店）。每个品牌都有自己的域名、网关、客户、账本和员工，在数据库中通过 `merchant_id` 进行隔离。
+
+---
+
+### C {#c}
+
+**Companion App（配套应用）** 与您的 OwnPay 服务器配对的 Android 应用，用于转发收到的短信，以便对手动网关和移动金融服务网关进行自动支付验证。
+
+---
+
+### D {#d}
+
+**Dispute / Chargeback（争议 / 拒付）** 客户通过其银行或卡组织对已完成交易发起的质疑。OwnPay 按以下生命周期跟踪争议：`open → under_review → won / lost → closed`。
+
+**Double-Entry Bookkeeping（复式记账）** 一种会计方法，每个财务事件都以平衡的借方和贷方分录记录在各账本账户中。OwnPay 的账本引擎遵循 GAAP 方向规则：资产和费用在借方增加，而负债、权益和收入在贷方增加。
+
+---
+
+### G {#g}
+
+**Gateway（网关）** OwnPay 通过插件适配器与之通信的外部支付处理商（Stripe、PayPal、bKash 等）。每个网关都实现了 `GatewayAdapterInterface`，提供发起、验证和退款支付的方法。
+
+**Gateway Adapter（网关适配器）** 实现 `GatewayAdapterInterface` 的 PHP 类，负责将 OwnPay 的内部支付流程转换为特定支付服务商所需的 API 调用。
+
+---
+
+### H {#h}
+
+**HMAC-SHA256** 一种消息认证码算法，用于对发出的 Webhook 投递进行签名。签名使用商户的 Webhook 密钥对 `{timestamp}.{raw_body}` 进行计算，以确保真实性和完整性。
+
+**Hook (Action)（钩子：动作）** OwnPay 执行流程中的一个节点，插件可以通过 `doAction()` 注册回调以响应事件（例如 `payment.completed`、`customer.created`）。动作不返回值。
+
+**Hook (Filter)（钩子：过滤器）** 插件可以通过 `applyFilter()` 在处理过程中修改数据的节点。例如，`payment.amount` 过滤器允许插件在处理支付之前添加便利费。过滤器必须返回（可能已修改的）值。
+
+---
+
+### I {#i}
+
+**Invoice（发票）** 在 OwnPay 中创建的带编号、按行列项的单据，可自动计算小计、税费、折扣和总额。客户可以通过 `/invoice/{token}` 的公开 URL 支付发票。
+
+---
+
+### L {#l}
+
+**Ledger（账本）** OwnPay 的财务会计引擎。每笔支付、退款和手续费都以平衡的借/贷对记录在各账本账户中，始终确保数学上的完整性。
+
+---
+
+### M {#m}
+
+**Manual Gateway（手动网关）** 不通过自动化外部 API 处理的支付方式（例如银行转账、货到付款、通过短信验证的移动钱包）。手动网关上的交易需要由管理员或配套应用的短信解析器进行明确验证。
+
+---
+
+### P {#p}
+
+**Payment Intent（支付意图）** 表示客户支付意图的数据库对象。它存储金额、币种、所选网关以及生命周期状态（`pending → processing → completed / failed / expired`）。
+
+**Payment Link（支付链接）** 一个可分享的 URL（`/pay/{slug}`），客户无需通过 API 预先创建支付意图即可发起支付。链接可以设置固定或可变金额、自定义字段、使用次数限制和到期日期。
+
+**PII（个人身份信息）** 可识别特定个人的数据，例如姓名、电子邮件地址和电话号码。OwnPay 使用 AES-256-GCM 对静态存储的 PII 进行加密，并在日志和审计记录中对其进行掩码处理。
+
+**Plugin（插件）** 位于 `modules/` 下、用于扩展 OwnPay 的独立软件包。共有三种类型：Gateway（支付服务商适配器）、Theme（结账页外观）和 Addon（功能扩展）。每个插件都有一个 `manifest.json`，并在加载前由沙箱进行扫描。
+
+---
+
+### R {#r}
+
+**Rate Limiting（速率限制）** 一种限制客户端在某一时间窗口内可发出请求数量的节流机制。OwnPay 使用滑动窗口算法，按 IP 和按 API 密钥进行跟踪。超出限制时返回 HTTP 429 并附带 `Retry-After` 响应头。
+
+**Refund（退款）** 针对先前已完成的交易将资金退还给客户。退款会路由到原始网关，并记录为平衡的账本分录。
+
+---
+
+### S {#s}
+
+**Sandbox（沙箱）** 支付网关提供的测试环境，您可以在其中使用测试凭据和测试卡号处理支付，而不涉及真实资金。通过使用网关的沙箱/测试 API 密钥，可以将 OwnPay 网关配置为测试模式。
+
+**SMS Auto-Verification（短信自动验证）** 一项功能：配套应用将支付服务商发来的短信转发到 OwnPay 服务器，服务器解析短信并自动将其与待处理交易匹配，无需人工干预即可确认支付。
+
+---
+
+### T {#t}
+
+**Tenant（租户）** 品牌的同义词。指由数据库中的 `merchant_id` 强制实施的数据隔离边界。每个租户的数据（客户、交易、账本、设置）对其他租户不可见。
+
+**Transaction（交易）** 在支付意图确认后创建的永久、不可变记录。它存储 OwnPay 交易 ID、网关的交易 ID、金额、手续费、币种、状态和元数据。
+
+---
+
+### W {#w}
+
+**Webhook** 当发生支付事件（完成、失败、退款等）时，OwnPay 向商户配置的 URL 发送的 HTTP POST 回调。每次投递都使用 HMAC-SHA256 签名以供验证，失败时按指数退避重试，在重试次数耗尽后移入死信队列。
+
+**White-Label（白标）** 能够以品牌自己的域名、徽标、颜色和名称展示 OwnPay 结账页，且不出现任何 OwnPay 标识。客户访问 `pay.yourbrand.com`，只会看到该品牌的身份。
+
+---
+
+## 相关页面 {#related-pages}
+
+- [功能](/zh/resources/features) - 这些术语大多在此处结合上下文使用
+- [架构](/zh/resources/architecture) - 技术实现细节
+- [行为准则](/zh/resources/code-of-conduct) - 社区标准

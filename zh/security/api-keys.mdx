@@ -1,0 +1,91 @@
+---
+title: API 密钥
+description: "生成、设置权限范围并管理 API 密钥，以便以编程方式访问 OwnPay 管理 API、商户 API 和移动 API。"
+keywords: "API 密钥, API 认证, 密钥权限范围, 撤销密钥, 速率限制, 编程访问, API keys"
+sidebarTitle: API 密钥
+icon: key
+---
+
+API 密钥让您无需经过浏览器登录流程，即可对发往 OwnPay 三个 API 层的编程请求进行认证。每个密钥都有限定其访问范围的权限范围（scope）。
+
+<Info>
+  有关包括签名生成在内的完整认证机制，请参阅 [API 认证](/zh/api/authentication)。
+</Info>
+
+## 生成 API 密钥 {#generate-an-api-key}
+
+<Steps>
+  <Step>
+    在左侧边栏中导航到 **Developer Hub \> API Keys**。
+  </Step>
+  <Step>
+    点击 **Generate New Key**。
+  </Step>
+  <Step>
+    选择该密钥将访问的 **API 层**：Admin API、Merchant API 或 Mobile API。
+  </Step>
+  <Step>
+    选择一个或多个**权限范围**：
+
+    | 权限范围 | 权限 |
+    | --- | --- |
+    | `read` | 查看资源（交易、客户等） |
+    | `write` | 创建和修改资源 |
+    | `admin` | 完全访问，包括系统配置 |
+  </Step>
+  <Step>
+    可选择添加一个**标签**（例如 "WooCommerce Integration"）以便识别。
+  </Step>
+  <Step>
+    点击 **Create**。完整密钥只会显示一次。请立即复制 - 它不会再次显示。
+  </Step>
+</Steps>
+
+<Warning>
+  请像对待密码一样对待 API 密钥。切勿将其提交到源代码、日志文件或公共仓库中。请改用环境变量或密钥管理器。
+</Warning>
+
+## 密钥元数据 {#key-metadata}
+
+列表中的每个 API 密钥都会显示：
+
+| 列 | 描述 |
+| --- | --- |
+| **Label** | 您指定的可读名称 |
+| **API Layer** | Admin、Merchant 或 Mobile |
+| **Scopes** | 授予该密钥的权限 |
+| **Last Used** | 最近一次 API 请求的时间戳 |
+| **Last IP** | 最近一次请求的 IP 地址 |
+| **Actions** | 撤销 |
+
+## 撤销密钥 {#revoke-a-key}
+
+在任意密钥行上点击 **Revoke**。该密钥会立即失效 - 之后使用该密钥的任何 API 请求都会返回 `401 Unauthorized` 响应。
+
+<Note>
+  撤销是永久性的。如需恢复访问，请生成新密钥。
+</Note>
+
+## 每个密钥的速率限制 {#rate-limits-per-key}
+
+每个 API 密钥都受速率限制约束。超出限制会返回 `429 Too Many Requests` 响应，并附带 `Retry-After` 响应头。
+
+| API 层 | 限制 |
+| --- | --- |
+| Admin API | 每分钟 120 次请求 |
+| Merchant API | 每分钟 300 次请求 |
+| Mobile API | 每分钟 60 次请求 |
+
+<Info>
+  有关详细的速率限制行为和突发容量，请参阅[速率限制](/zh/resources/rate-limiting)。
+</Info>
+
+## 超级管理员 API 密钥生成 {#super-admin-api-key-generation}
+
+超级管理员可以生成具有 `admin` 权限范围的密钥，该权限范围可完全访问所有系统配置、品牌管理和用户管理端点。仅在绝对必要时才生成具有 admin 权限范围的密钥 - 对于只需要数据访问或创建交易的集成，请使用 `read` 或 `write` 权限范围。
+
+## 相关页面 {#related-pages}
+
+- [API 认证](/zh/api/authentication) - 如何在请求中使用 API 密钥
+- [速率限制](/zh/resources/rate-limiting) - 详细的速率限制文档
+- [开发者中心](/zh/security/developer-hub) - Webhook 和日志工具

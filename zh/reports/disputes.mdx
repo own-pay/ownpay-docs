@@ -1,0 +1,95 @@
+---
+title: "争议"
+description: "跟踪拒付和争议的完整生命周期，提交证据进行回应，并了解争议结果对财务的影响。"
+keywords: "争议, 拒付, 争议回应, 上传证据, 争议生命周期, 财务争议, disputes, chargebacks"
+sidebarTitle: "争议"
+icon: "alert-circle"
+---
+
+当客户联系其银行或发卡机构要求撤销一笔已完成的付款时，就会发生争议（也称为拒付）。OwnPay 会跟踪每个争议的完整生命周期，并在您的账本中记录其财务影响。
+
+## 争议生命周期 {#dispute-lifecycle}
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+stateDiagram-v2
+[*] --> Open: 收到拒付
+Open --> Under_Review: 要求提供证据
+Under_Review --> Won: 争议裁决对您有利
+Under_Review --> Lost: 争议裁决对您不利
+Under_Review --> Closed: 客户撤回
+Won --> [*]
+Lost --> [*]
+Closed --> [*]
+`}>
+</Mermaid>
+
+## 查看争议 {#viewing-disputes}
+
+前往 **Reports \> Disputes**。表格列出所有争议，包含以下列：
+
+| 列 | 描述 |
+| --- | --- |
+| **Transaction ID** | 被争议的原始付款 |
+| **Amount** | 争议金额 |
+| **Status** | Open、Under Review、Won、Lost 或 Closed |
+| **Deadline** | 您必须提交证据的截止日期 |
+| **Reason** | 客户陈述的争议原因 |
+| **Gateway** | 处理该争议的支付网关 |
+
+## 回应争议 {#responding-to-a-dispute}
+
+<Steps>
+  <Step>
+    点击争议行打开其详情视图。
+  </Step>
+  <Step>
+    查看客户的争议原因和原始交易详情。
+  </Step>
+  <Step>
+    在 **Evidence** 部分下，上传支持性文件，例如送货回执、服务日志、沟通记录或任何履约证明。
+  </Step>
+  <Step>
+    为您的团队添加内部**备注**。这些备注是私密的，不会发送给银行。
+  </Step>
+  <Step>
+    在截止日期前点击 **Submit Response**。
+  </Step>
+</Steps>
+
+<Warning>
+  错过争议截止日期几乎总会导致自动败诉。请为 `dispute.opened` 事件设置 [webhook 通知](/zh/notifications/webhooks)，以便您的团队立即收到提醒。
+</Warning>
+
+## 争议结果 {#dispute-outcomes}
+
+<Columns>
+  <Column>
+### 胜诉 {#won}
+
+    - 争议金额会退回到您的账本余额
+    - 网关不收取额外费用（因服务商而异）
+    - 交易状态恢复为已完成
+  </Column>
+  <Column>
+### 败诉 {#lost}
+
+    - 争议金额会从您的账本中扣除
+    - 同时还会扣除一笔**争议费**（由卡组织收取）
+    - 该交易会被永久标记为已争议
+  </Column>
+</Columns>
+
+## 预防最佳实践 {#prevention-best-practices}
+
+- 使用清晰的付款描述，以便客户在对账单上识别扣款
+- 主动提供订单确认和送货回执
+- 在客户咨询升级为拒付之前及时回应
+- 为每笔交易保留详细且易于获取的记录，以便提交证据
+
+## 相关页面 {#related-pages}
+
+- [交易](/zh/payments/transactions) - 查看争议背后的原始付款
+- [退款](/zh/payments/refunds) - 主动发起退款以避免争议
+- [审计日志](/zh/reports/audit-log) - 跟踪员工执行的所有争议相关操作
+- [Webhooks](/zh/notifications/webhooks) - 设置实时争议提醒

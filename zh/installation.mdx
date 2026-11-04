@@ -1,0 +1,241 @@
+---
+title: "在共享主机、VPS 或 Docker 上安装 OwnPay"
+description: "在共享主机、VPS 或 Docker 上部署 OwnPay。包括前提条件检查、分步设置以及安装后验证。"
+keywords: "安装支付网关, cPanel 支付处理, 自托管支付设置, Docker 支付平台, PHP 支付网关安装, VPS 支付网关"
+sidebarTitle: "安装"
+icon: "feather"
+---
+
+import LlmsDirective from "/zh/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay 内置了一个**网页安装程序**，它会检查您的服务器配置、创建数据库结构，并初始化您的主管理员账户。只需上传文件、访问您的域名，向导就会处理其余的一切——无需任何命令行经验。
+
+## 前提条件检查 {#prerequisite-checks}
+
+<AccordionGroup>
+  <Accordion title="系统要求" icon="list-check">
+    | 组件 | 最低要求 | 推荐配置 |
+    | :-- | :-- | :-- |
+    | **PHP 运行时** | 8.3 | 8.3\+ |
+    | **MySQL** | 8.0 | 8.0\+（或 MariaDB 10.4\+） |
+    | **内存** | 512 MB RAM | 2 GB\+ RAM |
+    | **磁盘** | 1 GB 可用空间 | 10 GB\+ SSD |
+    | **Redis** | 可选 | 推荐用于缓存 |
+  </Accordion>
+
+  <Accordion title="必需的 PHP 扩展" icon="puzzle">
+    确认以下扩展均已启用：`mbstring`、`pdo_mysql`、`gd`、`curl`、`zip`、`json`、`openssl`、`bcmath`、`intl`。
+
+    在终端中运行 `php -m` 进行检查，或在主机控制面板中查看 PHP Info 页面。
+  </Accordion>
+
+  <Accordion title="文件夹权限" icon="folder">
+    Web 服务器必须能够写入：
+
+    - `storage/`（日志、会话、缓存、上传文件）
+    - `public/assets/uploads/`（品牌 Logo、附件）
+  </Accordion>
+</AccordionGroup>
+
+## 选择部署方式 {#choose-your-deployment-method}
+
+<Tabs>
+  <Tab title="共享主机" icon="world">
+    适用于 cPanel、Plesk、DirectAdmin 以及大多数共享主机提供商（Hostinger、Namecheap、SiteGround 等）。
+
+    <Steps>
+      <Step title="下载发布包">
+        从 [GitHub Releases]({{github}}/releases) 下载最新的 `.zip` 文件。
+      </Step>
+      <Step title="上传并解压">
+        通过文件管理器或 FTP 将 `.zip` 上传到您的网站根目录（`public_html/`），并直接解压到根文件夹中。
+
+        <Warning>
+          如果解压后生成了类似 `public_html/ownpay-v0.2.0/` 的嵌套文件夹，请将所有文件上移一级到 `public_html/` 中，并删除空文件夹。
+        </Warning>
+      </Step>
+      <Step title="创建 MySQL 数据库">
+        在主机控制面板中，创建一个新数据库和一个拥有 **ALL PRIVILEGES** 的用户。记下主机地址（通常为 `localhost` 或 `127.0.0.1`）。
+      </Step>
+      <Step title="将 PHP 设置为 8.3">
+        打开 **Select PHP Version**（cPanel）、**PHP Settings**（Plesk）或 **PHP Version Selector**（DirectAdmin），然后选择 **8.3**。
+      </Step>
+      <Step title="启动网页安装程序">
+        访问 `https://yourdomain.com/install` 并按照 4 步向导操作：环境验证、数据库配置、结构导入以及管理员账户创建。
+      </Step>
+      <Step title="设置 cron 任务">
+        添加一个每分钟运行一次的 cron 任务：
+
+        ```bash
+        * * * * * php /home/your_user/public_html/public/index.php cron >> /dev/null 2>&1
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="VPS（Nginx + PHP-FPM）" icon="server">
+    完全掌控整个技术栈。推荐用于生产环境。
+
+    <Steps>
+      <Step title="安装系统软件包">
+        ```bash
+        sudo apt update && sudo apt upgrade -y
+        sudo apt install -y nginx mysql-server php8.3-fpm php8.3-mysql \
+          php8.3-mbstring php8.3-curl php8.3-xml php8.3-zip \
+          php8.3-gd php8.3-bcmath php8.3-intl \
+          certbot python3-certbot-nginx
+        ```
+      </Step>
+      <Step title="克隆并设置权限">
+        ```bash
+        cd /var/www
+        sudo git clone {{github}}.git ownpay
+        cd ownpay
+        sudo chown -R www-data:www-data .
+        sudo chmod -R 775 storage public/assets/uploads
+        ```
+      </Step>
+      <Step title="创建 MySQL 数据库">
+        ```bash
+        sudo mysql -u root -p
+        ```
+
+        ```sql
+        CREATE DATABASE ownpay CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        CREATE USER 'ownpay'@'localhost' IDENTIFIED BY 'STRONG_PASSWORD';
+        GRANT ALL PRIVILEGES ON ownpay.* TO 'ownpay'@'localhost';
+        FLUSH PRIVILEGES;
+        ```
+      </Step>
+      <Step title="配置 Nginx">
+        创建 `/etc/nginx/sites-available/ownpay`：
+
+        ```nginx
+        server {
+            listen 80;
+            server_name yourdomain.com;
+            root /var/www/ownpay/public;
+            index index.php;
+        
+            location / {
+                try_files $uri $uri/ /index.php?$query_string;
+            }
+        
+            location ~ \.php$ {
+                fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+                fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+                include fastcgi_params;
+            }
+        }
+        ```
+
+        启用站点、测试配置并重新加载：
+
+        ```bash
+        sudo ln -s /etc/nginx/sites-available/ownpay /etc/nginx/sites-enabled/
+        sudo nginx -t && sudo systemctl reload nginx
+        ```
+      </Step>
+      <Step title="签发 SSL 证书">
+        ```bash
+        sudo certbot --nginx -d yourdomain.com
+        ```
+      </Step>
+      <Step title="运行网页安装程序">
+        访问 `https://yourdomain.com/install` 完成设置向导。
+      </Step>
+      <Step title="设置 cron 任务">
+        ```bash
+        sudo crontab -u www-data -e
+        ```
+
+        ```bash
+        * * * * * /usr/bin/php /var/www/ownpay/public/index.php cron >> /var/log/ownpay-cron.log 2>&1
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Docker" icon="box">
+    容器化部署，适用于可复现的环境。
+
+    <Steps>
+      <Step title="克隆并配置">
+        ```bash
+        git clone {{github}}.git && cd OwnPay
+        cp .env.example .env
+        # Edit .env with your database credentials and secret key
+        ```
+      </Step>
+      <Step title="启动容器">
+        ```bash
+        docker-compose up -d
+        ```
+      </Step>
+      <Step title="运行迁移和数据填充">
+        ```bash
+        docker-compose exec app php bin/migrate
+        docker-compose exec app php bin/seed
+        ```
+      </Step>
+      <Step title="完成设置">
+        访问 `http://localhost:8080/install` 配置您的管理员账户和第一个品牌。
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## 安装后验证 {#post-installation-verification}
+
+安装程序完成后，请确认一切运行正常：
+
+<Steps>
+  <Step title="确认仪表板能够加载">
+    访问 `https://yourdomain.com/login`，并使用您创建的管理员凭据登录。您应该能看到仪表板。
+  </Step>
+  <Step title="确认 cron 正在运行">
+    等待两分钟，然后检查系统日志中是否有计划任务记录。如果没有记录出现，请确认 cron 命令路径是否正确。
+  </Step>
+  <Step title="配置 SMTP">
+    前往 **System \> Settings \> Mail Settings** 并输入您的 SMTP 凭据。发送一封测试邮件以确认能够送达。
+  </Step>
+  <Step title="启用双因素认证">
+    前往 **My Account** 并启用 2FA。强烈建议为主管理员账户启用此功能。
+  </Step>
+</Steps>
+
+## 故障排查 {#troubleshooting}
+
+<AccordionGroup>
+  <Accordion title="500 内部服务器错误" icon="alert-triangle">
+    - 在 `.env` 中设置 `APP_DEBUG=true` 以查看实际的错误信息。
+    - 在 `storage/logs/` 中查看堆栈跟踪。
+    - 确保 Web 服务器能够读取 `storage/` 和 `public/assets/uploads/`。
+  </Accordion>
+
+  <Accordion title="空白页面 / 白屏" icon="app-window">
+    - 确认所有必需的 PHP 扩展均已加载（`php -m`）。
+    - 确认 `php.ini` 中的 `memory_limit` 至少为 `512M`。
+  </Accordion>
+
+  <Accordion title="数据库连接失败" icon="database">
+    - 在数据库主机字段中使用 `127.0.0.1` 而不是 `localhost`。
+    - 确认该用户对数据库拥有 `ALL PRIVILEGES`。
+    - 确认 MySQL 正在监听 `3306` 端口。
+  </Accordion>
+
+  <Accordion title="权限被拒绝错误" icon="lock">
+    - 在共享主机上，通过文件管理器将 `storage/` 设置为 `755` 或 `775`。
+    - 在 VPS 上，运行 `sudo chown -R www-data:www-data storage/`。
+  </Accordion>
+</AccordionGroup>
+
+## 相关页面 {#related-pages}
+
+- [快速开始](/zh/quickstart) - 配置您的第一个网关并接受一笔测试付款
+- [OwnPay 的工作原理](/zh/fundamentals/how-ownpay-works) - 架构概览
+- [性能与扩展](/zh/resources/performance-scaling) - 针对生产流量进行优化
+- [安全与合规](/zh/resources/security-compliance) - 加固您的部署
+- [常见错误](/zh/resources/common-errors) - 故障排查参考

@@ -115,7 +115,10 @@
       {
         "header": "Product",
         "items": [
-          { "label": "Quickstart", "href": "/docs/quickstart" },
+          {
+            "label": "Quickstart",
+            "href": "/docs/quickstart"
+          },
           {
             "label": "Installation",
             "href": "/docs/installation"
@@ -124,25 +127,52 @@
             "label": "Download",
             "href": "https://update.ownpay.org"
           },
-          { "label": "Features", "href": "/docs/resources/features" },
-          { "label": "Roadmap", "href": "/docs/resources/roadmap" },
-          { "label": "Changelog", "href": "/docs/resources/changelog" }
+          {
+            "label": "Features",
+            "href": "/docs/resources/features"
+          },
+          {
+            "label": "Roadmap",
+            "href": "/docs/resources/roadmap"
+          },
+          {
+            "label": "Changelog",
+            "href": "/docs/resources/changelog"
+          }
         ]
       },
       {
         "header": "Developers",
         "items": [
-          { "label": "API Reference", "href": "/docs/api/overview" },
-          { "label": "API Quick Start", "href": "/docs/developer/quickstart" },
-          { "label": "Webhooks", "href": "/docs/api/webhooks" },
-          { "label": "Plugins", "href": "/docs/developer/plugins/overview" }
+          {
+            "label": "API Reference",
+            "href": "/docs/api/overview"
+          },
+          {
+            "label": "API Quick Start",
+            "href": "/docs/developer/quickstart"
+          },
+          {
+            "label": "Webhooks",
+            "href": "/docs/api/webhooks"
+          },
+          {
+            "label": "Plugins",
+            "href": "/docs/developer/plugins/overview"
+          }
         ]
       },
       {
         "header": "Resources",
         "items": [
-          { "label": "Architecture", "href": "/docs/resources/architecture" },
-          { "label": "Security", "href": "/docs/resources/security-compliance" },
+          {
+            "label": "Architecture",
+            "href": "/docs/resources/architecture"
+          },
+          {
+            "label": "Security",
+            "href": "/docs/resources/security-compliance"
+          },
           {
             "label": "FAQ",
             "href": "/docs/resources/faq"
@@ -151,7 +181,10 @@
             "label": "Community",
             "href": "https://github.com/own-pay/OwnPay/discussions"
           },
-          { "label": "Contributing", "href": "/docs/resources/contributing" }
+          {
+            "label": "Contributing",
+            "href": "/docs/resources/contributing"
+          }
         ]
       }
     ]
@@ -253,86 +286,315 @@
     }
   },
   "redirects": [
-    { "source": "/concepts", "destination": "/fundamentals/how-ownpay-works" },
-    { "source": "/concepts/index", "destination": "/fundamentals/how-ownpay-works" },
-    { "source": "/concepts/brands", "destination": "/fundamentals/brands" },
-    { "source": "/concepts/gateways", "destination": "/fundamentals/gateways" },
-    { "source": "/concepts/plugins", "destination": "/fundamentals/plugins" },
-    { "source": "/concepts/ledger", "destination": "/fundamentals/ledger" },
-    { "source": "/concepts/domains", "destination": "/fundamentals/domains" },
-    { "source": "/concepts/payment-flow", "destination": "/fundamentals/payment-flow" },
-    { "source": "/user-guide/people/brands", "destination": "/people/brands" },
-    { "source": "/user-guide/people/staff", "destination": "/people/staff" },
-    { "source": "/user-guide/people/roles", "destination": "/people/roles" },
-    { "source": "/user-guide/people/customers", "destination": "/people/customers" },
-    { "source": "/user-guide/payments/payment-links", "destination": "/payments/payment-links" },
-    { "source": "/user-guide/payments/transactions", "destination": "/payments/transactions" },
-    { "source": "/user-guide/payments/invoices", "destination": "/payments/invoices" },
-    { "source": "/user-guide/payments/ledger", "destination": "/payments/ledger" },
-    { "source": "/user-guide/gateways/gateways", "destination": "/gateways/configuration" },
-    { "source": "/user-guide/gateways/currencies", "destination": "/gateways/currencies" },
-    { "source": "/user-guide/appearance/branding-settings", "destination": "/appearance/branding" },
-    { "source": "/user-guide/appearance/themes", "destination": "/appearance/themes" },
-    { "source": "/user-guide/appearance/landing-page", "destination": "/appearance/landing-page" },
-    { "source": "/user-guide/mobile-sms/companion-app", "destination": "/mobile/companion-app" },
-    { "source": "/user-guide/mobile-sms/devices", "destination": "/mobile/devices" },
-    { "source": "/user-guide/mobile-sms/sms-templates", "destination": "/mobile/sms-templates" },
-    { "source": "/user-guide/mobile-sms/sms-logs", "destination": "/mobile/sms-templates" },
-    { "source": "/user-guide/reports-finance/reports", "destination": "/reports/dashboard" },
-    { "source": "/user-guide/reports-finance/audit-log", "destination": "/reports/audit-log" },
-    { "source": "/user-guide/reports-finance/balance-verification", "destination": "/reports/balance-verification" },
-    { "source": "/user-guide/system/settings", "destination": "/system/settings" },
-    { "source": "/user-guide/system/domains", "destination": "/system/domains" },
-    { "source": "/user-guide/system/plugins", "destination": "/system/plugins" },
-    { "source": "/user-guide/system/addons", "destination": "/system/addons" },
-    { "source": "/user-guide/system/system-update", "destination": "/system/system-update" },
-    { "source": "/user-guide/auth/login", "destination": "/security/login" },
-    { "source": "/user-guide/auth/two-factor", "destination": "/security/two-factor" },
-    { "source": "/user-guide/auth/forgot-password", "destination": "/security/password-reset" },
-    { "source": "/user-guide/account/my-account", "destination": "/security/my-account" },
-    { "source": "/user-guide/developers/developer-hub", "destination": "/security/developer-hub" },
-    { "source": "/user-guide/public/checkout", "destination": "/checkout/customer-experience" },
-    { "source": "/user-guide/dashboard", "destination": "/reports/dashboard" },
-    { "source": "/user-guide/changelog", "destination": "/resources/changelog" },
-    { "source": "/user-guide/subscribe", "destination": "/quickstart" },
-    { "source": "/demo", "destination": "/quickstart" },
-    { "source": "/api-reference/merchant", "destination": "/api/overview" },
-    { "source": "/api-reference/mobile", "destination": "/api/overview" },
-    { "source": "/api-reference/admin", "destination": "/api/overview" },
-    { "source": "/resources/integrations/rest-api", "destination": "/api/overview" },
-    { "source": "/advanced-topics/security-compliance", "destination": "/resources/security-compliance" },
-    { "source": "/advanced-topics/performance-scaling", "destination": "/resources/performance-scaling" },
-    { "source": "/advanced-topics/troubleshooting", "destination": "/resources/common-errors" },
-    { "source": "/advanced-topics/faq", "destination": "/resources/faq" },
-    { "source": "/developer/ai-overview", "destination": "/developer/ai/overview" },
-    { "source": "/developer/ai-mcp", "destination": "/developer/ai/mcp" },
-    { "source": "/developer/ai-skills", "destination": "/developer/ai/skills" },
-    { "source": "/developer/plugin-types/gateway-development", "destination": "/developer/plugin-types/gateway" },
-    { "source": "/developer/plugin-types/addon-development", "destination": "/developer/plugin-types/addon" },
-    { "source": "/developer/plugin-types/theme-development", "destination": "/developer/plugin-types/theme" },
-    { "source": "/developer/plugin-types/gateway-prompt", "destination": "/developer/ai/overview" },
-    { "source": "/developer/plugin-types/addon-prompt", "destination": "/developer/ai/overview" },
-    { "source": "/developer/plugin-types/theme-prompt", "destination": "/developer/ai/overview" },
-    { "source": "/developer/plugin-types/integration-prompt", "destination": "/developer/ai/overview" },
-    { "source": "/core-concepts", "destination": "/fundamentals/how-ownpay-works" },
-    { "source": "/deployment/installation", "destination": "/installation" },
-    { "source": "/deployment/upgrading", "destination": "/resources/migration-guide" },
-    { "source": "/guides/first-payment", "destination": "/quickstart" },
-    { "source": "/guides/gateway-setup", "destination": "/gateways/configuration" },
-    { "source": "/guides/custom-domains", "destination": "/system/domains" },
-    { "source": "/guides/email-notifications", "destination": "/notifications/email" },
-    { "source": "/mobile/overview", "destination": "/mobile/companion-app" },
-    { "source": "/mobile/pairing", "destination": "/mobile/companion-app" },
-    { "source": "/mobile/sms-verification", "destination": "/gateways/sms-verification" },
-    { "source": "/plugins/overview", "destination": "/developer/plugins/overview" },
-    { "source": "/plugins/hooks-reference", "destination": "/developer/plugins/hooks" },
-    { "source": "/plugins/gateway-plugins", "destination": "/developer/plugin-types/gateway" },
-    { "source": "/plugins/theme-plugins", "destination": "/developer/plugin-types/theme" }
+    {
+      "source": "/concepts",
+      "destination": "/fundamentals/how-ownpay-works"
+    },
+    {
+      "source": "/concepts/index",
+      "destination": "/fundamentals/how-ownpay-works"
+    },
+    {
+      "source": "/concepts/brands",
+      "destination": "/fundamentals/brands"
+    },
+    {
+      "source": "/concepts/gateways",
+      "destination": "/fundamentals/gateways"
+    },
+    {
+      "source": "/concepts/plugins",
+      "destination": "/fundamentals/plugins"
+    },
+    {
+      "source": "/concepts/ledger",
+      "destination": "/fundamentals/ledger"
+    },
+    {
+      "source": "/concepts/domains",
+      "destination": "/fundamentals/domains"
+    },
+    {
+      "source": "/concepts/payment-flow",
+      "destination": "/fundamentals/payment-flow"
+    },
+    {
+      "source": "/user-guide/people/brands",
+      "destination": "/people/brands"
+    },
+    {
+      "source": "/user-guide/people/staff",
+      "destination": "/people/staff"
+    },
+    {
+      "source": "/user-guide/people/roles",
+      "destination": "/people/roles"
+    },
+    {
+      "source": "/user-guide/people/customers",
+      "destination": "/people/customers"
+    },
+    {
+      "source": "/user-guide/payments/payment-links",
+      "destination": "/payments/payment-links"
+    },
+    {
+      "source": "/user-guide/payments/transactions",
+      "destination": "/payments/transactions"
+    },
+    {
+      "source": "/user-guide/payments/invoices",
+      "destination": "/payments/invoices"
+    },
+    {
+      "source": "/user-guide/payments/ledger",
+      "destination": "/payments/ledger"
+    },
+    {
+      "source": "/user-guide/gateways/gateways",
+      "destination": "/gateways/configuration"
+    },
+    {
+      "source": "/user-guide/gateways/currencies",
+      "destination": "/gateways/currencies"
+    },
+    {
+      "source": "/user-guide/appearance/branding-settings",
+      "destination": "/appearance/branding"
+    },
+    {
+      "source": "/user-guide/appearance/themes",
+      "destination": "/appearance/themes"
+    },
+    {
+      "source": "/user-guide/appearance/landing-page",
+      "destination": "/appearance/landing-page"
+    },
+    {
+      "source": "/user-guide/mobile-sms/companion-app",
+      "destination": "/mobile/companion-app"
+    },
+    {
+      "source": "/user-guide/mobile-sms/devices",
+      "destination": "/mobile/devices"
+    },
+    {
+      "source": "/user-guide/mobile-sms/sms-templates",
+      "destination": "/mobile/sms-templates"
+    },
+    {
+      "source": "/user-guide/mobile-sms/sms-logs",
+      "destination": "/mobile/sms-templates"
+    },
+    {
+      "source": "/user-guide/reports-finance/reports",
+      "destination": "/reports/dashboard"
+    },
+    {
+      "source": "/user-guide/reports-finance/audit-log",
+      "destination": "/reports/audit-log"
+    },
+    {
+      "source": "/user-guide/reports-finance/balance-verification",
+      "destination": "/reports/balance-verification"
+    },
+    {
+      "source": "/user-guide/system/settings",
+      "destination": "/system/settings"
+    },
+    {
+      "source": "/user-guide/system/domains",
+      "destination": "/system/domains"
+    },
+    {
+      "source": "/user-guide/system/plugins",
+      "destination": "/system/plugins"
+    },
+    {
+      "source": "/user-guide/system/addons",
+      "destination": "/system/addons"
+    },
+    {
+      "source": "/user-guide/system/system-update",
+      "destination": "/system/system-update"
+    },
+    {
+      "source": "/user-guide/auth/login",
+      "destination": "/security/login"
+    },
+    {
+      "source": "/user-guide/auth/two-factor",
+      "destination": "/security/two-factor"
+    },
+    {
+      "source": "/user-guide/auth/forgot-password",
+      "destination": "/security/password-reset"
+    },
+    {
+      "source": "/user-guide/account/my-account",
+      "destination": "/security/my-account"
+    },
+    {
+      "source": "/user-guide/developers/developer-hub",
+      "destination": "/security/developer-hub"
+    },
+    {
+      "source": "/user-guide/public/checkout",
+      "destination": "/checkout/customer-experience"
+    },
+    {
+      "source": "/user-guide/dashboard",
+      "destination": "/reports/dashboard"
+    },
+    {
+      "source": "/user-guide/changelog",
+      "destination": "/resources/changelog"
+    },
+    {
+      "source": "/user-guide/subscribe",
+      "destination": "/quickstart"
+    },
+    {
+      "source": "/demo",
+      "destination": "/quickstart"
+    },
+    {
+      "source": "/api-reference/merchant",
+      "destination": "/api/overview"
+    },
+    {
+      "source": "/api-reference/mobile",
+      "destination": "/api/overview"
+    },
+    {
+      "source": "/api-reference/admin",
+      "destination": "/api/overview"
+    },
+    {
+      "source": "/resources/integrations/rest-api",
+      "destination": "/api/overview"
+    },
+    {
+      "source": "/advanced-topics/security-compliance",
+      "destination": "/resources/security-compliance"
+    },
+    {
+      "source": "/advanced-topics/performance-scaling",
+      "destination": "/resources/performance-scaling"
+    },
+    {
+      "source": "/advanced-topics/troubleshooting",
+      "destination": "/resources/common-errors"
+    },
+    {
+      "source": "/advanced-topics/faq",
+      "destination": "/resources/faq"
+    },
+    {
+      "source": "/developer/ai-overview",
+      "destination": "/developer/ai/overview"
+    },
+    {
+      "source": "/developer/ai-mcp",
+      "destination": "/developer/ai/mcp"
+    },
+    {
+      "source": "/developer/ai-skills",
+      "destination": "/developer/ai/skills"
+    },
+    {
+      "source": "/developer/plugin-types/gateway-development",
+      "destination": "/developer/plugin-types/gateway"
+    },
+    {
+      "source": "/developer/plugin-types/addon-development",
+      "destination": "/developer/plugin-types/addon"
+    },
+    {
+      "source": "/developer/plugin-types/theme-development",
+      "destination": "/developer/plugin-types/theme"
+    },
+    {
+      "source": "/developer/plugin-types/gateway-prompt",
+      "destination": "/developer/ai/overview"
+    },
+    {
+      "source": "/developer/plugin-types/addon-prompt",
+      "destination": "/developer/ai/overview"
+    },
+    {
+      "source": "/developer/plugin-types/theme-prompt",
+      "destination": "/developer/ai/overview"
+    },
+    {
+      "source": "/developer/plugin-types/integration-prompt",
+      "destination": "/developer/ai/overview"
+    },
+    {
+      "source": "/core-concepts",
+      "destination": "/fundamentals/how-ownpay-works"
+    },
+    {
+      "source": "/deployment/installation",
+      "destination": "/installation"
+    },
+    {
+      "source": "/deployment/upgrading",
+      "destination": "/resources/migration-guide"
+    },
+    {
+      "source": "/guides/first-payment",
+      "destination": "/quickstart"
+    },
+    {
+      "source": "/guides/gateway-setup",
+      "destination": "/gateways/configuration"
+    },
+    {
+      "source": "/guides/custom-domains",
+      "destination": "/system/domains"
+    },
+    {
+      "source": "/guides/email-notifications",
+      "destination": "/notifications/email"
+    },
+    {
+      "source": "/mobile/overview",
+      "destination": "/mobile/companion-app"
+    },
+    {
+      "source": "/mobile/pairing",
+      "destination": "/mobile/companion-app"
+    },
+    {
+      "source": "/mobile/sms-verification",
+      "destination": "/gateways/sms-verification"
+    },
+    {
+      "source": "/plugins/overview",
+      "destination": "/developer/plugins/overview"
+    },
+    {
+      "source": "/plugins/hooks-reference",
+      "destination": "/developer/plugins/hooks"
+    },
+    {
+      "source": "/plugins/gateway-plugins",
+      "destination": "/developer/plugin-types/gateway"
+    },
+    {
+      "source": "/plugins/theme-plugins",
+      "destination": "/developer/plugin-types/theme"
+    }
   ],
   "navigation": {
     "global": {
       "anchors": [
-        { "anchor": "Changelog", "icon": "history", "href": "/resources/changelog" }
+        {
+          "anchor": "Changelog",
+          "icon": "history",
+          "href": "/resources/changelog"
+        }
       ]
     },
     "languages": [
@@ -615,6 +877,574 @@
                 "icon": "code",
                 "pages": [
                   "resources/code-examples"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "zh",
+        "tabs": [
+          {
+            "tab": "文档",
+            "icon": "book",
+            "groups": [
+              {
+                "group": "开始使用",
+                "icon": "rocket",
+                "pages": [
+                  "zh/introduction",
+                  "zh/quickstart",
+                  "zh/installation"
+                ]
+              },
+              {
+                "group": "核心概念",
+                "icon": "stack-2",
+                "pages": [
+                  "zh/fundamentals/how-ownpay-works",
+                  "zh/fundamentals/brands",
+                  "zh/fundamentals/payment-flow",
+                  "zh/fundamentals/gateways",
+                  "zh/fundamentals/ledger",
+                  "zh/fundamentals/plugins",
+                  "zh/fundamentals/domains"
+                ]
+              },
+              {
+                "group": "人员",
+                "icon": "users",
+                "pages": [
+                  "zh/people/brands",
+                  "zh/people/staff",
+                  "zh/people/roles",
+                  "zh/people/customers"
+                ]
+              },
+              {
+                "group": "支付",
+                "icon": "credit-card",
+                "pages": [
+                  "zh/payments/payment-links",
+                  "zh/payments/transactions",
+                  "zh/payments/refunds",
+                  "zh/payments/invoices",
+                  "zh/payments/ledger"
+                ]
+              },
+              {
+                "group": "网关与货币",
+                "icon": "wallet",
+                "pages": [
+                  "zh/gateways/configuration",
+                  "zh/gateways/manual-methods",
+                  "zh/gateways/currencies",
+                  "zh/gateways/sms-verification"
+                ]
+              },
+              {
+                "group": "外观",
+                "icon": "palette",
+                "pages": [
+                  "zh/appearance/branding",
+                  "zh/appearance/themes",
+                  "zh/appearance/landing-page"
+                ]
+              },
+              {
+                "group": "通知",
+                "icon": "bell",
+                "pages": [
+                  "zh/notifications/email",
+                  "zh/notifications/webhooks",
+                  "zh/notifications/telegram",
+                  "zh/notifications/sms-center"
+                ]
+              },
+              {
+                "group": "移动端",
+                "icon": "device-mobile",
+                "pages": [
+                  "zh/mobile/companion-app",
+                  "zh/mobile/devices",
+                  "zh/mobile/sms-templates"
+                ]
+              },
+              {
+                "group": "报表与财务",
+                "icon": "chart-bar",
+                "pages": [
+                  "zh/reports/dashboard",
+                  "zh/reports/audit-log",
+                  "zh/reports/balance-verification",
+                  "zh/reports/disputes"
+                ]
+              },
+              {
+                "group": "系统",
+                "icon": "settings",
+                "pages": [
+                  "zh/system/settings",
+                  "zh/system/domains",
+                  "zh/system/plugins",
+                  "zh/system/addons",
+                  "zh/system/languages",
+                  "zh/system/system-update"
+                ]
+              },
+              {
+                "group": "安全与访问",
+                "icon": "lock",
+                "pages": [
+                  "zh/security/login",
+                  "zh/security/two-factor",
+                  "zh/security/password-reset",
+                  "zh/security/api-keys",
+                  "zh/security/developer-hub",
+                  "zh/security/my-account"
+                ]
+              },
+              {
+                "group": "结账",
+                "icon": "shopping-cart",
+                "pages": [
+                  "zh/checkout/customer-experience"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API 参考",
+            "icon": "terminal-2",
+            "groups": [
+              {
+                "group": "概览",
+                "icon": "book",
+                "pages": [
+                  "zh/api/overview",
+                  "zh/api/authentication",
+                  "zh/api/errors",
+                  "zh/api/webhooks"
+                ]
+              },
+              {
+                "group": "商户 API",
+                "icon": "building-store",
+                "openapi": "api/merchant_api.yaml"
+              },
+              {
+                "group": "移动端 API",
+                "icon": "device-mobile",
+                "openapi": "api/mobile_api.yaml"
+              },
+              {
+                "group": "管理 API",
+                "icon": "shield",
+                "openapi": "api/admin_api.yaml"
+              }
+            ]
+          },
+          {
+            "tab": "开发者",
+            "icon": "code",
+            "groups": [
+              {
+                "group": "入门",
+                "icon": "rocket",
+                "pages": [
+                  "zh/developer/quickstart",
+                  "zh/developer/testing",
+                  "zh/developer/webhook-integration"
+                ]
+              },
+              {
+                "group": "SDK 与库",
+                "icon": "plug",
+                "pages": [
+                  "zh/developer/integration/php",
+                  "zh/developer/integration/laravel",
+                  "zh/developer/integration/nodejs",
+                  "zh/developer/integration/python",
+                  "zh/developer/integration/woocommerce",
+                  "zh/developer/integration/whmcs"
+                ]
+              },
+              {
+                "group": "插件系统",
+                "icon": "puzzle",
+                "pages": [
+                  "zh/developer/plugins/overview",
+                  "zh/developer/plugins/directory-structure",
+                  "zh/developer/plugins/manifest",
+                  "zh/developer/plugins/hooks",
+                  "zh/developer/plugins/events",
+                  "zh/developer/plugins/capabilities",
+                  "zh/developer/plugins/lifecycle"
+                ]
+              },
+              {
+                "group": "构建插件",
+                "icon": "tool",
+                "pages": [
+                  "zh/developer/plugin-types/gateway",
+                  "zh/developer/plugin-types/addon",
+                  "zh/developer/plugin-types/theme",
+                  "zh/developer/plugin-types/integration"
+                ]
+              },
+              {
+                "group": "翻译",
+                "icon": "world",
+                "pages": [
+                  "zh/developer/translations"
+                ]
+              },
+              {
+                "group": "AI 工具",
+                "icon": "robot",
+                "pages": [
+                  "zh/developer/ai/overview",
+                  "zh/developer/ai/mcp",
+                  "zh/developer/ai/skills"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "资源",
+            "icon": "folder",
+            "groups": [
+              {
+                "group": "关于",
+                "icon": "info-circle",
+                "pages": [
+                  "zh/resources/features",
+                  "zh/resources/architecture",
+                  "zh/resources/roadmap",
+                  "zh/resources/ecosystem"
+                ]
+              },
+              {
+                "group": "高级",
+                "icon": "shield",
+                "pages": [
+                  "zh/resources/security-compliance",
+                  "zh/resources/performance-scaling",
+                  "zh/resources/backup-export",
+                  "zh/resources/migration-guide",
+                  "zh/resources/rate-limiting"
+                ]
+              },
+              {
+                "group": "故障排除",
+                "icon": "alert-triangle",
+                "pages": [
+                  "zh/resources/common-errors",
+                  "zh/resources/faq",
+                  "zh/resources/debug-mode"
+                ]
+              },
+              {
+                "group": "社区",
+                "icon": "users",
+                "pages": [
+                  "zh/resources/contributing",
+                  "zh/resources/local-setup",
+                  "zh/resources/code-of-conduct",
+                  "zh/resources/changelog",
+                  "zh/resources/glossary"
+                ]
+              },
+              {
+                "group": "代码示例",
+                "icon": "code",
+                "pages": [
+                  "zh/resources/code-examples"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "tabs": [
+          {
+            "tab": "दस्तावेज़",
+            "icon": "book",
+            "groups": [
+              {
+                "group": "शुरू करें",
+                "icon": "rocket",
+                "pages": [
+                  "hi/introduction",
+                  "hi/quickstart",
+                  "hi/installation"
+                ]
+              },
+              {
+                "group": "मूल अवधारणाएँ",
+                "icon": "stack-2",
+                "pages": [
+                  "hi/fundamentals/how-ownpay-works",
+                  "hi/fundamentals/brands",
+                  "hi/fundamentals/payment-flow",
+                  "hi/fundamentals/gateways",
+                  "hi/fundamentals/ledger",
+                  "hi/fundamentals/plugins",
+                  "hi/fundamentals/domains"
+                ]
+              },
+              {
+                "group": "लोग",
+                "icon": "users",
+                "pages": [
+                  "hi/people/brands",
+                  "hi/people/staff",
+                  "hi/people/roles",
+                  "hi/people/customers"
+                ]
+              },
+              {
+                "group": "भुगतान",
+                "icon": "credit-card",
+                "pages": [
+                  "hi/payments/payment-links",
+                  "hi/payments/transactions",
+                  "hi/payments/refunds",
+                  "hi/payments/invoices",
+                  "hi/payments/ledger"
+                ]
+              },
+              {
+                "group": "गेटवे और मुद्राएँ",
+                "icon": "wallet",
+                "pages": [
+                  "hi/gateways/configuration",
+                  "hi/gateways/manual-methods",
+                  "hi/gateways/currencies",
+                  "hi/gateways/sms-verification"
+                ]
+              },
+              {
+                "group": "रूप-रंग",
+                "icon": "palette",
+                "pages": [
+                  "hi/appearance/branding",
+                  "hi/appearance/themes",
+                  "hi/appearance/landing-page"
+                ]
+              },
+              {
+                "group": "सूचनाएँ",
+                "icon": "bell",
+                "pages": [
+                  "hi/notifications/email",
+                  "hi/notifications/webhooks",
+                  "hi/notifications/telegram",
+                  "hi/notifications/sms-center"
+                ]
+              },
+              {
+                "group": "मोबाइल",
+                "icon": "device-mobile",
+                "pages": [
+                  "hi/mobile/companion-app",
+                  "hi/mobile/devices",
+                  "hi/mobile/sms-templates"
+                ]
+              },
+              {
+                "group": "रिपोर्ट और वित्त",
+                "icon": "chart-bar",
+                "pages": [
+                  "hi/reports/dashboard",
+                  "hi/reports/audit-log",
+                  "hi/reports/balance-verification",
+                  "hi/reports/disputes"
+                ]
+              },
+              {
+                "group": "सिस्टम",
+                "icon": "settings",
+                "pages": [
+                  "hi/system/settings",
+                  "hi/system/domains",
+                  "hi/system/plugins",
+                  "hi/system/addons",
+                  "hi/system/languages",
+                  "hi/system/system-update"
+                ]
+              },
+              {
+                "group": "सुरक्षा और एक्सेस",
+                "icon": "lock",
+                "pages": [
+                  "hi/security/login",
+                  "hi/security/two-factor",
+                  "hi/security/password-reset",
+                  "hi/security/api-keys",
+                  "hi/security/developer-hub",
+                  "hi/security/my-account"
+                ]
+              },
+              {
+                "group": "चेकआउट",
+                "icon": "shopping-cart",
+                "pages": [
+                  "hi/checkout/customer-experience"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API संदर्भ",
+            "icon": "terminal-2",
+            "groups": [
+              {
+                "group": "अवलोकन",
+                "icon": "book",
+                "pages": [
+                  "hi/api/overview",
+                  "hi/api/authentication",
+                  "hi/api/errors",
+                  "hi/api/webhooks"
+                ]
+              },
+              {
+                "group": "मर्चेंट API",
+                "icon": "building-store",
+                "openapi": "api/merchant_api.yaml"
+              },
+              {
+                "group": "मोबाइल API",
+                "icon": "device-mobile",
+                "openapi": "api/mobile_api.yaml"
+              },
+              {
+                "group": "एडमिन API",
+                "icon": "shield",
+                "openapi": "api/admin_api.yaml"
+              }
+            ]
+          },
+          {
+            "tab": "डेवलपर",
+            "icon": "code",
+            "groups": [
+              {
+                "group": "शुरुआत",
+                "icon": "rocket",
+                "pages": [
+                  "hi/developer/quickstart",
+                  "hi/developer/testing",
+                  "hi/developer/webhook-integration"
+                ]
+              },
+              {
+                "group": "SDK और लाइब्रेरी",
+                "icon": "plug",
+                "pages": [
+                  "hi/developer/integration/php",
+                  "hi/developer/integration/laravel",
+                  "hi/developer/integration/nodejs",
+                  "hi/developer/integration/python",
+                  "hi/developer/integration/woocommerce",
+                  "hi/developer/integration/whmcs"
+                ]
+              },
+              {
+                "group": "प्लगइन सिस्टम",
+                "icon": "puzzle",
+                "pages": [
+                  "hi/developer/plugins/overview",
+                  "hi/developer/plugins/directory-structure",
+                  "hi/developer/plugins/manifest",
+                  "hi/developer/plugins/hooks",
+                  "hi/developer/plugins/events",
+                  "hi/developer/plugins/capabilities",
+                  "hi/developer/plugins/lifecycle"
+                ]
+              },
+              {
+                "group": "प्लगइन बनाना",
+                "icon": "tool",
+                "pages": [
+                  "hi/developer/plugin-types/gateway",
+                  "hi/developer/plugin-types/addon",
+                  "hi/developer/plugin-types/theme",
+                  "hi/developer/plugin-types/integration"
+                ]
+              },
+              {
+                "group": "अनुवाद",
+                "icon": "world",
+                "pages": [
+                  "hi/developer/translations"
+                ]
+              },
+              {
+                "group": "AI टूल्स",
+                "icon": "robot",
+                "pages": [
+                  "hi/developer/ai/overview",
+                  "hi/developer/ai/mcp",
+                  "hi/developer/ai/skills"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "संसाधन",
+            "icon": "folder",
+            "groups": [
+              {
+                "group": "परिचय",
+                "icon": "info-circle",
+                "pages": [
+                  "hi/resources/features",
+                  "hi/resources/architecture",
+                  "hi/resources/roadmap",
+                  "hi/resources/ecosystem"
+                ]
+              },
+              {
+                "group": "उन्नत",
+                "icon": "shield",
+                "pages": [
+                  "hi/resources/security-compliance",
+                  "hi/resources/performance-scaling",
+                  "hi/resources/backup-export",
+                  "hi/resources/migration-guide",
+                  "hi/resources/rate-limiting"
+                ]
+              },
+              {
+                "group": "समस्या निवारण",
+                "icon": "alert-triangle",
+                "pages": [
+                  "hi/resources/common-errors",
+                  "hi/resources/faq",
+                  "hi/resources/debug-mode"
+                ]
+              },
+              {
+                "group": "समुदाय",
+                "icon": "users",
+                "pages": [
+                  "hi/resources/contributing",
+                  "hi/resources/local-setup",
+                  "hi/resources/code-of-conduct",
+                  "hi/resources/changelog",
+                  "hi/resources/glossary"
+                ]
+              },
+              {
+                "group": "कोड उदाहरण",
+                "icon": "code",
+                "pages": [
+                  "hi/resources/code-examples"
                 ]
               }
             ]

@@ -1,0 +1,108 @@
+---
+title: "插件清单"
+description: "OwnPay 插件 manifest.json 的完整字段参考，包括所有字段、能力值和校验规则。"
+keywords: "manifest.json, 插件元数据, 插件版本, 插件能力, 插件清单校验"
+sidebarTitle: "清单"
+icon: "file-text"
+---
+
+每个 OwnPay 插件的根目录中都必须有一个 `manifest.json`。插件加载器会最先读取此文件——如果校验失败，插件将不会被加载。
+
+## 字段参考 {#field-reference}
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `name` | string | 是 | 便于阅读的插件名称 |
+| `slug` | string | 是 | 唯一的机器标识符（小写、连字符） |
+| `version` | string | 是 | 语义化版本（例如 `1.2.3`） |
+| `type` | string | 是 | 以下之一：`gateway`、`addon`、`theme`、`integration` |
+| `description` | string | 否 | 插件功能的简短说明 |
+| `author` | string | 否 | 作者名称或组织 |
+| `homepage` | string | 否 | 插件主页或代码仓库的 URL |
+| `capabilities` | array | 是 | 插件所需的能力字符串列表 |
+| `cspOrigins` | array | 否 | 资源所需的额外内容安全策略来源 |
+| `icon` | string | 否 | 相对于插件根目录的 SVG 或 PNG 图标路径 |
+| `permissions` | array | 否 | 管理该插件所需的管理员权限 slug |
+| `minimumOwnPayVersion` | string | 否 | 所需的最低 OwnPay 版本（semver） |
+| `phpVersion` | string | 否 | 所需的最低 PHP 版本（默认：`8.3`） |
+
+## 能力值 {#capability-values}
+
+只声明插件实际使用的能力。沙盒会将它们作为权限闸门来强制执行。
+
+| 能力 | 作用 |
+| --- | --- |
+| `payment_process` | 插件可以实现 `GatewayInterface` |
+| `webhook_receive` | 插件可以注册 webhook 端点处理器 |
+| `admin_page` | 插件可以向管理侧边栏菜单添加项目 |
+| `api_routes` | 插件可以通过 `routes/api.php` 注册自定义 API 路由 |
+| `database` | 插件可以定义并运行数据库迁移 |
+| `assets` | 插件可以从 `assets/` 提供 CSS 和 JS 文件 |
+| `settings` | 插件可以定义设置页面 |
+| `schedule` | 插件可以注册计划（cron）任务 |
+
+## 校验规则 {#validation-rules}
+
+| 规则 | 详情 |
+| --- | --- |
+| Slug 格式 | 必须匹配 `^[a-z][a-z0-9-]{1,48}[a-z0-9]$` |
+| 版本格式 | 必须是有效的 semver（`MAJOR.MINOR.PATCH`） |
+| 类型 | 必须是四种受支持类型之一 |
+| 能力 | 每一项都必须是已知的能力字符串 |
+
+如果校验失败，OwnPay 会记录错误并跳过该插件。请在 **System → Logs** 中查看日志。
+
+## 示例 {#examples}
+
+### 网关清单 {#gateway-manifest}
+
+```json
+{
+  "name": "Stripe Gateway",
+  "slug": "gateway-stripe",
+  "version": "2.1.0",
+  "type": "gateway",
+  "description": "Accept Visa, Mastercard, and Amex payments via Stripe",
+  "author": "OwnPay Team",
+  "homepage": "https://github.com/own-pay/gateway-stripe",
+  "capabilities": ["payment_process", "webhook_receive", "settings", "database"],
+  "minimumOwnPayVersion": "0.2.0",
+  "phpVersion": "8.3"
+}
+```
+
+### Addon 清单 {#addon-manifest}
+
+```json
+{
+  "name": "Telegram Bot",
+  "slug": "addon-telegram-bot",
+  "version": "1.0.0",
+  "type": "addon",
+  "description": "Send payment notifications to Telegram",
+  "capabilities": ["settings", "admin_page"],
+  "author": "Community"
+}
+```
+
+### 主题清单 {#theme-manifest}
+
+```json
+{
+  "name": "Modern Checkout",
+  "slug": "theme-modern",
+  "version": "1.3.0",
+  "type": "theme",
+  "description": "Clean, responsive checkout theme",
+  "capabilities": ["assets"],
+  "cspOrigins": ["https://fonts.googleapis.com"],
+  "icon": "icon.svg"
+}
+```
+
+## 相关页面 {#related-pages}
+
+- [目录结构](/zh/developer/plugins/directory-structure)
+- [能力参考](/zh/developer/plugins/capabilities)
+- [插件生命周期](/zh/developer/plugins/lifecycle)
+- [钩子参考](/zh/developer/plugins/hooks)

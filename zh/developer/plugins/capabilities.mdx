@@ -1,0 +1,120 @@
+---
+title: "插件能力 - 声明功能与权限"
+description: "能力系统用于声明插件的功能、所使用的钩子以及涉及的平台特性，以便进行权限管理和发现。"
+keywords: "插件能力, 权限, 功能声明, 插件发现, 能力系统"
+sidebarTitle: "能力"
+icon: "list-check"
+---
+
+OwnPay 使用能力系统来声明插件的功能以及它所交互的平台特性。能力在 `manifest.json` 中以字符串值表示，并映射到 `OwnPay\Plugin\Capability` 这一 backed PHP 枚举。
+
+<Note>
+  **完全信任模型**：已安装的插件由所有者上传，并以完整的应用信任运行。能力是声明性元数据和意图契约。它们用于说明插件的功能并驱动 UI 展示，而不是运行时强制执行的沙盒。
+</Note>
+
+## 声明能力 {#declaring-capabilities}
+
+能力在 `manifest.json` 内的 `capabilities` 数组中声明：
+
+```json
+{
+  "slug": "my-plugin",
+  "capabilities": ["addon", "hooks", "cron"]
+}
+```
+
+入口类上的 `PluginInterface::capabilities()` 方法应返回对应的 `Capability` 枚举成员：
+
+```php
+use OwnPay\Plugin\Capability;
+
+public function capabilities(): array
+{
+    return [Capability::ADDON, Capability::HOOKS, Capability::CRON];
+}
+```
+
+## 完整能力参考 {#full-capability-reference}
+
+| 枚举成员 | JSON 值 | 所需权限键 | 范围与意图 |
+| --- | --- | --- | --- |
+| `Capability::GATEWAY` | `"gateway"` | `gateway.process`、`gateway.config` | 支付网关适配器 |
+| `Capability::THEME` | `"theme"` | `theme.render` | 结账主题 |
+| `Capability::ADDON` | `"addon"` | 无 | 通用扩展 |
+| `Capability::COMMUNICATION` | `"communication"` | `comm.send` | 短信、邮件或聊天消息投递 |
+| `Capability::ANALYTICS` | `"analytics"` | `analytics.read` | 报表与商业智能 |
+| `Capability::WEBHOOK` | `"webhook"` | 无 | 自定义入站 webhook 处理器 |
+| `Capability::NOTIFICATION` | `"notification"` | 无 | 推送和系统通知 |
+| `Capability::EXPORT` | `"export"` | 无 | 数据导出提供者 |
+| `Capability::AUTHENTICATION` | `"authentication"` | 无 | SSO 和 OAuth |
+| `Capability::STORAGE` | `"storage"` | `storage.read`、`storage.write` | 外部文件存储 |
+| `Capability::CRON` | `"cron"` | 无 | 后台计划任务 |
+| `Capability::DASHBOARD` | `"dashboard"` | 无 | 管理仪表盘小组件 |
+| `Capability::DB_READ` | `"db_read"` | 无 | 数据库读取权限 |
+| `Capability::DB_WRITE` | `"db_write"` | 无 | 数据库写入权限 |
+| `Capability::FILE_READ` | `"file_read"` | 无 | 文件系统读取 |
+| `Capability::FILE_WRITE` | `"file_write"` | 无 | 文件系统写入 |
+| `Capability::HTTP_OUTBOUND` | `"http_outbound"` | 无 | 出站 HTTP |
+| `Capability::HOOKS` | `"hooks"` | 无 | 事件钩子订阅 |
+| `Capability::CHECKOUT_UI` | `"checkout_ui"` | 无 | 结账 UI 注入 |
+
+## 常见能力组合 {#common-capability-combinations}
+
+### 支付网关 {#payment-gateway}
+
+```json
+"capabilities": ["gateway"]
+```
+
+### 通信 Addon（短信/邮件/Telegram） {#communication-addon-sms/email/telegram}
+
+```json
+"capabilities": ["addon", "communication", "hooks", "http_outbound"]
+```
+
+### 分析仪表盘小组件 {#analytics-dashboard-widget}
+
+```json
+"capabilities": ["addon", "analytics", "hooks", "dashboard"]
+```
+
+### 结账主题 {#checkout-theme}
+
+```json
+"capabilities": ["theme", "checkout_ui"]
+```
+
+## 安全相关说明 {#security-relevant-notes}
+
+### `db_read` / `db_write` - SQL 隔离 {#db_read-/-db_write-sql-isolation}
+
+对任何不以 `op_plugin_` 为前缀的 `op_*` 表的查询都会被 `PluginSandbox::validateSql()` 拦截。
+
+### `file_read` / `file_write` - 路径限制 {#file_read-/-file_write-path-containment}
+
+`PluginSandbox::validateFilePath()` 使用 `realpath()` 解析目标路径，并检查它是否以插件目录路径开头。
+
+### 被禁用的 PHP 函数 {#blocked-php-functions}
+
+无论声明了哪些能力，以下函数都会导致插件立即加载失败：
+
+| 被禁用的函数 | 原因 |
+| --- | --- |
+| `exec()` | 直接执行操作系统命令 |
+| `shell_exec()` | 通过等同于反引号的方式执行 shell 命令 |
+| `system()` | 执行操作系统命令并直接输出 |
+| `passthru()` | 原始操作系统命令执行 |
+| `popen()` | 打开进程管道 |
+| `proc_open()` | 完全的进程控制 |
+| `pcntl_exec()` | 替换进程映像 |
+| `dl()` | 动态加载扩展 |
+| `assert()` | 通过断言执行代码 |
+| `create_function()` | 运行时生成 lambda 代码 |
+| `eval` | 动态代码执行 |
+
+## 相关页面 {#related-pages}
+
+- [清单参考](/zh/developer/plugins/manifest)
+- [钩子参考](/zh/developer/plugins/hooks)
+- [插件生命周期](/zh/developer/plugins/lifecycle)
+- [插件概览](/zh/developer/plugins/overview)

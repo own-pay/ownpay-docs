@@ -1,0 +1,83 @@
+---
+title: "语言"
+description: "管理多语言支持 - 为每位员工更改管理员语言、上传语言包，并为结账体验设置品牌默认语言。"
+keywords: "语言, 多语言, 翻译, 语言包, 区域设置, 管理员语言, 结账语言, languages"
+sidebarTitle: "语言"
+icon: "language"
+---
+
+OwnPay 的管理面板和面向客户的结账页都支持多种语言。语言偏好可以在员工个人层面和品牌层面进行设置。
+
+## 更改您的管理员语言 {#change-your-admin-language}
+
+每位员工都可以独立设置自己偏好的管理面板语言：
+
+1. 点击右上角的**头像**
+2. 选择 **My Account**
+3. 在下拉菜单中选择您的 **Language**
+4. 点击 **Save**
+
+有关完整的个人设置指南，请参阅[我的账户](/zh/security/my-account)。
+
+## 管理系统语言 {#manage-system-languages}
+
+导航到 **System \> Languages** 以查看和管理所有可用语言。
+
+| 列 | 描述 |
+| --- | --- |
+| **Language** | 显示名称（例如 "English"、"Bengali"） |
+| **Code** | ISO 639-1 代码（例如 `en`、`bn`） |
+| **Status** | 已安装或未安装 |
+| **Brand Default** | 是否为某个特定品牌的默认语言 |
+
+## 上传语言包 {#upload-a-language-pack}
+
+<Steps>
+  <Step>
+    点击 **Upload Language Pack** 并选择一个 JSON 文件。
+  </Step>
+  <Step>
+    OwnPay 会验证文件结构并导入翻译。
+  </Step>
+  <Step>
+    如果该语言代码尚不存在，则会自动添加。
+  </Step>
+</Steps>
+
+### 语言文件格式 {#language-file-format}
+
+语言文件为使用点号表示法键名的 JSON：
+
+```json
+{
+  "checkout.pay_now": "Pay Now",
+  "checkout.enter_amount": "Enter Amount",
+  "common.currency": "Currency"
+}
+```
+
+<Info>
+  有关贡献翻译或创建完整语言包的指导，请参阅[翻译指南](/zh/developer/translations)。
+</Info>
+
+## 为每个品牌设置默认语言 {#set-default-language-per-brand}
+
+在语言列表中，点击任意已安装语言旁的 **Set as Default**。此时会出现品牌选择器 - 选择该默认设置适用的品牌。除非客户的浏览器另有要求，否则该品牌的结账体验将使用此语言。
+
+## 结账语言的确定方式 {#checkout-language-determination}
+
+当客户访问结账页时，OwnPay 按以下顺序确定语言：
+
+1. **品牌默认语言** - 在 System \> Languages 中为当前品牌设置的语言
+2. **浏览器 Accept-Language 头** - 如果未设置品牌默认语言，OwnPay 会读取访问者浏览器的语言偏好
+3. **英语兜底** - 如果没有找到匹配项，则使用英语
+
+<Tip>
+  如果您的客户群使用多种语言，请不要设置品牌默认语言。这样 OwnPay 将自动遵循每位访问者的浏览器语言偏好。
+</Tip>
+
+## 相关页面 {#related-pages}
+
+- [我的账户](/zh/security/my-account) - 更改您的个人管理员语言
+- [翻译指南](/zh/developer/translations) - 贡献或创建语言包
+- [客户体验](/zh/checkout/customer-experience) - 语言如何影响结账页

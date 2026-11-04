@@ -1,0 +1,324 @@
+---
+title: कोड उदाहरण
+description: "OwnPay API के ज़रिए पेमेंट इंटेंट बनाने, वेबहुक सत्यापित करने और ट्रांज़ैक्शन स्थिति क्वेरी करने के लिए आधिकारिक बहु-भाषा कोड उदाहरण।"
+keywords: "कोड उदाहरण, PHP SDK, Laravel, Node.js, Python, Go, Java, cURL, भुगतान इंटीग्रेशन, वेबहुक सत्यापन"
+sidebarTitle: कोड उदाहरण
+icon: code
+---
+
+यह पेज OwnPay API के साथ इंटीग्रेशन के लिए आधिकारिक संदर्भ है। हर उदाहरण दिखाता है कि पेमेंट इंटेंट कैसे बनाएँ, रिस्पॉन्स को कैसे संभालें, और ग्राहक को चेकआउट पेज पर कैसे रीडायरेक्ट करें।
+
+<Info>
+  चरण-दर-चरण ट्यूटोरियल के लिए, [क्विकस्टार्ट](/hi/developer/quickstart) देखें। पूरे API संदर्भ के लिए, [API अवलोकन](/hi/api/overview) देखें।
+</Info>
+
+---
+
+## भुगतान बनाना {#creating-a-payment}
+
+`POST /api/v1/payments` को कॉल करके पेमेंट इंटेंट बनाएँ। रिस्पॉन्स में एक `checkout_url` शामिल होता है - भुगतान पूरा करने के लिए अपने ग्राहक को वहाँ रीडायरेक्ट करें।
+
+<CodeGroup>
+
+```cURL
+curl -X POST https://pay.yourbrand.com/api/v1/payments \\
+  -H "Authorization: Bearer op_live_abc123.def456" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "amount": "500.00",
+    "currency": "USD",
+    "redirect_url": "https://my-store.com/success",
+    "cancel_url": "https://my-store.com/cancel",
+    "customer_email": "customer@example.com",
+    "customer_name": "Jane Doe",
+    "reference": "ORDER-10024"
+  }'
+```
+
+```PHP SDK
+<?php
+use OwnPay\Client;
+
+$client = new Client('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
+
+$payment = $client->payments->create([
+    'amount'        => '500.00',
+    'currency'      => 'USD',
+    'redirect_url'  => 'https://my-store.com/success',
+    'cancel_url'    => 'https://my-store.com/cancel',
+    'customer_email' => 'customer@example.com',
+    'customer_name'  => 'Jane Doe',
+    'reference'     => 'ORDER-10024',
+]);
+
+// Redirect the customer to the checkout page
+header('Location: ' . $payment->checkout_url);
+exit;
+```
+
+```Laravel
+use OwnPay\Laravel\Facades\OwnPay;
+
+$payment = OwnPay::createPayment([
+    'amount'        => '500.00',
+    'currency'      => 'USD',
+    'redirect_url'  => 'https://my-store.com/success',
+    'cancel_url'    => 'https://my-store.com/cancel',
+    'customer_email' => 'customer@example.com',
+    'customer_name'  => 'Jane Doe',
+    'reference'     => 'ORDER-10024',
+]);
+
+return redirect($payment->checkout_url);
+```
+
+```Node.js
+import OwnPay from 'ownpay';
+
+const client = new OwnPay('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
+
+const payment = await client.payments.create({
+  amount: '500.00',
+  currency: 'USD',
+  redirect_url: 'https://my-store.com/success',
+  cancel_url: 'https://my-store.com/cancel',
+  customer_email: 'customer@example.com',
+  customer_name: 'Jane Doe',
+  reference: 'ORDER-10024',
+});
+
+console.log('Redirect to:', payment.checkout_url);
+```
+
+```Python
+import ownpay
+
+client = ownpay.Client(
+    base_url="https://pay.yourbrand.com/api/v1",
+    api_key="op_live_abc123.def456"
+)
+
+payment = client.payments.create(
+    amount="500.00",
+    currency="USD",
+    redirect_url="https://my-store.com/success",
+    cancel_url="https://my-store.com/cancel",
+    customer_email="customer@example.com",
+    customer_name="Jane Doe",
+    reference="ORDER-10024",
+)
+
+print(f"Redirect to: {payment['checkout_url']}")
+```
+
+```Go
+package main
+
+import (
+        "fmt"
+        "github.com/own-pay/ownpay-go"
+)
+
+func main() {
+        client := ownpay.NewClient("https://pay.yourbrand.com/api/v1", "op_live_abc123.def456")
+
+        payment, err := client.Payments.Create(ownpay.PaymentParams{
+                Amount:        "500.00",
+                Currency:      "USD",
+                RedirectURL:   "https://my-store.com/success",
+                CancelURL:     "https://my-store.com/cancel",
+                CustomerEmail: "customer@example.com",
+                CustomerName:  "Jane Doe",
+                Reference:     "ORDER-10024",
+        })
+        if err != nil {
+                panic(err)
+        }
+
+        fmt.Println("Redirect to:", payment.CheckoutURL)
+}
+```
+
+```Java
+import org.ownpay.Client;
+import org.ownpay.model.Payment;
+import java.util.Map;
+
+public class Main {
+    public static void main(String[] args) {
+        Client client = new Client(
+            "https://pay.yourbrand.com/api/v1",
+            "op_live_abc123.def456"
+        );
+
+        Payment payment = client.payments().create(Map.of(
+            "amount", "500.00",
+            "currency", "USD",
+            "redirect_url", "https://my-store.com/success",
+            "cancel_url", "https://my-store.com/cancel",
+            "customer_email", "customer@example.com",
+            "customer_name", "Jane Doe",
+            "reference", "ORDER-10024"
+        ));
+
+        System.out.println("Redirect to: " + payment.getCheckoutUrl());
+    }
+}
+```
+
+</CodeGroup>
+
+---
+
+## वेबहुक सत्यापित करना {#verifying-webhooks}
+
+वेबहुक प्रोसेस करने से पहले हमेशा HMAC-SHA256 सिग्नेचर सत्यापित करें। सिग्नेचर `{timestamp}.{raw_body}` को कवर करता है।
+
+<CodeGroup>
+
+```PHP SDK
+<?php
+use OwnPay\Webhook;
+
+$webhook = new Webhook('whsec_your_webhook_secret');
+
+try {
+    $event = $webhook->constructEvent(
+        file_get_contents('php://input'),
+        $_SERVER['HTTP_X_OWNPAY_SIGNATURE'] ?? '',
+        $_SERVER['HTTP_X_OWNPAY_TIMESTAMP'] ?? ''
+    );
+} catch (\OwnPay\Exception\SignatureVerificationException $e) {
+    http_response_code(401);
+    exit('Invalid signature');
+}
+
+if ($event->type === 'payment.completed') {
+    $trx = $event->data;
+    // Fulfill the order using $trx['reference']
+}
+
+http_response_code(200);
+echo 'OK';
+```
+
+```Node.js
+import OwnPay from 'ownpay';
+import crypto from 'crypto';
+
+const webhookSecret = 'whsec_your_webhook_secret';
+
+function verifyWebhook(rawBody, signatureHeader, timestampHeader) {
+  const hmac = crypto.createHmac('sha256', webhookSecret);
+  hmac.update(`${timestampHeader}.${rawBody}`);
+  const expected = `sha256=${hmac.digest('hex')}`;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signatureHeader));
+}
+
+// In your Express handler:
+app.post('/webhooks/ownpay', express.raw({ type: 'application/json' }), (req, res) => {
+  const sig = req.headers['x-ownpay-signature'];
+  const ts = req.headers['x-ownpay-timestamp'];
+
+  if (!verifyWebhook(req.body.toString(), sig, ts)) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  const event = JSON.parse(req.body.toString());
+  if (event.type === 'payment.completed') {
+    console.log('Order fulfilled:', event.data.reference);
+  }
+
+  res.status(200).send('OK');
+});
+```
+
+```Python
+import hmac
+import hashlib
+import json
+from flask import Flask, request, Response
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "whsec_your_webhook_secret"
+
+@app.route("/webhooks/ownpay", methods=["POST"])
+def handle_webhook():
+    sig = request.headers.get("x-ownpay-signature", "")
+    ts = request.headers.get("x-ownpay-timestamp", "")
+    raw = request.get_data()
+
+    expected = "sha256=" + hmac.new(
+        WEBHOOK_SECRET.encode(), (ts + ".").encode() + raw, hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected, sig):
+        return Response("Invalid signature", status=401)
+
+    event = json.loads(raw)
+    if event["type"] == "payment.completed":
+        print(f"Order fulfilled: {event['data']['reference']}")
+
+    return Response("OK", status=200)
+```
+
+</CodeGroup>
+
+---
+
+## ट्रांज़ैक्शन स्थिति क्वेरी करना {#querying-transaction-status}
+
+आप किसी भुगतान की स्थिति सीधे क्वेरी कर सकते हैं, जो तब उपयोगी है जब कोई ग्राहक भुगतान के बाद आपकी साइट पर लौटता है।
+
+<CodeGroup>
+
+```PHP SDK
+<?php
+use OwnPay\Client;
+
+$client = new Client('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
+
+$payment = $client->payments->get('pi_01j0x8kz7m3wd4b9qfhec5rtg6');
+
+if ($payment->status === 'completed') {
+    // Fulfill the order
+} elseif ($payment->status === 'failed') {
+    // Show payment failure to customer
+} else {
+    // Still processing - poll again or wait for webhook
+}
+```
+
+```Node.js
+import OwnPay from 'ownpay';
+
+const client = new OwnPay('https://pay.yourbrand.com/api/v1', 'op_live_abc123.def456');
+
+const payment = await client.payments.get('pi_01j0x8kz7m3wd4b9qfhec5rtg6');
+
+switch (payment.status) {
+  case 'completed':
+    console.log('Fulfill order:', payment.reference);
+    break;
+  case 'failed':
+    console.log('Show failure message');
+    break;
+  default:
+    console.log('Status:', payment.status, '- poll or wait for webhook');
+}
+```
+
+</CodeGroup>
+
+<Tip>
+  प्रोडक्शन इंटीग्रेशन के लिए पोलिंग की बजाय वेबहुक को प्राथमिकता दें। वेबहुक लगभग रियल-टाइम होते हैं और API रेट लिमिट कोटा बर्बाद नहीं करते। स्टेटस क्वेरी का उपयोग केवल फ़ॉलबैक के रूप में तब करें जब कोई वेबहुक छूट गया हो।
+</Tip>
+
+---
+
+## संबंधित पेज {#related-pages}
+
+- [डेवलपर क्विकस्टार्ट](/hi/developer/quickstart) - चरण-दर-चरण इंटीग्रेशन ट्यूटोरियल
+- [API अवलोकन](/hi/api/overview) - पूरा एंडपॉइंट संदर्भ
+- [इकोसिस्टम](/hi/resources/ecosystem) - SDK इंस्टॉलेशन और सामुदायिक इंटीग्रेशन
+- [रेट लिमिटिंग](/hi/resources/rate-limiting) - 429 रिस्पॉन्स और हेडर को समझना

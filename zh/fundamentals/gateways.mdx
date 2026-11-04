@@ -1,0 +1,97 @@
+---
+title: 网关 - 支付提供商集成
+description: "OwnPay 以插件形式连接 123+ 个支付网关。了解网关类型、凭据加密、按品牌分配以及健康检查。"
+keywords: "支付网关, 网关插件, 支付集成, 网关路由, 线下支付, 网关加密"
+sidebarTitle: 网关
+icon: wallet
+---
+
+import LlmsDirective from "/zh/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay 中的**网关**是一个知道如何与特定支付提供商通信的插件——它发送客户的支付信息、接收授权结果，并处理回调和退款。OwnPay 自带 123\+ 个网关插件，涵盖国际银行卡处理商、区域性移动钱包以及银行级集成。
+
+## 网关类型 {#gateway-types}
+
+<Columns>
+  <Column>
+    **在线网关**
+
+    实时支付处理。客户在结账页面输入支付信息，网关即时授权交易。
+
+    示例：Stripe、PayPal、bKash、Nagad、Razorpay、SSLCommerz、Square。
+  </Column>
+  <Column>
+    **手动网关**
+
+    需要人工确认的线下支付方式。系统向客户展示付款说明（银行账号、二维码），员工在核实转账后将该付款标记为已完成。
+
+    示例：银行转账、货到付款、手动发票。
+  </Column>
+</Columns>
+
+## 网关路由的工作原理 {#how-gateway-routing-works}
+
+当客户到达结账页面时，OwnPay 会查看该品牌已启用的网关，并将其作为支付选项展示。路由逻辑非常简单：
+
+1. 加载该品牌所有标记为**启用**的网关。
+2. 按支付货币进行筛选（每个网关通过 `supportedCurrencies()` 声明其支持的货币）。
+3. 在结账页面上展示匹配的网关。
+4. 客户选择其中一个并提交付款。
+
+<Note>
+  OwnPay 目前不执行自动网关故障转移或负载均衡，由客户自行选择网关。如果您需要冗余，请启用多个网关，让客户有其他选择。
+</Note>
+
+## 凭据加密 {#credential-encryption}
+
+网关 API 密钥、密钥串和商户 ID **绝不以明文存储**。保存网关凭据时，OwnPay 会使用由应用程序 `APP_KEY` 派生的密钥，以 **AES-256-GCM** 对其加密。加密后的数据存储在数据库中，只有正在运行的应用程序才能解密。
+
+```php
+// Internally, credentials go through this flow:
+$plaintext = 'sk_live_abc123...';
+$encrypted = openssl_encrypt($plaintext, 'aes-256-gcm', $key, 0, $iv, $tag);
+// $encrypted and $tag are stored in the database
+```
+
+<Warning>
+  如果丢失了 `APP_KEY`，所有加密的网关凭据都将无法恢复。请备份您的 `.env` 文件，并将 `APP_KEY` 存放在安全的密钥管理器中。
+</Warning>
+
+## 按品牌分配网关 {#per-brand-gateway-assignment}
+
+每个品牌独立选择要启用的网关。品牌 A 可能使用 Stripe 和 PayPal，而品牌 B 使用 bKash 和 SSLCommerz。凭据、费用以及启用/禁用状态都限定在品牌的 `merchant_id` 范围内。
+
+## 网关健康检查 {#gateway-health-checks}
+
+OwnPay 会定期 ping 已启用的网关，以验证其可达性。如果某个网关持续未通过健康检查，它会在管理仪表板中被标记，以便您进行排查。可在侧边栏的 **Gateways** 下查看网关状态。
+
+## 常用的受支持网关 {#popular-supported-gateways}
+
+| 网关 | 类型 | 地区 |
+| :-- | :-- | :-- |
+| Stripe | 在线（银行卡、钱包） | 全球 |
+| PayPal | 在线（银行卡、账户） | 全球 |
+| bKash | 在线（移动货币） | 孟加拉国 |
+| Nagad | 在线（移动支付） | 孟加拉国 |
+| SSLCommerz | 在线（银行卡、银行） | 南亚 |
+| Razorpay | 在线（银行卡、UPI、钱包） | 印度 |
+| Square | 在线（银行卡、Apple Pay） | 美国、加拿大、英国、澳大利亚、爱尔兰、法国、西班牙 |
+| GCash | 在线（移动钱包） | 菲律宾 |
+| Aamarpay | 在线（银行卡、银行） | 孟加拉国 |
+| Bank Transfer | 手动（线下） | 任意 |
+
+<Info>
+  此表仅列出部分网关。OwnPay 支持 123\+ 个网关。请在管理面板的 **Gateways** 下查看完整列表，或访问 [GitHub]({{github}})。
+</Info>
+
+## 相关页面 {#related-pages}
+
+- [网关配置](/zh/gateways/configuration) - 各提供商的分步设置
+- [货币](/zh/gateways/currencies) - 管理货币和汇率
+- [支付流程](/zh/fundamentals/payment-flow) - 交易状态和生命周期
+- [插件系统](/zh/fundamentals/plugins) - 网关如何以插件形式构建
+- [构建网关插件](/zh/developer/plugin-types/gateway) - 自定义网关的开发者指南

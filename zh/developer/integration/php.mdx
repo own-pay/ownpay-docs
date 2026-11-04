@@ -1,0 +1,150 @@
+---
+title: "PHP SDK"
+description: "OwnPay 官方 PHP SDK，用于创建支付、验证状态并处理 webhook，提供类型安全的响应。"
+keywords: "PHP SDK, OwnPay PHP, composer, 支付 SDK, webhook 辅助工具, PHP 支付集成"
+sidebarTitle: "PHP SDK"
+icon: "file-code"
+---
+
+OwnPay 官方 PHP SDK 为 Merchant API 提供了类型化客户端、webhook 验证辅助工具以及自动错误处理。
+
+## 安装 {#installation}
+
+```bash
+composer require ownpay/php-sdk
+```
+
+需要 PHP 8.3\+（与 OwnPay 的运行时一致）。
+
+## 创建支付 {#creating-a-payment}
+
+```php
+use OwnPay\SDK\Client;
+
+$client = new Client(
+    apiKey:  $_ENV['OWNPAY_API_KEY'],
+    baseUrl: $_ENV['OWNPAY_BASE_URL'],
+);
+
+$payment = $client->payments()->create([
+    'amount'         => '50.00',
+    'currency'       => 'USD',
+    'customer_email' => 'customer@example.com',
+    'customer_name'  => 'Jane Doe',
+    'description'    => 'Order #1042',
+    'metadata'       => ['order_id' => '1042'],
+    'redirect_url'   => 'https://your-store.com/callback',
+    'cancel_url'     => 'https://your-store.com/cancel',
+]);
+
+// $payment['data']['checkout_url'] - redirect customer here
+// $payment['data']['id']           - store for later verification
+header('Location: ' . $payment['data']['checkout_url']);
+exit;
+```
+
+## 验证支付 {#verifying-a-payment}
+
+客户从结账页面返回后，请在履行订单之前验证支付状态：
+
+```php
+$payment = $client->payments()->get('pay_abc123');
+
+if ($payment['data']['status'] === 'completed') {
+    fulfillOrder($payment['data']['metadata']['order_id']);
+} else {
+    echo 'Payment not completed. Status: ' . $payment['data']['status'];
+}
+```
+
+## 列出交易 {#listing-transactions}
+
+```php
+$transactions = $client->transactions()->list([
+    'status'  => 'completed',
+    'page'    => 1,
+    'per_page' => 20,
+]);
+
+foreach ($transactions['data']['data'] as $txn) {
+    printf("%s  %s %s\n", $txn['id'], $txn['amount'], $txn['currency']);
+}
+```
+
+## 使用 SDK 辅助工具处理 webhook {#webhook-handling-with-sdk-helper}
+
+SDK 包含一个 `Webhook` 类，用于处理签名验证和事件解析。权威的验证参考请参阅 [Webhooks](/zh/api/webhooks)。
+
+```php
+use OwnPay\SDK\Webhook;
+
+$rawBody   = file_get_contents('php://input');
+$signature = $_SERVER['HTTP_X_OWNPAY_SIGNATURE'] ?? '';
+$timestamp = (int) ($_SERVER['HTTP_X_OWNPAY_TIMESTAMP'] ?? 0);
+
+$webhook = new Webhook($_ENV['OWNPAY_WEBHOOK_SECRET']);
+
+try {
+    $event = $webhook->verify($rawBody, $signature, $timestamp);
+} catch (\OwnPay\SDK\Exceptions\InvalidSignatureException $e) {
+    http_response_code(401);
+    exit('Invalid signature');
+} catch (\OwnPay\SDK\Exceptions\StaleEventException $e) {
+    http_response_code(403);
+    exit('Timestamp too old');
+}
+
+// Route by event type
+if ($event->type === 'payment.completed') {
+    fulfillOrder($event->data['metadata']['order_id'] ?? '');
+}
+
+http_response_code(200);
+```
+
+## 错误处理 {#error-handling}
+
+SDK 针对每一类错误都会抛出类型化异常：
+
+```php
+use OwnPay\SDK\Exceptions\{
+    AuthenticationException,
+    ValidationException,
+    NotFoundException,
+    RateLimitException,
+    OwnPayException,
+};
+
+try {
+    $payment = $client->payments()->create($payload);
+} catch (AuthenticationException $e) {
+    // 401 - check your API key
+} catch (ValidationException $e) {
+    // 422 - $e->getFields() returns the field-level errors array
+    foreach ($e->getFields() as $fieldError) {
+        echo $fieldError['field'] . ': ' . $fieldError['message'];
+    }
+} catch (RateLimitException $e) {
+    // 429 - retry after $e->getRetryAfter() seconds
+    sleep($e->getRetryAfter());
+} catch (OwnPayException $e) {
+    // Any other OwnPay error
+    error_log($e->getMessage());
+}
+```
+
+## 环境配置 {#environment-configuration}
+
+```env
+# .env
+OWNPAY_BASE_URL=https://your-domain.com
+OWNPAY_API_KEY=op_live_abc123.def456
+OWNPAY_WEBHOOK_SECRET=whsec_abc123...
+```
+
+## 相关页面 {#related-pages}
+
+- [API 概览](/zh/api/overview)
+- [身份验证](/zh/api/authentication)
+- [Webhooks](/zh/api/webhooks)
+- [Laravel 集成](/zh/developer/integration/laravel)

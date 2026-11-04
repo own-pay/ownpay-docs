@@ -1,0 +1,241 @@
+---
+title: "OwnPay को शेयर्ड होस्टिंग, VPS या Docker पर इंस्टॉल करें"
+description: "OwnPay को शेयर्ड होस्टिंग, VPS या Docker पर डिप्लॉय करें। पूर्वापेक्षा जाँच, चरण-दर-चरण सेटअप और इंस्टॉलेशन के बाद का सत्यापन।"
+keywords: "install payment gateway, cPanel payment processing, self-hosted payments setup, Docker payment platform, PHP payment gateway install, VPS payment gateway, OwnPay इंस्टॉलेशन"
+sidebarTitle: "इंस्टॉलेशन"
+icon: "feather"
+---
+
+import LlmsDirective from "/hi/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay में एक **अंतर्निहित वेब इंस्टॉलर** शामिल है जो आपके सर्वर कॉन्फ़िगरेशन की जाँच करता है, डेटाबेस स्कीमा बनाता है, और आपका मास्टर एडमिनिस्ट्रेटर खाता तैयार करता है। फ़ाइलें अपलोड करें, अपने डोमेन पर जाएँ, और बाकी काम विज़ार्ड संभाल लेता है - कमांड-लाइन अनुभव की आवश्यकता नहीं।
+
+## पूर्वापेक्षा जाँच {#prerequisite-checks}
+
+<AccordionGroup>
+  <Accordion title="सिस्टम आवश्यकताएँ" icon="list-check">
+    | कंपोनेंट | न्यूनतम | अनुशंसित |
+    | :-- | :-- | :-- |
+    | **PHP Runtime** | 8.3 | 8.3\+ |
+    | **MySQL** | 8.0 | 8.0\+ (या MariaDB 10.4\+) |
+    | **मेमोरी** | 512 MB RAM | 2 GB\+ RAM |
+    | **डिस्क** | 1 GB खाली | 10 GB\+ SSD |
+    | **Redis** | वैकल्पिक | कैशिंग के लिए अनुशंसित |
+  </Accordion>
+
+  <Accordion title="आवश्यक PHP एक्सटेंशन" icon="puzzle">
+    सत्यापित करें कि ये सभी सक्रिय हैं: `mbstring`, `pdo_mysql`, `gd`, `curl`, `zip`, `json`, `openssl`, `bcmath`, `intl`।
+
+    जाँचने के लिए टर्मिनल में `php -m` चलाएँ, या अपने होस्टिंग पैनल में PHP Info पेज देखें।
+  </Accordion>
+
+  <Accordion title="फ़ोल्डर अनुमतियाँ" icon="folder">
+    वेब सर्वर को इनमें लिखने में सक्षम होना चाहिए:
+
+    - `storage/` (लॉग, सेशन, कैश, अपलोड)
+    - `public/assets/uploads/` (ब्रांड लोगो, अटैचमेंट)
+  </Accordion>
+</AccordionGroup>
+
+## अपनी डिप्लॉयमेंट विधि चुनें {#choose-your-deployment-method}
+
+<Tabs>
+  <Tab title="शेयर्ड होस्टिंग" icon="world">
+    cPanel, Plesk, DirectAdmin और अधिकांश शेयर्ड होस्टिंग प्रदाताओं (Hostinger, Namecheap, SiteGround, आदि) के साथ काम करता है।
+
+    <Steps>
+      <Step title="रिलीज़ डाउनलोड करें">
+        [GitHub Releases]({{github}}/releases) से नवीनतम `.zip` डाउनलोड करें।
+      </Step>
+      <Step title="अपलोड और एक्सट्रैक्ट करें">
+        File Manager या FTP के माध्यम से `.zip` को अपने वेब रूट (`public_html/`) में अपलोड करें। इसे सीधे रूट फ़ोल्डर में एक्सट्रैक्ट करें।
+
+        <Warning>
+          अगर एक्सट्रैक्शन से `public_html/ownpay-v0.2.0/` जैसा नेस्टेड फ़ोल्डर बनता है, तो सभी फ़ाइलों को एक स्तर ऊपर `public_html/` में ले जाएँ और खाली फ़ोल्डर हटा दें।
+        </Warning>
+      </Step>
+      <Step title="MySQL डेटाबेस बनाएँ">
+        अपने होस्टिंग पैनल में, **ALL PRIVILEGES** के साथ एक नया डेटाबेस और उपयोगकर्ता बनाएँ। होस्ट नोट करें (आमतौर पर `localhost` या `127.0.0.1`)।
+      </Step>
+      <Step title="PHP को 8.3 पर सेट करें">
+        **Select PHP Version** (cPanel), **PHP Settings** (Plesk), या **PHP Version Selector** (DirectAdmin) खोलें और **8.3** चुनें।
+      </Step>
+      <Step title="वेब इंस्टॉलर लॉन्च करें">
+        `https://yourdomain.com/install` पर जाएँ और 4-चरणीय विज़ार्ड का पालन करें: एनवायरनमेंट सत्यापन, डेटाबेस कॉन्फ़िगरेशन, स्कीमा इम्पोर्ट और एडमिन खाता निर्माण।
+      </Step>
+      <Step title="क्रॉन जॉब सेट अप करें">
+        एक क्रॉन जॉब जोड़ें जो हर मिनट चलता है:
+
+        ```bash
+        * * * * * php /home/your_user/public_html/public/index.php cron >> /dev/null 2>&1
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="VPS (Nginx + PHP-FPM)" icon="server">
+    स्टैक पर पूर्ण नियंत्रण। प्रोडक्शन के लिए अनुशंसित।
+
+    <Steps>
+      <Step title="सिस्टम पैकेज इंस्टॉल करें">
+        ```bash
+        sudo apt update && sudo apt upgrade -y
+        sudo apt install -y nginx mysql-server php8.3-fpm php8.3-mysql \
+          php8.3-mbstring php8.3-curl php8.3-xml php8.3-zip \
+          php8.3-gd php8.3-bcmath php8.3-intl \
+          certbot python3-certbot-nginx
+        ```
+      </Step>
+      <Step title="क्लोन करें और अनुमतियाँ सेट करें">
+        ```bash
+        cd /var/www
+        sudo git clone {{github}}.git ownpay
+        cd ownpay
+        sudo chown -R www-data:www-data .
+        sudo chmod -R 775 storage public/assets/uploads
+        ```
+      </Step>
+      <Step title="MySQL डेटाबेस बनाएँ">
+        ```bash
+        sudo mysql -u root -p
+        ```
+
+        ```sql
+        CREATE DATABASE ownpay CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        CREATE USER 'ownpay'@'localhost' IDENTIFIED BY 'STRONG_PASSWORD';
+        GRANT ALL PRIVILEGES ON ownpay.* TO 'ownpay'@'localhost';
+        FLUSH PRIVILEGES;
+        ```
+      </Step>
+      <Step title="Nginx कॉन्फ़िगर करें">
+        `/etc/nginx/sites-available/ownpay` बनाएँ:
+
+        ```nginx
+        server {
+            listen 80;
+            server_name yourdomain.com;
+            root /var/www/ownpay/public;
+            index index.php;
+        
+            location / {
+                try_files $uri $uri/ /index.php?$query_string;
+            }
+        
+            location ~ \.php$ {
+                fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+                fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+                include fastcgi_params;
+            }
+        }
+        ```
+
+        साइट सक्षम करें, कॉन्फ़िग का परीक्षण करें, और रीलोड करें:
+
+        ```bash
+        sudo ln -s /etc/nginx/sites-available/ownpay /etc/nginx/sites-enabled/
+        sudo nginx -t && sudo systemctl reload nginx
+        ```
+      </Step>
+      <Step title="SSL प्रोविज़न करें">
+        ```bash
+        sudo certbot --nginx -d yourdomain.com
+        ```
+      </Step>
+      <Step title="वेब इंस्टॉलर चलाएँ">
+        सेटअप विज़ार्ड पूरा करने के लिए `https://yourdomain.com/install` पर जाएँ।
+      </Step>
+      <Step title="क्रॉन जॉब सेट अप करें">
+        ```bash
+        sudo crontab -u www-data -e
+        ```
+
+        ```bash
+        * * * * * /usr/bin/php /var/www/ownpay/public/index.php cron >> /var/log/ownpay-cron.log 2>&1
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Docker" icon="box">
+    पुनरुत्पादनीय एनवायरनमेंट के लिए कंटेनराइज़्ड डिप्लॉयमेंट।
+
+    <Steps>
+      <Step title="क्लोन और कॉन्फ़िगर करें">
+        ```bash
+        git clone {{github}}.git && cd OwnPay
+        cp .env.example .env
+        # Edit .env with your database credentials and secret key
+        ```
+      </Step>
+      <Step title="कंटेनर शुरू करें">
+        ```bash
+        docker-compose up -d
+        ```
+      </Step>
+      <Step title="माइग्रेशन और सीड चलाएँ">
+        ```bash
+        docker-compose exec app php bin/migrate
+        docker-compose exec app php bin/seed
+        ```
+      </Step>
+      <Step title="सेटअप पूरा करें">
+        अपना एडमिन खाता और पहला ब्रांड कॉन्फ़िगर करने के लिए `http://localhost:8080/install` पर जाएँ।
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## इंस्टॉलेशन के बाद का सत्यापन {#post-installation-verification}
+
+इंस्टॉलर पूरा होने के बाद, पुष्टि करें कि सब कुछ काम कर रहा है:
+
+<Steps>
+  <Step title="सत्यापित करें कि डैशबोर्ड लोड होता है">
+    `https://yourdomain.com/login` पर जाएँ और आपके द्वारा बनाए गए एडमिन क्रेडेंशियल से साइन इन करें। आपको डैशबोर्ड दिखना चाहिए।
+  </Step>
+  <Step title="पुष्टि करें कि क्रॉन चल रहा है">
+    दो मिनट प्रतीक्षा करें, फिर शेड्यूल्ड टास्क प्रविष्टियों के लिए सिस्टम लॉग जाँचें। अगर कोई प्रविष्टि नहीं दिखती, तो सत्यापित करें कि क्रॉन कमांड का पाथ सही है।
+  </Step>
+  <Step title="SMTP कॉन्फ़िगर करें">
+    **System \> Settings \> Mail Settings** पर जाएँ और अपने SMTP क्रेडेंशियल दर्ज करें। डिलीवरी की पुष्टि के लिए एक टेस्ट ईमेल भेजें।
+  </Step>
+  <Step title="टू-फ़ैक्टर ऑथेंटिकेशन सक्षम करें">
+    **My Account** पर जाएँ और 2FA सक्षम करें। मास्टर एडमिन खाते के लिए इसकी पुरज़ोर अनुशंसा की जाती है।
+  </Step>
+</Steps>
+
+## समस्या निवारण {#troubleshooting}
+
+<AccordionGroup>
+  <Accordion title="500 internal server error" icon="alert-triangle">
+    - वास्तविक त्रुटि संदेश देखने के लिए `.env` में `APP_DEBUG=true` सेट करें।
+    - स्टैक ट्रेस के लिए `storage/logs/` जाँचें।
+    - सुनिश्चित करें कि वेब सर्वर `storage/` और `public/assets/uploads/` पढ़ सकता है।
+  </Accordion>
+
+  <Accordion title="खाली पेज / सफ़ेद स्क्रीन" icon="app-window">
+    - सत्यापित करें कि सभी आवश्यक PHP एक्सटेंशन लोड हैं (`php -m`)।
+    - पुष्टि करें कि `php.ini` में `memory_limit` कम से कम `512M` है।
+  </Accordion>
+
+  <Accordion title="डेटाबेस कनेक्शन विफल" icon="database">
+    - DB होस्ट फ़ील्ड में `localhost` के बजाय `127.0.0.1` का उपयोग करें।
+    - सत्यापित करें कि उपयोगकर्ता के पास डेटाबेस पर `ALL PRIVILEGES` हैं।
+    - पुष्टि करें कि MySQL पोर्ट `3306` पर सुन रहा है।
+  </Accordion>
+
+  <Accordion title="Permission denied त्रुटियाँ" icon="lock">
+    - शेयर्ड होस्टिंग पर, File Manager के माध्यम से `storage/` को `755` या `775` पर सेट करें।
+    - VPS पर, `sudo chown -R www-data:www-data storage/` चलाएँ।
+  </Accordion>
+</AccordionGroup>
+
+## संबंधित पेज {#related-pages}
+
+- [क्विकस्टार्ट](/hi/quickstart) - अपना पहला गेटवे कॉन्फ़िगर करें और एक टेस्ट पेमेंट स्वीकार करें
+- [OwnPay कैसे काम करता है](/hi/fundamentals/how-ownpay-works) - आर्किटेक्चर अवलोकन
+- [परफ़ॉर्मेंस और स्केलिंग](/hi/resources/performance-scaling) - प्रोडक्शन ट्रैफ़िक के लिए ऑप्टिमाइज़ करें
+- [सुरक्षा और अनुपालन](/hi/resources/security-compliance) - अपने डिप्लॉयमेंट को सुरक्षित बनाएँ
+- [सामान्य त्रुटियाँ](/hi/resources/common-errors) - समस्या निवारण संदर्भ

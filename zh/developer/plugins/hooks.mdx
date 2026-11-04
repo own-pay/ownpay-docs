@@ -1,0 +1,145 @@
+---
+title: 钩子参考
+description: "按领域组织的 WordPress 风格动作和过滤器钩子完整目录：支付、网关、结账、系统、管理以及插件生命周期。"
+keywords: "钩子参考, 动作钩子, 过滤器钩子, EventManager, 支付钩子, 网关钩子, 结账钩子, 系统钩子"
+sidebarTitle: 钩子
+icon: anchor
+---
+
+钩子系统是插件与 OwnPay 核心交互的主要方式。它采用 WordPress 风格的**动作**（触发即忘）和**过滤器**（数据管道），由 `OwnPay\Event\EventManager` 实现。
+
+## API 概要 {#api-summary}
+
+### 动作 {#actions}
+
+```php
+// Register
+$events->addAction(string $hook, callable $callback, int $priority = 10, int $acceptedArgs = 1): void;
+
+// Fire (core only)
+$events->doAction(string $hook, mixed ...$args): void;
+```
+
+### 过滤器 {#filters}
+
+```php
+// Register
+$events->addFilter(string $hook, callable $callback, int $priority = 10, int $acceptedArgs = 2): void;
+
+// Apply (core only)
+$result = $events->applyFilter(string $hook, mixed $value, mixed ...$args): mixed;
+```
+
+回调按优先级升序执行（数字越小越先运行）。默认优先级为 10。
+
+## 何时使用动作或过滤器 {#when-to-use-actions-vs-filters}
+
+| 以下情况使用动作…… | 以下情况使用过滤器…… |
+| --- | --- |
+| 响应某个事件（支付完成） | 在数据保存之前修改它 |
+| 发送通知 | 更改模板路径 |
+| 写入外部 API | 在列表中添加或移除项目 |
+| 记录日志 | 在管道中转换值 |
+
+## 钩子目录 {#hook-catalog}
+
+### 支付钩子 {#payment-hooks}
+
+| 钩子 | 类型 | 参数 | 说明 |
+| --- | --- | --- | --- |
+| `payment.intent.created` | Action | `array $intent` | 已生成结账 intent |
+| `payment.intent.expired` | Action | `array $intent` | Intent 超时且未支付 |
+| `payment.transaction.created` | Action | `array $transaction` | 交易以 `pending` 状态录入 |
+| `payment.transaction.completed` | Action | `array $transaction` | 交易成功结算 |
+| `payment.transaction.failed` | Action | `array $transaction` | 交易被拒绝或出错 |
+| `payment.transaction.cancelled` | Action | `array $transaction` | 客户已取消 |
+| `payment.transaction.before_create` | Filter | `array $data`, `int $merchantId` → `array` | 在写入数据库之前修改列 |
+| `payment.amount.calculate` | Filter | `string $amount`, `array $context` → `string` | 调整金额（手续费、附加费） |
+| `payment.fee.calculate` | Filter | `string $fee`, `array $context` → `string` | 覆盖动态结算费用 |
+
+### 网关钩子 {#gateway-hooks}
+
+| 钩子 | 类型 | 参数 | 说明 |
+| --- | --- | --- | --- |
+| `gateway.capture.before` | Filter | `array $params`, `string $slug`, `int $merchantId` → `array` | 修改发送给网关适配器的参数 |
+| `gateway.capture.after` | Action | `array $response`, `string $slug` | 网关返回响应之后 |
+| `gateway.webhook.{slug}` | Action | `array $payload`, `string $slug` | 特定网关 slug 的传入 webhook |
+
+<Note>
+  `gateway.webhook.{slug}` 中的 `{slug}` 会被替换为网关插件的 slug（例如 `gateway.webhook.gateway-stripe`）。
+</Note>
+
+### 结账钩子 {#checkout-hooks}
+
+| 钩子 | 类型 | 参数 | 说明 |
+| --- | --- | --- | --- |
+| `checkout.before` | Action | `array $transaction` | 结账布局渲染之前 |
+| `checkout.render` | Filter | `array $data` → `array` | 过滤 Twig 视图上下文变量 |
+| `checkout.template` | Filter | `string $templatePath` → `string` | 覆盖布局模板路径 |
+| `checkout.status.template` | Filter | `string $templatePath` → `string` | 覆盖结果页面模板 |
+| `checkout.head` | Action | 无 | 注入 `<link>` 和 `<style>` 标签 |
+| `checkout.footer` | Action | 无 | 注入 `<script>` 标签 |
+| `checkout.gateway.selected` | Action | `array $transaction`, `string $gateway` | 客户选择了网关 |
+| `checkout.manual_verify.submitted` | Action | `array $transaction`, `array $proof` | 已上传手动付款凭证 |
+| `checkout.csp.sources` | Filter | `array $sources` → `array` | 添加允许的内容安全策略来源 |
+
+### 系统钩子 {#system-hooks}
+
+| 钩子 | 类型 | 参数 | 说明 |
+| --- | --- | --- | --- |
+| `system.boot` | Action | 无 | 早期引导 |
+| `system.shutdown` | Action | 无 | 优雅关闭 |
+| `system.request` | Filter | `Request $request` → `Request` | 过滤入站 HTTP 请求 |
+| `system.response` | Filter | `Response $response`, `Request $request` → `Response` | 过滤最终响应内容 |
+| `system.middleware.pipeline` | Filter | `array $middleware` → `array` | 添加或移除全局中间件 |
+
+### 管理钩子 {#admin-hooks}
+
+| 钩子 | 类型 | 参数 | 说明 |
+| --- | --- | --- | --- |
+| `admin.middleware` | Filter | `array $middleware` → `array` | 添加管理端专用中间件 |
+| `admin.menu` | Action | 无 | 向管理侧边栏添加项目 |
+
+### 插件生命周期钩子 {#plugin-lifecycle-hooks}
+
+| 钩子 | 类型 | 参数 | 说明 |
+| --- | --- | --- | --- |
+| `plugin.installed` | Action | `string $slug`, `array $manifest` | ZIP 解压之后 |
+| `plugin.activated` | Action | `string $slug`, `int $migrationsCount`, `int $brandId` | 激活完成 |
+| `plugin.deactivated` | Action | `string $slug`, `int $brandId` | 插件已暂停 |
+| `plugin.uninstalled` | Action | `string $slug` | 文件已删除 |
+
+## 钩子注册模式 {#hook-registration-pattern}
+
+在插件的 `register()` 方法中注册所有钩子。钩子会自动归属到你的插件 slug，并在停用时被清理：
+
+```php
+public function register(EventManager $events, Container $container): void
+{
+    $events->addAction('payment.transaction.completed', function (array $txn) use ($container): void {
+        $service = $container->get(NotificationService::class);
+        $service->notify($txn);
+    }, priority: 15);
+
+    $events->addFilter('payment.fee.calculate', function (string $fee, array $ctx): string {
+        return bcadd($fee, '0.50', 2); // flat $0.50 fee add-on
+    }, priority: 20);
+}
+```
+
+## 架构不变量 {#architectural-invariants}
+
+以下约束任何插件都无法绕过：
+
+1. **安全中间件不可移除** - 你无法从管道中移除身份验证、CSRF 或 TenantScope 中间件
+2. **TenantScope 不可绕过** - 每个请求都限定在某个品牌范围内；插件无法访问其他品牌的数据
+3. **错误隔离** - 每个回调都在各自的 try/catch 中运行。出错的插件绝不会导致核心崩溃
+4. **金额使用 BCMath** - 钩子中的所有货币值都必须使用 `bcadd`、`bcsub`、`bcmul`、`bcdiv`、`bccomp`
+5. **钩子不得写入账本** - 插件不能直接向复式记账账本过账
+
+## 相关页面 {#related-pages}
+
+- [事件参考](/zh/developer/plugins/events)
+- [能力参考](/zh/developer/plugins/capabilities)
+- [插件生命周期](/zh/developer/plugins/lifecycle)
+- [插件概览](/zh/developer/plugins/overview)

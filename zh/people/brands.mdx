@@ -1,0 +1,69 @@
+---
+title: "创建和管理品牌"
+description: "如何在 OwnPay 中创建、配置品牌，并为其分配网关和员工，以实现多租户支付运营。"
+keywords: "品牌, 多租户, 品牌配置, 网关分配, 员工分配, brands"
+sidebarTitle: "品牌"
+icon: "building-store"
+---
+
+品牌是 OwnPay 中的核心组织单元。每个品牌都作为一个独立的支付店面运营，拥有自己的货币、网关、结账外观和员工分配。如果您刚接触品牌概念，请先阅读 [/fundamentals/brands 中的说明](/zh/fundamentals/brands)。
+
+## 创建品牌 {#create-a-brand}
+
+1. 以超级管理员身份登录管理后台。
+2. 在侧边栏中前往 **People** → **Brands**。
+3. 点击 **\+ Add Brand**。
+4. 填写品牌详细信息（见下表）。
+5. 点击 **Create** 保存。
+
+## 配置品牌设置 {#configure-brand-settings}
+
+创建品牌后，点击品牌行上的 **Edit** 以调整其配置。
+
+| 设置 | 类型 | 必填 | 描述 |
+| --- | --- | --- | --- |
+| **Business name** | 文本 | 是 | 在结账页面和发票上显示的公开名称 |
+| **Slug** | 文本 | 是 | URL 安全的标识符（仅限小写字母和连字符） |
+| **Default currency** | 选择 | 是 | 账本和结账使用的基础货币（例如 USD、BDT、EUR） |
+| **Timezone** | 选择 | 是 | 用于报表、发票到期日和交易时间戳的时区 |
+| **Contact email** | 电子邮件 | 否 | 向客户显示的通用支持邮箱 |
+| **Phone** | 文本 | 否 | 公开联系电话 |
+| **Status** | 选择 | 是 | `Active`（上线）、`Suspended`（阻止结账）或 `Pending` |
+| **Custom domain** | 文本 | 否 | 用于白标结账的完整域名（例如 `pay.example.com`） |
+| **Logo** | 文件上传 | 否 | 结账页面上的品牌标志。推荐：200×60 px PNG |
+| **Primary color** | 颜色选择器 | 否 | 结账按钮和链接的强调色 |
+| **Support email** | 电子邮件 | 否 | 结账页面上客户支持咨询的发送目标邮箱 |
+
+## 为品牌分配网关 {#assign-gateways-to-a-brand}
+
+1. 点击 **Edit** 打开品牌编辑器。
+2. 导航至 **Gateways** 部分。
+3. 切换开启您要为此品牌启用的支付网关。
+4. 只有支持该品牌默认货币的网关才会显示为选项。
+5. 点击 **Save**。
+
+<Note>
+  网关必须先在 **Gateways & Currencies** 下进行全局配置，然后才能分配给品牌。品牌分配控制该品牌结账时显示哪些网关。
+</Note>
+
+## 分配员工 {#assign-staff-members}
+
+1. 前往 **People** → **Staff**。
+2. 点击该员工所在行的 **Edit**。
+3. 在品牌分配部分，选择该员工可以访问的品牌。
+4. 为每个品牌选择角色级别。
+5. 点击 **Save**。
+
+员工只能看到其被分配品牌的数据。没有任何品牌分配的员工无法访问任何支付数据。
+
+<Warning>
+  在品牌处理过交易后，请勿更改其默认货币。这会导致账本和报表出现不一致。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [品牌概念](/zh/fundamentals/brands) - 说明品牌在 OwnPay 中如何运作
+- [员工](/zh/people/staff) - 邀请和管理团队成员
+- [角色](/zh/people/roles) - 内置角色和权限矩阵
+- [支付网关](/zh/gateways/configuration) - 配置网关凭据
+- [域名](/zh/system/domains) - 验证自定义品牌域名的 DNS

@@ -1,0 +1,139 @@
+---
+title: "API 错误码与 HTTP 状态参考"
+description: "OwnPay API 错误码、HTTP 状态码、错误响应结构的完整参考，以及如何处理身份验证、校验和网关错误。"
+keywords: "API 错误, 错误码, HTTP 状态码, 校验错误, 错误响应格式, API 故障排查"
+sidebarTitle: "错误"
+icon: "alert-triangle"
+---
+
+OwnPay 使用标准 HTTP 状态码和统一的 JSON 错误封装结构，便于你以编程方式处理失败情况。每个非 2xx 响应都会返回机器可读的 `error.code` 和人类可读的 `error.message`。
+
+## 错误响应结构 {#error-response-structure}
+
+所有错误响应都采用相同的结构：
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid or has been revoked.",
+    "details": {}
+  }
+}
+```
+
+| 字段 | 类型 | 描述 |
+| --- | --- | --- |
+| `success` | boolean | 错误响应中始终为 `false`。 |
+| `error.code` | string | 机器可读的错误标识符。请使用它进行程序化处理。 |
+| `error.message` | string | 人类可读的描述，可安全记录到日志。 |
+| `error.details` | object | 可选。字段级校验错误或网关返回的数据。 |
+
+## HTTP 状态码 {#http-status-codes}
+
+| 状态 | 含义 | 出现场景 |
+| --- | --- | --- |
+| `200` | OK | 请求成功。 |
+| `201` | Created | 资源已创建（支付、退款、发票）。 |
+| `400` | Bad Request | JSON 格式错误或参数无效。 |
+| `401` | Unauthorized | API 密钥缺失、无效、已过期或已撤销。 |
+| `403` | Forbidden | API 密钥作用域不足以访问该端点。 |
+| `404` | Not Found | 资源不存在或属于其他品牌。 |
+| `409` | Conflict | 幂等性冲突或资源重复。 |
+| `422` | Unprocessable Entity | 一个或多个字段校验失败。 |
+| `429` | Too Many Requests | 超出速率限制。请参阅 [速率限制](/zh/resources/rate-limiting)。 |
+| `500` | Internal Server Error | 意外的服务器错误。可通过退避策略安全重试。 |
+| `502` / `503` | Bad Gateway / Service Unavailable | 上游网关超时或正在维护。建议重试。 |
+
+## 常见错误码 {#common-error-codes}
+
+### 身份验证 {#authentication}
+
+| 错误码 | HTTP | 含义 |
+| --- | --- | --- |
+| `invalid_api_key` | 401 | 未找到密钥或格式错误。 |
+| `expired_api_key` | 401 | 密钥已超过有效期。 |
+| `revoked_api_key` | 401 | 密钥已被手动撤销。 |
+| `insufficient_permissions` | 403 | 密钥作用域不足以访问此端点。 |
+| `missing_authorization_header` | 401 | 缺少 `Authorization` 请求头。 |
+
+关于如何传递凭据，请参阅 [身份验证](/zh/api/authentication)。
+
+### 校验 {#validation}
+
+| 错误码 | HTTP | 含义 |
+| --- | --- | --- |
+| `validation_failed` | 422 | 一个或多个字段校验失败。请检查 `error.details`。 |
+| `invalid_currency` | 422 | 该品牌未启用此货币代码。 |
+| `invalid_amount` | 422 | 金额为零、负数或超出网关限制。 |
+| `unsupported_gateway` | 422 | 该品牌未启用所请求的网关。 |
+
+### 资源错误 {#resource-errors}
+
+| 错误码 | HTTP | 含义 |
+| --- | --- | --- |
+| `not_found` | 404 | 资源不存在。 |
+| `payment_not_found` | 404 | 无法识别的支付 ID。 |
+| `already_refunded` | 409 | 该支付已全额退款。 |
+| `idempotency_conflict` | 409 | 相同的 `Idempotency-Key` 被用于不同的请求数据。 |
+
+### 网关错误 {#gateway-errors}
+
+| 错误码 | HTTP | 含义 |
+| --- | --- | --- |
+| `gateway_declined` | 402 | 网关拒绝了该交易。请参阅 `error.details`。 |
+| `gateway_timeout` | 502 | 上游网关未能及时响应。 |
+| `gateway_unavailable` | 503 | 网关已被临时禁用或正在维护。 |
+
+### 速率限制 {#rate-limits}
+
+| 错误码 | HTTP | 含义 |
+| --- | --- | --- |
+| `rate_limit_exceeded` | 429 | 请求过多。重试前请读取 `Retry-After` 请求头。 |
+
+## 校验错误详情 {#validation-error-details}
+
+校验失败时会包含一个 `details` 对象，将每个字段映射到其错误消息：
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "validation_failed",
+    "message": "The given data was invalid.",
+    "details": {
+      "amount": ["The amount must be at least 1."],
+      "currency": ["The selected currency is invalid."]
+    }
+  }
+}
+```
+
+## 处理错误 {#handling-errors}
+
+<Steps>
+  <Step title="检查 HTTP 状态">
+    根据状态码决定是重试、向用户展示错误，还是静默记录日志。
+  </Step>
+  <Step title="根据 `error.code` 分支处理">
+    切勿解析 `error.message`。错误码在各版本间保持稳定，而消息内容则不然。
+  </Step>
+  <Step title="安全重试">
+    遇到 `429`、`500`、`502` 和 `503` 时使用指数退避进行重试。重试时务必发送 `Idempotency-Key`。
+  </Step>
+  <Step title="记录完整的错误封装">
+    将 `error.code`、`error.message` 和 `error.details` 与请求 ID 一同保存，以便调试。
+  </Step>
+</Steps>
+
+<Tip>
+  在每个会修改数据的请求中都加上 `Idempotency-Key` 请求头。这样你可以安全地重试，而不会创建重复的支付或退款。
+</Tip>
+
+## 相关内容 {#related}
+
+- [身份验证](/zh/api/authentication)
+- [Webhooks](/zh/api/webhooks)
+- [速率限制](/zh/resources/rate-limiting)
+- [常见错误](/zh/resources/common-errors)

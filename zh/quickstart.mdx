@@ -1,0 +1,198 @@
+---
+title: "快速入门 - 5 分钟内接受您的第一笔付款"
+description: "部署 OwnPay、创建品牌、启用支付网关并接受一笔测试付款。从零到处理付款的最快路径。"
+keywords: "快速入门, 支付网关设置, 第一笔付款, 自托管支付, 支付教程, OwnPay 设置, quickstart"
+sidebarTitle: "快速入门"
+icon: "rocket"
+---
+
+import LlmsDirective from "/zh/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+在五分钟内让您的自托管支付网关运行起来并接受一笔测试付款。本指南将带您完成每一个步骤，从部署 OwnPay 到完成一笔交易。
+
+<Info>
+  希望集成 API 的开发者应改为从[开发者快速入门](/zh/developer/quickstart)开始。
+</Info>
+
+## 前提条件 {#prerequisites}
+
+开始之前，请确保您具备：
+
+- **PHP 8.3\+**，并启用 `bcmath`、`pdo_mysql`、`mbstring`、`curl`、`gd`、`zip`、`json`、`openssl`、`intl`
+- **MySQL 8\+**（或 MariaDB 10.4\+）
+- **一个启用 HTTPS 的域名** - 处理付款需要 SSL
+- **大约 5 分钟**的专注时间
+
+## 第 1 步：部署 OwnPay {#step-1-deploy-ownpay}
+
+选择您的托管环境。每个标签页都涵盖了基本要点，完整指南请访问[安装](/zh/installation)。
+
+<Tabs>
+  <Tab title="Shared Hosting" icon="world">
+    适用于 cPanel、Plesk、DirectAdmin 以及大多数共享主机。
+
+    1. 从 [GitHub Releases]({{github}}/releases) 下载最新版本。
+    2. 将 `.zip` 上传到您的网站根目录（`public_html/`）并解压。
+    3. 在主机控制面板中将 PHP 设置为 **8.3**。
+    4. 创建一个 MySQL 数据库和拥有 **ALL PRIVILEGES** 权限的用户。
+
+    <Tip>
+      如果解压后生成了嵌套文件夹（例如 `public_html/ownpay-v0.2.0/`），请将所有文件上移一级，直接放到 `public_html/` 中。
+    </Tip>
+  </Tab>
+  <Tab title="VPS with Nginx" icon="server">
+    适用于拥有完整 root 权限的 Ubuntu/Debian 服务器。
+
+    ```bash
+    # Install dependencies
+    sudo apt update && sudo apt install -y nginx mysql-server \
+      php8.3-fpm php8.3-mysql php8.3-mbstring php8.3-curl \
+      php8.3-xml php8.3-zip php8.3-gd php8.3-bcmath \
+      php8.3-intl certbot python3-certbot-nginx
+    
+    # Clone and configure
+    cd /var/www
+    sudo git clone {{github}}.git ownpay
+    cd ownpay
+    sudo chown -R www-data:www-data .
+    sudo chmod -R 775 storage public/assets/uploads
+    ```
+
+    将您的 Nginx server 块指向 `/var/www/ownpay/public`，并使用 `certbot` 配置 SSL。完整详情请参阅[安装指南](/zh/installation)。
+  </Tab>
+  <Tab title="Docker" icon="box">
+    用于本地开发或云编排的容器化部署。
+
+    ```bash
+    git clone {{github}}.git && cd OwnPay
+    cp .env.example .env
+    # Edit .env with your database credentials
+    docker-compose up -d
+    docker-compose exec app php bin/migrate
+    docker-compose exec app php bin/seed
+    ```
+
+    访问 `http://localhost:8080/install` 完成设置向导。
+  </Tab>
+</Tabs>
+
+## 第 2 步：运行网页安装程序 {#step-2-run-the-web-installer}
+
+打开浏览器并访问 `https://yourdomain.com/install`。设置向导将带您完成四个阶段：
+
+<Steps>
+  <Step title="连接数据库">
+    输入您在第 1 步中创建的 MySQL 主机、数据库名称、用户名和密码。向导会测试连接并确认其可以读写。
+  </Step>
+  <Step title="导入数据库结构">
+    OwnPay 会自动创建所有必需的表，包括账本账户、品牌、网关、交易和设置。无需手动编写 SQL。
+  </Step>
+  <Step title="创建管理员账户">
+    使用您的电子邮件和强密码注册一个主管理员。该账户拥有跨所有品牌的完整系统访问权限。
+  </Step>
+  <Step title="生成 API 密钥">
+    向导会为 Merchant、Mobile 和 Admin API 生成您的第一组 API 密钥。请妥善保存，密钥（secret）不会再次显示。
+  </Step>
+</Steps>
+
+<Warning>
+  首次登录后，请在 **My Account** 下更改管理员密码并启用双因素身份验证。
+</Warning>
+
+## 第 3 步：创建您的第一个品牌 {#step-3-create-your-first-brand}
+
+**品牌**是您的独立商户租户，拥有自己的网关、客户、交易和账本。
+
+1. 在侧边栏中前往 **People \> Brands**。
+2. 点击 **Add Brand**。
+3. 填写：
+   - **品牌名称** - 客户看到的显示名称（例如"Acme Store"）
+   - **默认货币** - 此品牌的主要货币
+   - **时区** - 用于报表和时间戳
+   - **标志** - 上传用于结账页面的品牌标志
+
+<Note>
+  您随时可以添加更多品牌。每个品牌都与其他品牌完全隔离运行。
+</Note>
+
+## 第 4 步：启用支付网关 {#step-4-activate-a-payment-gateway}
+
+1. 在侧边栏中前往 **Gateways**。
+2. 点击 **Add Gateway** 并从可用的服务商中选择：
+   <CardGroup cols={3}>
+     <Card title="Stripe" icon="credit-card">
+       银行卡、Apple Pay、Google Pay - 全球覆盖。
+     </Card>
+     <Card title="bKash" icon="device-mobile">
+       移动钱包 - 孟加拉国。
+     </Card>
+     <Card title="PayPal" icon="wallet">
+       PayPal 账户和银行卡 - 全球。
+     </Card>
+     <Card title="Nagad" icon="device-mobile">
+       移动支付 - 孟加拉国。
+     </Card>
+     <Card title="SSLCommerz" icon="shield">
+       银行卡和银行转账 - 南亚。
+     </Card>
+     <Card title="Razorpay" icon="credit-card">
+       银行卡、UPI、钱包 - 印度。
+     </Card>
+   </CardGroup>
+3. 输入您的服务商凭据（API key、secret、merchant ID）。
+4. 打开 **Active** 开关，为您的品牌启用该网关。
+
+<Info>
+  所有网关凭据都使用 AES-256-GCM 进行静态加密。OwnPay 绝不会在数据库中存储原始密钥。
+</Info>
+
+## 第 5 步：创建付款链接 {#step-5-create-a-payment-link}
+
+1. 前往 **Payments \> Payment Links**。
+2. 点击 **Create Payment Link**。
+3. 填写：
+   - **标题** - 付款的描述（例如"Pro Plan - Monthly"）
+   - **金额** - 收费金额
+   - **货币** - 默认为您品牌的货币
+4. 保存链接。
+
+OwnPay 会生成一个唯一的 URL，您可以通过电子邮件、聊天分享，或嵌入到您的网站上。
+
+## 第 6 步：测试结账 {#step-6-test-the-checkout}
+
+1. 在无痕浏览器窗口中打开付款链接。
+2. 在结账页面上选择您已启用的网关。
+3. 使用网关的沙盒/测试模式凭据完成一笔测试付款。
+4. 确认您看到了成功页面。
+
+<Tip>
+  此步骤请使用网关的**测试模式**。像 `4242 4242 4242 4242` 这样的 Stripe 测试卡完全可用。不会产生真实的资金往来。
+</Tip>
+
+## 下一步 {#what’s-next}
+
+<CardGroup cols={3}>
+  <Card title="在您的网站上接受付款" icon="code" href="/zh/developer/quickstart">
+    使用商户 API、webhook 和 SDK 将 OwnPay 集成到您的应用中。
+  </Card>
+
+  <Card title="设置自定义域名" icon="world" href="/zh/system/domains">
+    在 `pay.yourbrand.com` 上提供结账服务，支持自动 SSL 和白标品牌。
+  </Card>
+
+  <Card title="邀请您的团队" icon="users" href="/zh/people/staff">
+    添加具有基于角色权限的员工，让您的团队协作管理付款。
+  </Card>
+</CardGroup>
+
+## 相关页面 {#related-pages}
+
+- [安装](/zh/installation) - 适用于所有环境的详细部署说明
+- [OwnPay 的工作原理](/zh/fundamentals/how-ownpay-works) - 架构和概念概览
+- [网关配置](/zh/gateways/configuration) - 每个服务商的完整设置指南
+- [付款流程](/zh/fundamentals/payment-flow) - 了解交易状态和生命周期
+- [开发者快速入门](/zh/developer/quickstart) - API 集成指南

@@ -1,0 +1,108 @@
+---
+title: "账本 - 支付的复式记账"
+description: "OwnPay 使用复式记账，以 bcmath 精度和品牌隔离，将每一笔付款、费用和转账记录为平衡的借贷对。"
+keywords: "复式记账账本, 支付会计, 记账, 日记账分录, 财务对账, bcmath, T 型账户"
+sidebarTitle: "账本"
+icon: "book"
+---
+
+import LlmsDirective from "/zh/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+每当 OwnPay 中发生资金变动——客户付款、网关扣除费用、发起退款——系统都会将其记录为一对平衡的日记账分录。这就是**复式记账**，与会计软件和银行使用的方法相同。这意味着您始终可以追溯资金的来源和去向，并且借方总额始终等于贷方总额。
+
+## OwnPay 中复式记账的工作方式 {#how-double-entry-works-in-ownpay}
+
+当一笔 \$100 的付款通过 Stripe 完成时（网关费用为 \$2.90），OwnPay 会在三个账户中创建四条账本分录：
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+graph LR
+subgraph "现金账户（资产）"
+C1[借方 $97.10]
+end
+subgraph "网关手续费支出"
+G1[借方 $2.90]
+end
+subgraph "客户应收款（资产）"
+R1[贷方 $100.00]
+end
+R1 -->|"付款完成"| C1
+R1 -->|"付款完成"| G1
+style C1 fill:#e8f5e9,stroke:#2e7d32
+style G1 fill:#fce4ec,stroke:#c62828
+style R1 fill:#e3f2fd,stroke:#1565c0
+`}>
+</Mermaid>
+
+最终效果：**\$100.00 贷方 = \$97.10 借方 \+ \$2.90 借方**。账目平衡为零。
+
+## 账户类型 {#account-types}
+
+OwnPay 使用标准的 GAAP 账户类别：
+
+| 账户类型 | 示例 | 借方影响 | 贷方影响 |
+| :-- | :-- | :-- | :-- |
+| **资产** | 现金、客户应收款 | 余额增加 | 余额减少 |
+| **费用** | 网关手续费收入、平台费 | 余额增加 | 余额减少 |
+| **负债** | 应付退款 | 余额减少 | 余额增加 |
+| **权益** | 留存收益 | 余额减少 | 余额增加 |
+
+## 余额计算 {#balance-calculation}
+
+所有金额计算都使用 PHP 的 `bcmath` 扩展——绝不使用浮点运算。余额使用 `bccomp()` 以 **4 位小数精度**进行校验。
+
+```php
+// Internal balance validation (simplified)
+$debits  = bcadd($entry1->debit, $entry2->debit, 4);  // "100.0000"
+$credits = bcadd($entry1->credit, $entry2->credit, 4); // "100.0000"
+
+if (bccomp($debits, $credits, 4) !== 0) {
+    throw new InvalidArgumentException('Journal entries must balance');
+}
+```
+
+<Warning>
+  切勿手动更新 `op_ledger_accounts.balance` 列。请始终使用 `LedgerService`——直接编辑 SQL 会导致对账不一致。
+</Warning>
+
+## 防止重复记账 {#double-post-prevention}
+
+OwnPay 会防止同一笔付款被记录两次。在插入账本分录之前，系统会获取一个行锁：
+
+```sql
+SELECT * FROM op_ledger_transactions
+WHERE merchant_id = ? AND reference_type = ? AND reference_id = ?
+FOR UPDATE
+```
+
+如果已存在匹配的行，则跳过该操作。此过程在数据库事务中运行，因此并发请求会被安全地串行化。
+
+## 品牌隔离 {#brand-isolation}
+
+账本账户限定于某个 `merchant_id`（品牌）。品牌 A 的现金余额与品牌 B 完全独立。存储库在查询层面强制执行这一点：
+
+```php
+$account = $ledgerRepo->findOrCreateAccount($name, $type, $currency, $merchantId);
+```
+
+## 对账 {#reconciliation}
+
+您可以随时将账本余额与网关结算进行核对。OwnPay 提供了一个 CLI 对账命令：
+
+```bash
+php public/index.php admin/reconcile --merchant=YOUR_MERCHANT_ID
+```
+
+该命令会将 OwnPay 记录的交易与网关报告的总额进行比较，并标记任何差异。如需图形界面版本，请参阅管理仪表板中的[余额验证](/zh/reports/balance-verification)页面。
+
+## 相关页面 {#related-pages}
+
+- [支付 - 账本](/zh/payments/ledger) - 在界面中查看账本分录和日记账详情
+- [余额验证](/zh/reports/balance-verification) - 从仪表板运行对账审计
+- [品牌](/zh/fundamentals/brands) - 了解品牌级账本隔离
+- [交易状态](/zh/fundamentals/payment-flow) - 哪些状态会触发账本分录
+- [常见错误](/zh/resources/common-errors) - 排查对账不一致问题

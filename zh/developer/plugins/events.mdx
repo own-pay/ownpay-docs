@@ -1,0 +1,84 @@
+---
+title: 事件系统
+description: "OwnPay 核心分发的内置事件、如何在插件中监听它们，以及事件与钩子之间的区别。"
+keywords: "事件系统, 支付事件, 事件监听器, 事件分发器, 事件与钩子"
+sidebarTitle: 事件
+icon: radio
+---
+
+OwnPay 通过 `EventManager` 分发内部事件，插件可以监听这些事件。事件与钩子不同，承担着不同的架构作用。
+
+## 事件与钩子 {#events-vs-hooks}
+
+| 方面 | 事件 | 钩子 |
+| --- | --- | --- |
+| 方向 | 核心触发 → 插件监听 | 核心触发或转换 → 插件参与 |
+| 返回值 | 被忽略 | 过滤器必须返回值 |
+| 排队 | 可排队进行异步处理 | 始终同步 |
+| 典型用途 | 领域事件、副作用 | 数据修改、模板覆盖 |
+| API | `$events->addListener()` | `$events->addAction()` / `$events->addFilter()` |
+
+<Tip>
+  当你需要异步处理时（例如在支付后发送邮件）使用事件。当你需要在处理过程中修改数据时使用钩子。
+</Tip>
+
+## 在插件中监听事件 {#listening-to-events-in-plugins}
+
+```php
+public function register(EventManager $events, Container $container): void
+{
+    $events->addListener(
+        \OwnPay\Events\PaymentCompleted::class,
+        function (PaymentCompleted $event) use ($container): void {
+            $container->get(AnalyticsService::class)->track($event->transaction);
+        }
+    );
+}
+```
+
+## 内置事件 {#built-in-events}
+
+| 事件类 | 分发时机 | 主要属性 |
+| --- | --- | --- |
+| `PaymentCompleted` | 交易结算完成 | `transaction: array` |
+| `PaymentFailed` | 交易被拒绝 | `transaction: array`、`reason: string` |
+| `PaymentExpired` | Intent 超时 | `intent: array` |
+| `RefundIssued` | 发起退款 | `refund: array`、`transaction: array` |
+| `RefundCompleted` | 退款在网关结算 | `refund: array` |
+| `RefundFailed` | 退款被网关拒绝 | `refund: array`、`reason: string` |
+| `CustomerCreated` | 新建客户记录 | `customer: array` |
+| `DisputeOpened` | 收到拒付 | `dispute: array` |
+| `DisputeResolved` | 争议结果确定 | `dispute: array`、`outcome: string` |
+| `PluginInstalled` | 插件 ZIP 已解压 | `slug: string`、`manifest: array` |
+| `PluginActivated` | 插件为某品牌激活 | `slug: string`、`brandId: int` |
+| `PluginDeactivated` | 插件已停用 | `slug: string`、`brandId: int` |
+| `DomainMapped` | 已关联自定义域名 | `domain: string`、`merchantId: int` |
+| `DomainVerified` | DNS 验证通过 | `domain: string`、`merchantId: int` |
+| `UpdateAvailable` | 检测到新版本 | `latestVersion: string` |
+
+## 事件监听器注册 {#event-listener-registration}
+
+```php
+// Synchronous listener (default)
+$events->addListener(PaymentCompleted::class, function (PaymentCompleted $event): void {
+    // Runs immediately, blocks until done
+});
+
+// Queued listener (async via Redis)
+$events->addListener(PaymentCompleted::class, SendReceiptListener::class, queued: true);
+```
+
+<Info>
+  排队监听器需要配置 Redis。监听器类必须实现 `__invoke(PaymentCompleted $event)`。
+</Info>
+
+## 错误处理 {#error-handling}
+
+事件监听器与钩子运行在相同的错误隔离包装器中。如果某个监听器抛出异常，错误会被记录，事件会继续传递给下一个监听器。
+
+## 相关页面 {#related-pages}
+
+- [钩子参考](/zh/developer/plugins/hooks)
+- [能力参考](/zh/developer/plugins/capabilities)
+- [插件生命周期](/zh/developer/plugins/lifecycle)
+- [插件概览](/zh/developer/plugins/overview)

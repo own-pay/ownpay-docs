@@ -1,0 +1,139 @@
+---
+title: "API त्रुटि कोड और HTTP स्टेटस संदर्भ"
+description: "OwnPay API त्रुटि कोड, HTTP स्टेटस कोड, त्रुटि रिस्पॉन्स संरचना, और प्रमाणीकरण, वैलिडेशन तथा गेटवे त्रुटियों को संभालने का पूरा संदर्भ।"
+keywords: "API त्रुटियाँ, error codes, HTTP status codes, validation errors, error response format, API troubleshooting"
+sidebarTitle: "त्रुटियाँ"
+icon: "alert-triangle"
+---
+
+OwnPay मानक HTTP स्टेटस कोड और एक सुसंगत JSON त्रुटि एनवेलप का उपयोग करता है, ताकि आप विफलताओं को प्रोग्रामेटिक रूप से संभाल सकें। हर non-2xx रिस्पॉन्स एक मशीन-पठनीय `error.code` और एक मानव-पठनीय `error.message` लौटाता है।
+
+## त्रुटि रिस्पॉन्स संरचना {#error-response-structure}
+
+सभी त्रुटि रिस्पॉन्स का आकार एक जैसा होता है:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid or has been revoked.",
+    "details": {}
+  }
+}
+```
+
+| फ़ील्ड | प्रकार | विवरण |
+| --- | --- | --- |
+| `success` | boolean | त्रुटियों के लिए हमेशा `false`। |
+| `error.code` | string | मशीन-पठनीय त्रुटि पहचानकर्ता। प्रोग्रामेटिक हैंडलिंग के लिए इसका उपयोग करें। |
+| `error.message` | string | मानव-पठनीय विवरण जिसे लॉग करना सुरक्षित है। |
+| `error.details` | object | वैकल्पिक। फ़ील्ड-स्तर की वैलिडेशन त्रुटियाँ या गेटवे पेलोड। |
+
+## HTTP स्टेटस कोड {#http-status-codes}
+
+| स्टेटस | अर्थ | यह कब दिखता है |
+| --- | --- | --- |
+| `200` | OK | अनुरोध सफल रहा। |
+| `201` | Created | रिसोर्स बनाया गया (पेमेंट, रिफ़ंड, इनवॉइस)। |
+| `400` | Bad Request | गलत फ़ॉर्मेट वाला JSON या अमान्य पैरामीटर। |
+| `401` | Unauthorized | API कुंजी अनुपस्थित, अमान्य, समाप्त या रद्द है। |
+| `403` | Forbidden | एंडपॉइंट के लिए API कुंजी का स्कोप पर्याप्त नहीं है। |
+| `404` | Not Found | रिसोर्स मौजूद नहीं है या किसी अन्य ब्रांड का है। |
+| `409` | Conflict | Idempotency टकराव या डुप्लिकेट रिसोर्स। |
+| `422` | Unprocessable Entity | एक या अधिक फ़ील्ड पर वैलिडेशन विफल रहा। |
+| `429` | Too Many Requests | रेट लिमिट पार हो गई। [रेट लिमिटिंग](/hi/resources/rate-limiting) देखें। |
+| `500` | Internal Server Error | अप्रत्याशित सर्वर त्रुटि। बैकऑफ़ के साथ पुनः प्रयास करना सुरक्षित है। |
+| `502` / `503` | Bad Gateway / Service Unavailable | अपस्ट्रीम गेटवे टाइमआउट या मेंटेनेंस। पुनः प्रयास करने की सलाह दी जाती है। |
+
+## सामान्य त्रुटि कोड {#common-error-codes}
+
+### प्रमाणीकरण {#authentication}
+
+| कोड | HTTP | अर्थ |
+| --- | --- | --- |
+| `invalid_api_key` | 401 | कुंजी नहीं मिली या गलत फ़ॉर्मेट में है। |
+| `expired_api_key` | 401 | कुंजी की समाप्ति तिथि बीत चुकी है। |
+| `revoked_api_key` | 401 | कुंजी को मैन्युअल रूप से रद्द किया गया था। |
+| `insufficient_permissions` | 403 | इस एंडपॉइंट के लिए कुंजी का स्कोप पर्याप्त नहीं है। |
+| `missing_authorization_header` | 401 | `Authorization` हेडर मौजूद नहीं है। |
+
+क्रेडेंशियल कैसे भेजें, यह जानने के लिए [प्रमाणीकरण](/hi/api/authentication) देखें।
+
+### वैलिडेशन {#validation}
+
+| कोड | HTTP | अर्थ |
+| --- | --- | --- |
+| `validation_failed` | 422 | एक या अधिक फ़ील्ड वैलिडेशन में विफल रहे। `error.details` की जाँच करें। |
+| `invalid_currency` | 422 | इस ब्रांड के लिए करेंसी कोड सक्षम नहीं है। |
+| `invalid_amount` | 422 | राशि शून्य, ऋणात्मक है, या गेटवे सीमा से अधिक है। |
+| `unsupported_gateway` | 422 | अनुरोधित गेटवे इस ब्रांड के लिए सक्षम नहीं है। |
+
+### रिसोर्स त्रुटियाँ {#resource-errors}
+
+| कोड | HTTP | अर्थ |
+| --- | --- | --- |
+| `not_found` | 404 | रिसोर्स मौजूद नहीं है। |
+| `payment_not_found` | 404 | पेमेंट ID पहचानी नहीं गई। |
+| `already_refunded` | 409 | पेमेंट का पहले ही पूरा रिफ़ंड हो चुका है। |
+| `idempotency_conflict` | 409 | एक ही `Idempotency-Key` का उपयोग अलग पेलोड के साथ किया गया। |
+
+### गेटवे त्रुटियाँ {#gateway-errors}
+
+| कोड | HTTP | अर्थ |
+| --- | --- | --- |
+| `gateway_declined` | 402 | गेटवे ने ट्रांज़ैक्शन अस्वीकार कर दिया। `error.details` देखें। |
+| `gateway_timeout` | 502 | अपस्ट्रीम गेटवे ने समय पर जवाब नहीं दिया। |
+| `gateway_unavailable` | 503 | गेटवे अस्थायी रूप से अक्षम है या मेंटेनेंस में है। |
+
+### रेट लिमिट {#rate-limits}
+
+| कोड | HTTP | अर्थ |
+| --- | --- | --- |
+| `rate_limit_exceeded` | 429 | बहुत अधिक अनुरोध। पुनः प्रयास करने से पहले `Retry-After` हेडर पढ़ें। |
+
+## वैलिडेशन त्रुटि विवरण {#validation-error-details}
+
+वैलिडेशन विफलताओं में एक `details` ऑब्जेक्ट शामिल होता है, जो हर फ़ील्ड को उसके त्रुटि संदेशों से मैप करता है:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "validation_failed",
+    "message": "The given data was invalid.",
+    "details": {
+      "amount": ["The amount must be at least 1."],
+      "currency": ["The selected currency is invalid."]
+    }
+  }
+}
+```
+
+## त्रुटियों को संभालना {#handling-errors}
+
+<Steps>
+  <Step title="HTTP स्टेटस जाँचें">
+    स्टेटस कोड के आधार पर तय करें कि पुनः प्रयास करना है, उपयोगकर्ता को त्रुटि दिखानी है, या उसे चुपचाप लॉग करना है।
+  </Step>
+  <Step title="`error.code` के आधार पर ब्रांच करें">
+    कभी भी `error.message` को पार्स न करें। कोड सभी रिलीज़ में स्थिर रहते हैं; संदेश नहीं।
+  </Step>
+  <Step title="सुरक्षित रूप से पुनः प्रयास करें">
+    `429`, `500`, `502` और `503` पर एक्सपोनेंशियल बैकऑफ़ के साथ पुनः प्रयास करें। पुनः प्रयास करते समय हमेशा `Idempotency-Key` भेजें।
+  </Step>
+  <Step title="पूरा एनवेलप लॉग करें">
+    डीबगिंग के लिए अनुरोध ID के साथ `error.code`, `error.message` और `error.details` को सहेजें।
+  </Step>
+</Steps>
+
+<Tip>
+  हर डेटा-परिवर्तित करने वाले अनुरोध में `Idempotency-Key` हेडर शामिल करें। इससे आप डुप्लिकेट पेमेंट या रिफ़ंड बनाए बिना सुरक्षित रूप से पुनः प्रयास कर सकते हैं।
+</Tip>
+
+## संबंधित {#related}
+
+- [प्रमाणीकरण](/hi/api/authentication)
+- [वेबहुक](/hi/api/webhooks)
+- [रेट लिमिटिंग](/hi/resources/rate-limiting)
+- [सामान्य त्रुटियाँ](/hi/resources/common-errors)

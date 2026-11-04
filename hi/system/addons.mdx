@@ -1,0 +1,75 @@
+---
+title: Addons
+description: "बिल्ट-इन और मार्केटप्लेस addons इंस्टॉल और प्रबंधित करें, जो OwnPay को ईमेल, Telegram और अन्य कार्यात्मक क्षमताओं के साथ विस्तारित करते हैं।"
+keywords: "addons, addon manager, mail-gateway, telegram-bot, मार्केटप्लेस addons, addon इंस्टॉल करें"
+sidebarTitle: Addons
+icon: package
+---
+
+Addons एक विशेष प्लगइन प्रकार हैं जो OwnPay को कार्यात्मक क्षमताएँ प्रदान करते हैं - जैसे ईमेल डिलीवरी, Telegram सूचनाएँ और अन्य इंटीग्रेशन। सुविधा के लिए उन्हें उनके अपने सेक्शन से प्रबंधित किया जाता है।
+
+<Info>
+  तकनीकी रूप से Addons `addon` प्रकार के प्लगइन हैं। सामान्य प्लगइन प्रबंधन इंटरफ़ेस के लिए, [प्लगइन](/hi/system/plugins) देखें।
+</Info>
+
+## बिल्ट-इन addons {#built-in-addons}
+
+OwnPay दो बिल्ट-इन addons के साथ आता है जो इंस्टॉलेशन के तुरंत बाद उपलब्ध होते हैं:
+
+<CardGroup>
+  <Card title="mail-gateway" icon="mail">
+    ट्रांज़ैक्शन सूचनाओं, पासवर्ड रीसेट और कस्टम टेम्पलेट के लिए SMTP ईमेल डिलीवरी प्रदान करता है। कॉन्फ़िगरेशन के लिए [ईमेल सूचनाएँ](/hi/notifications/email) देखें।
+  </Card>
+
+  <Card title="telegram-bot" icon="message">
+    पेमेंट और रिफ़ंड इवेंट के लिए Telegram चैट पर रीयल-टाइम पुश सूचनाएँ भेजता है। सेटअप के लिए [Telegram सूचनाएँ](/hi/notifications/telegram) देखें।
+  </Card>
+</CardGroup>
+
+## मार्केटप्लेस से इंस्टॉल करें {#install-from-marketplace}
+
+<Steps>
+  <Step>
+    **System \> Addons** पर जाएँ और **Browse Marketplace** पर क्लिक करें।
+  </Step>
+  <Step>
+    उपलब्ध addons ब्राउज़ करें। हर लिस्टिंग विवरण, संस्करण और संगतता दिखाती है।
+  </Step>
+  <Step>
+    जिस addon को आप चाहते हैं उस पर **Install** पर क्लिक करें। OwnPay इसे स्वचालित रूप से डाउनलोड और इंस्टॉल करता है।
+  </Step>
+  <Step>
+    addon को सक्रिय करें और अपने ब्रांड के लिए इसे कॉन्फ़िगर करें।
+  </Step>
+</Steps>
+
+## Addon अपलोड करें {#upload-an-addon}
+
+यदि आपके पास कोई addon ZIP फ़ाइल है (किसी डेवलपर से या कस्टम बिल्ड), तो **Upload Addon** पर क्लिक करें और फ़ाइल चुनें। प्लगइन पर लागू होने वाली वही [सैंडबॉक्स स्कैनिंग](/hi/system/plugins#plugin-sandbox-scanning) addon अपलोड के लिए उपयोग की जाती है।
+
+## प्रति ब्रांड सक्रिय करें {#activate-per-brand}
+
+किसी भी addon पंक्ति पर **Settings** पर क्लिक करके उसका कॉन्फ़िगरेशन पैनल खोलें। यहाँ आप:
+
+- addon को ग्लोबल रूप से **Active** या **Inactive** टॉगल कर सकते हैं
+- चुन सकते हैं कि addon किन **ब्रांड** पर लागू होता है
+- addon-विशिष्ट सेटिंग्स (API टोकन, चैट IDs आदि) कॉन्फ़िगर कर सकते हैं
+
+## Addon जीवनचक्र {#addon-lifecycle}
+
+| कार्रवाई | प्रभाव |
+| --- | --- |
+| **Activate** | चयनित ब्रांड के लिए addon सक्षम करता है |
+| **Deactivate** | कॉन्फ़िगरेशन हटाए बिना addon अक्षम करता है |
+| **Update** | उपलब्ध होने पर नया संस्करण लागू करता है |
+| **Uninstall** | addon, उसकी फ़ाइलें और सभी संग्रहीत सेटिंग्स हटाता है |
+
+<Warning>
+  mail-gateway addon को अनइंस्टॉल करने से सभी ईमेल डिलीवरी बंद हो जाएगी। telegram-bot addon को अनइंस्टॉल करने से सभी Telegram सूचनाएँ बंद हो जाएँगी। अनइंस्टॉल करने से पहले सुनिश्चित करें कि आपके पास कोई वैकल्पिक सूचना चैनल है।
+</Warning>
+
+## संबंधित पेज {#related-pages}
+
+- [ईमेल सूचनाएँ](/hi/notifications/email) - mail-gateway addon के माध्यम से SMTP कॉन्फ़िगर करें
+- [Telegram सूचनाएँ](/hi/notifications/telegram) - Telegram बॉट सूचनाएँ सेट अप करें
+- [प्लगइन](/hi/system/plugins) - गेटवे और थीम सहित सामान्य प्लगइन प्रबंधन

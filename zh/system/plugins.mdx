@@ -1,0 +1,93 @@
+---
+title: 插件
+description: "上传、安装、激活、更新和卸载插件，为 OwnPay 扩展新的网关、主题、附加组件和集成。"
+keywords: "插件, 插件管理器, 安装插件, 上传插件, 激活插件, 插件沙箱, plugins"
+sidebarTitle: 插件
+icon: puzzle
+---
+
+插件管理器负责处理您的 OwnPay 实例的所有扩展。插件可以添加支付网关、主题、附加组件和第三方集成。
+
+<Info>
+  有关构建插件的开发者文档，请参阅[插件概览](/zh/developer/plugins/overview)。
+</Info>
+
+## 插件列表 {#plugin-list}
+
+导航到 **System \> Plugins**。表格会显示每个已安装的插件：
+
+| 列 | 描述 |
+| --- | --- |
+| **Name** | 插件显示名称 |
+| **Version** | 当前安装的版本 |
+| **Type** | Gateway、Addon、Theme 或 Integration |
+| **Status** | Active 或 Inactive |
+| **Actions** | 激活、停用、设置、卸载 |
+
+## 安装插件 {#install-a-plugin}
+
+<Tabs>
+  <Tab title="ZIP 上传">
+    <Steps>
+      <Step>
+        点击页面顶部的 **Upload Plugin**。
+      </Step>
+      <Step>
+        从您的计算机中选择插件 ZIP 文件。
+      </Step>
+      <Step>
+        OwnPay 会验证压缩包结构、扫描安全问题并安装插件。
+      </Step>
+      <Step>
+        激活插件，并根据需要为每个品牌进行配置。
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="市场">
+    <Steps>
+      <Step>
+        点击 **Browse Marketplace** 查看可用插件。
+      </Step>
+      <Step>
+        找到您需要的插件并点击 **Install**。
+      </Step>
+      <Step>
+        OwnPay 会自动下载并安装该插件。
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## 按品牌激活 {#activate-per-brand}
+
+插件可以针对每个品牌独立激活或停用。在插件行上点击 **Settings**，然后切换该插件应处于活动状态的品牌。
+
+<Tip>
+  如果某个网关插件对某品牌处于停用状态，该网关将不会作为支付选项出现在该品牌的结账页上。
+</Tip>
+
+## 更新插件 {#update-plugins}
+
+当有新版本可用时，插件行上会出现 **Update** 标记。点击 **Update** 即可应用新版本。OwnPay 会在更新前为当前版本创建备份。
+
+## 卸载 {#uninstall}
+
+点击 **Uninstall** 可完全移除插件。这会删除插件的文件以及所有品牌特定的配置。卸载网关插件**不会**删除历史交易数据 - 这些记录会保留在数据库中。
+
+## 插件沙箱扫描 {#plugin-sandbox-scanning}
+
+每个上传的 ZIP 在安装前都会经过扫描：
+
+- **文件结构验证** - 确保压缩包遵循预期的插件布局
+- **PHP 语法检查** - 检查所有 PHP 文件是否存在解析错误
+- **禁用函数检测** - 阻止使用 `eval()`、`exec()`、`system()` 及其他危险函数
+
+<Warning>
+  仅从可信来源安装插件。即使有沙箱扫描，如果您处理敏感的财务数据，也请审查插件的源代码。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [附加组件](/zh/system/addons) - 专门管理附加组件类型的插件
+- [插件开发者概览](/zh/developer/plugins/overview) - 构建您自己的插件
+- [网关配置](/zh/gateways/configuration) - 配置已安装的网关插件
