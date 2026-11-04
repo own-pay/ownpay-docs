@@ -10,41 +10,57 @@ Each brand in OwnPay can have one or more custom domains. Customers are redirect
 
 ## Add a domain
 
+OwnPay maps each new domain to the active brand, so switch to the brand you want before you start.
+
 <Steps>
   <Step>
-    Navigate to **System \> Domains** and click **Add Domain**.
+    Navigate to **System \> Domains** and click **+ Add Domain**.
   </Step>
   <Step>
-    Select the **Brand** this domain belongs to.
+    Enter the domain name (for example, `pay.yourmerchant.com`) without `https://`.
   </Step>
   <Step>
-    Enter the domain name (for example, `pay.yourmerchant.com`).
+    Select the **Domain Type**: **Checkout domain** or **API domain**. Optionally, set a **Redirect URL** for visitors who open the domain directly.
   </Step>
   <Step>
-    Click **Save**. OwnPay displays the DNS records you need to configure.
+    Click **Next**. OwnPay displays the DNS records you need to configure.
   </Step>
 </Steps>
 
 ## Configure DNS
 
-OwnPay shows you the exact DNS records to add at your domain registrar:
+The add domain wizard and the domain's **DNS Setup** tab show the exact values for your installation. You need two records at your DNS provider.
+
+### TXT record (ownership)
+
+| Type | Name | Value |
+| --- | --- | --- |
+| TXT | `_ownpay-verify.pay.yourmerchant.com` | `ownpay-verify=<token>` |
+
+Copy the token from the wizard or the **DNS Setup** tab.
+
+### A or CNAME record (routing)
+
+Add one of these records:
 
 <Columns>
   <Column>
-    ### CNAME method (recommended)
+    #### CNAME method (recommended)
 
     | Type | Name | Value |
     | --- | --- | --- |
     | CNAME | `pay` | `your-ownpay-instance.com` |
+
+    OwnPay shows the host of your `APP_DOMAIN` (or `APP_URL`) as the CNAME target.
   </Column>
   <Column>
-    ### A record method
+    #### A record method
 
     | Type | Name | Value |
     | --- | --- | --- |
     | A | `pay` | `203.0.113.10` |
 
-    Replace the IP with your server's actual address.
+    Use the **A record IP** that OwnPay shows. OwnPay detects your server's public IPv4 address, or uses `APP_SERVER_IP` when you set it.
   </Column>
 </Columns>
 
@@ -52,9 +68,28 @@ OwnPay shows you the exact DNS records to add at your domain registrar:
   The CNAME method is preferred because it automatically follows IP changes if you migrate servers.
 </Tip>
 
+### Servers behind Cloudflare or NAT
+
+Verification compares the brand domain's A record with the server IP that OwnPay shows. That IP must be your origin server, not a proxy address.
+
+If the shown IP is a Cloudflare edge address, the Domains page displays a warning. Verification can't pass until you fix it:
+
+1. Set your origin server's public IPv4 address in `.env`:
+
+   ```bash
+   APP_SERVER_IP=203.0.113.10
+   ```
+
+2. Reload the Domains page and confirm the A record IP matches your origin server.
+3. Point the brand domain's A record at that IP and set it to **DNS only** in Cloudflare. A proxied brand domain resolves to Cloudflare edge addresses and fails verification.
+
+Set `APP_SERVER_IP` also when your server sits behind NAT and can't detect its own public IP.
+
 ## Verify a domain
 
-After setting your DNS records, click **Verify** next to the domain in the list. OwnPay performs a DNS lookup to confirm the records are correct.
+After setting your DNS records, click **Verify DNS** in the wizard or on the domain's **DNS Setup** tab. OwnPay checks the TXT record first, then checks that the A record points to the server IP.
+
+OwnPay also re-checks unverified domains every hour. If a domain stays unverified for 7 days, OwnPay removes it.
 
 <Info>
   DNS propagation can take up to 48 hours, though most registrars propagate within minutes. If verification fails immediately, wait and retry.
@@ -77,6 +112,8 @@ You can assign multiple domains to a single brand. The first verified domain bec
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | Verification fails | DNS not propagated | Wait and retry, or check with `dig` or `nslookup` |
+| `TXT record not found` | TXT record missing or token copied incorrectly | Check the TXT name and value against the **DNS Setup** tab, then verify again |
+| `A record ... does not point to ...` | A record points to a proxy edge IP, or DNS hasn't propagated | Set `APP_SERVER_IP` to your origin IP and turn off the Cloudflare proxy for the brand domain, or wait and retry |
 | SSL provisioning fails | Port 80 blocked | Open port 80 or configure your reverse proxy to forward ACME challenges |
 | Domain shows "mixed content" | Hard-coded HTTP links | Ensure your Application URL in Settings uses `https://` |
 
