@@ -68,7 +68,7 @@ All requests and responses use **JSON** with **UTF-8** encoding.
 | Character encoding | UTF-8 |
 | Date format | ISO 8601 (`2024-06-15T10:30:00Z`) |
 | Monetary amounts | Strings via bcmath (for example `"5000"`, `"99.99"`) |
-| Identifiers | Prefix-prefixed strings (`pay_...`, `txn_...`) |
+| Identifiers | Prefixed strings (`pay_...`, `txn_...`) |
 
 <Tip>
   All monetary amounts are returned as **strings** because OwnPay uses PHP's bcmath extension for precision. Never parse amounts as floats - use arbitrary-precision arithmetic in your language.
