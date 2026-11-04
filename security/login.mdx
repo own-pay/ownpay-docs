@@ -51,7 +51,7 @@ Set these environment variables in your `.env` file to change the defaults:
 OwnPay reads both values through its runtime settings, so a runtime system setting with the same key overrides the `.env` value. Missing, zero, negative, or non-numeric values fall back to the defaults.
 
 <Warning>
-  Repeated lockouts from the same IP may indicate a brute-force attack. Review the audit log and consider blocking the IP at your server level.
+  Repeated lockouts from the same IP may indicate a brute-force attack. Review the Login Security Log and consider blocking the IP at your server level.
 </Warning>
 
 ## Session management
@@ -73,7 +73,7 @@ By default, staff can be logged in from multiple browsers and devices simultaneo
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | `Invalid credentials` | Wrong email or password | Verify your credentials. Passwords are case-sensitive |
-| `Account temporarily locked` | Too many failed attempts | Stop retrying and wait for the time shown in the message, or ask an administrator to unlock you from the Login Security Log |
+| `Account temporarily locked` | Too many failed attempts | Stop retrying and wait for the time shown in the message, or ask an administrator to unlock your account from the Login Security Log |
 | `404 Not Found` on `/login` | Custom login slug configured | Use the correct slug from your branding settings |
 | Session expires immediately | Server clock mismatch | Verify your server's NTP synchronization |
 
