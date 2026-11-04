@@ -1,0 +1,127 @@
+---
+title: "OwnPay कैसे काम करता है"
+description: "OwnPay ग्राहक के पेमेंट को सही गेटवे तक कैसे रूट करता है, उसे डबल-एंट्री लेजर में कैसे दर्ज करता है, और आपके ऐप को webhook कैसे वापस भेजता है, साथ ही मुख्य अवधारणाएँ।"
+keywords: "OwnPay architecture, payment orchestrator, how it works, payment router, gateway routing, payment flow, multi-brand architecture, OwnPay आर्किटेक्चर"
+sidebarTitle: "OwnPay कैसे काम करता है"
+icon: "brain"
+---
+
+import LlmsDirective from "/hi/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay आपके व्यवसाय और 123\+ पेमेंट प्रदाताओं के बीच स्थित है। जब कोई ग्राहक "Pay" पर क्लिक करता है, तो OwnPay पेमेंट को सही गेटवे तक रूट करता है, परिणाम को डबल-एंट्री लेजर में दर्ज करता है, और आपके एप्लिकेशन को एक webhook वापस भेजता है - यह सब आपके नियंत्रण वाले इंफ्रास्ट्रक्चर से।
+
+## समग्र चित्र {#the-big-picture}
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+sequenceDiagram
+participant C as ग्राहक
+participant CO as OwnPay चेकआउट
+participant R as OwnPay राउटर
+participant G as पेमेंट गेटवे
+participant M as मर्चेंट ऐप
+
+C->>CO: "Pay" पर क्लिक करता है (पेमेंट लिंक / API)
+CO->>R: पेमेंट इंटेंट बनाएँ
+R->>R: गेटवे चुनें (ब्रांड कॉन्फ़िग)
+R->>CO: चेकआउट URL लौटाएँ
+CO->>C: चेकआउट पेज पर रीडायरेक्ट करें
+C->>G: पेमेंट विवरण दर्ज करें
+G->>G: बैंक/प्रोसेसर से ऑथराइज़ करें
+G-->>CO: परिणाम के साथ कॉलबैक
+CO->>R: लेनदेन स्थिति अपडेट करें
+R->>R: लेजर प्रविष्टियाँ लिखें (डेबिट/क्रेडिट)
+R-->>C: सफलता/विफलता पेज दिखाएँ
+R->>M: Webhook सूचना (HMAC-SHA256)
+`}>
+</Mermaid>
+
+यह क्रम उसी तरह चलता है, चाहे पेमेंट होस्टेड चेकआउट पेज से आए, पेमेंट लिंक से, या Merchant API से।
+
+## मुख्य अवधारणाएँ एक नज़र में {#key-concepts-at-a-glance}
+
+<CardGroup cols={3}>
+  <Card title="ब्रांड" icon="building-store" href="/hi/fundamentals/brands">
+    अलग-थलग मर्चेंट टेनेंट - हर ब्रांड के अपने गेटवे, डोमेन, स्टाफ़, API कुंजियाँ और लेजर होते हैं।
+  </Card>
+
+  <Card title="पेमेंट फ़्लो" icon="circle-arrow-right" href="/hi/fundamentals/payment-flow">
+    एक लेनदेन का जीवनचक्र - निर्माण से प्रोसेसिंग होते हुए पूर्णता, विफलता या समाप्ति तक।
+  </Card>
+
+  <Card title="गेटवे" icon="wallet" href="/hi/fundamentals/gateways">
+    123\+ पेमेंट प्रदाताओं के साथ प्लगइन-आधारित इंटीग्रेशन, एन्क्रिप्टेड क्रेडेंशियल स्टोरेज और प्रति-ब्रांड असाइनमेंट के साथ।
+  </Card>
+
+  <Card title="लेजर" icon="book" href="/hi/fundamentals/ledger">
+    डबल-एंट्री बहीखाता जो हर पैसे की आवाजाही को प्रति ब्रांड संतुलित डेबिट-क्रेडिट जोड़ों के रूप में दर्ज करता है।
+  </Card>
+
+  <Card title="प्लगइन" icon="puzzle" href="/hi/fundamentals/plugins">
+    हुक और इवेंट का उपयोग करने वाले चार प्लगइन प्रकारों - gateway, addon, theme और integration - के साथ विस्तार योग्य आर्किटेक्चर।
+  </Card>
+
+  <Card title="डोमेन" icon="world" href="/hi/fundamentals/domains">
+    स्वचालित DNS सत्यापन और SSL सर्टिफ़िकेट प्रोविज़निंग के साथ प्रति ब्रांड व्हाइट-लेबल कस्टम डोमेन।
+  </Card>
+</CardGroup>
+
+## OwnPay को क्या अलग बनाता है {#what-makes-ownpay-different}
+
+- **पूर्ण डेटा संप्रभुता के साथ सेल्फ़-होस्टेड** - आपका सर्वर, आपका डेटाबेस, आपके नियम। ग्राहक PII को रेस्ट पर AES-256-GCM से एन्क्रिप्ट किया जाता है। कोई तीसरा पक्ष आपका डेटा नहीं देखता।
+- **तुरंत उपलब्ध 123\+ गेटवे** - अंतरराष्ट्रीय प्रोसेसर (Stripe, PayPal) के साथ क्षेत्रीय अग्रणी (bKash, Nagad, GCash, Razorpay, SSLCommerz), और हर रिलीज़ में और जोड़े जाते हैं।
+- **OwnPay की ओर से शून्य लेनदेन शुल्क** - AGPL-3.0 के तहत लाइसेंस प्राप्त। आप केवल अपने गेटवे का प्रोसेसिंग शुल्क चुकाते हैं।
+- **AGPL-3.0 लाइसेंस और हमेशा के लिए मुफ़्त** - कोई फ़ीचर प्रतिबंध नहीं, कोई लाइसेंसिंग टियर नहीं, कोई फ़ोन-होम टेलीमेट्री नहीं। पूरा सोर्स [GitHub]({{github}}) पर।
+- **प्लगइन से विस्तार योग्य** - कोर कोड बदले बिना गेटवे, थीम, ऐडऑन और इंटीग्रेशन जोड़ें। 60 से अधिक हुक और एक पूर्ण इवेंट सिस्टम।
+- **डबल-एंट्री लेजर** - `bcmath`-संचालित सटीकता, ब्रांड आइसोलेशन और अंतर्निहित रिकंसिलिएशन के साथ लेखांकन-स्तरीय वित्तीय ट्रैकिंग।
+
+## OwnPay किसके लिए है? {#who-is-ownpay-for}
+
+| दर्शक | वे OwnPay का उपयोग कैसे करते हैं |
+| :-- | :-- |
+| **SaaS व्यवसाय** | ग्राहक डेटा को इन-हाउस रखते हुए एक एकीकृत API के माध्यम से सब्सक्रिप्शन और एकमुश्त पेमेंट स्वीकार करें। |
+| **मार्केटप्लेस प्लेटफ़ॉर्म** | मल्टी-टेनेंट पेमेंट ऑर्केस्ट्रेशन - हर विक्रेता को अलग-थलग फ़ंड और रिपोर्टिंग के साथ एक ब्रांड मिलता है। |
+| **फ़्रीलांसर और एजेंसियाँ** | सेकंडों में पेमेंट लिंक बनाएँ, क्लाइंट के लिए चेकआउट को व्हाइट-लेबल करें, और लेजर में आय ट्रैक करें। |
+| **एंटरप्राइज़** | ऑन-प्रिमाइसेस या प्राइवेट क्लाउड पर डिप्लॉय करें, डेटा रेज़िडेंसी आवश्यकताओं का पालन करें, और Admin API के माध्यम से इंटीग्रेट करें। |
+
+## तकनीकी स्टैक सारांश {#technical-stack-summary}
+
+<Columns>
+  <Column>
+    **रनटाइम**
+
+    - PHP 8.3\+ (कस्टम फ़्रेमवर्क, Laravel नहीं)
+    - सर्वर-साइड टेम्पलेट के लिए Twig 3
+    - फ़्रंटएंड पर Vanilla JavaScript
+    - सभी मौद्रिक गणनाओं के लिए `bcmath`
+    - PII एन्क्रिप्शन के लिए AES-256-GCM
+  </Column>
+  <Column>
+    **इंफ्रास्ट्रक्चर**
+
+    - MySQL 8\+ (स्कीमा, लेनदेन, लेजर)
+    - Redis (कैशिंग, सेशन, क्यू)
+    - PHP-FPM के साथ Nginx या Apache
+    - Docker Compose समर्थन
+  </Column>
+  <Column>
+    **इंटीग्रेशन**
+
+    - 3 REST API परतें (Merchant / Mobile / Admin)
+    - HMAC-SHA256 webhook सिग्नेचर
+    - SMS सत्यापन के लिए Android कंपैनियन ऐप
+    - हुक, फ़िल्टर और इवेंट के साथ Plugin SDK
+  </Column>
+</Columns>
+
+## संबंधित पेज {#related-pages}
+
+- [क्विकस्टार्ट](/hi/quickstart) - 5 मिनट में शुरू करें
+- [सुविधाएँ](/hi/resources/features) - पूरी सुविधा सूची और तुलनाएँ
+- [आर्किटेक्चर](/hi/resources/architecture) - आंतरिक डिज़ाइन का गहन विवरण
+- [API अवलोकन](/hi/api/overview) - Merchant, Mobile और Admin API संदर्भ
+- [प्लगइन अवलोकन](/hi/developer/plugins/overview) - अपने खुद के एक्सटेंशन बनाएँ

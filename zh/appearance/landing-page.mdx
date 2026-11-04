@@ -1,0 +1,64 @@
+---
+title: "着陆页配置"
+description: "如何在 OwnPay 中配置公开着陆页，包括主视觉区域、功能卡片、自定义 HTML 和 SEO 元数据。"
+keywords: "着陆页, 主视觉区域, SEO 元数据, 功能卡片, 自定义 HTML"
+sidebarTitle: "着陆页"
+icon: "app-window"
+---
+
+着陆页是访客访问 OwnPay 根 URL（例如 `https://pay.example.com`）时看到的公开页面。你可以将其用作营销页面、支付门户中心，也可以完全禁用它。
+
+## 启用或禁用着陆页 {#enable-or-disable-the-landing-page}
+
+1. 前往 **Appearance** → **Landing Page**。
+2. 打开或关闭 **Enable Landing Page**。
+3. 禁用后，访问根 URL 的访客会被重定向到管理员登录页面。
+
+## 设置页面标题和描述 {#set-the-page-title-and-description}
+
+这些字段决定了浏览器标签页和搜索引擎结果中显示的内容：
+
+| 字段 | 用途 |
+| --- | --- |
+| **Page title** | 浏览器标签页文字和 `<title>` 标签 |
+| **Meta description** | 在搜索结果中显示的 150–160 个字符的摘要 |
+| **Meta keywords** | 用于 SEO 的逗号分隔关键词 |
+
+## 配置主视觉区域 {#configure-the-hero-section}
+
+主视觉区域是着陆页顶部的大横幅：
+
+| 字段 | 描述 |
+| --- | --- |
+| **Hero title** | 主标题（例如 "Fast, Secure Payments"） |
+| **Hero subtitle** | 标题下方的标语 |
+| **CTA button text** | 行动号召按钮的标签 |
+| **CTA button URL** | 按钮链接的目标地址 |
+
+## 功能卡片 {#feature-cards}
+
+你可以在主视觉区域下方添加功能卡片来突出展示各项能力：
+
+1. 点击 **\+ Add Feature Card**。
+2. 输入标题、描述并选择一个图标。
+3. 为每项功能重复以上步骤。
+4. 点击 **Save Settings**。
+
+## 自定义 HTML {#custom-html}
+
+如需进行高级自定义，你可以向着陆页注入自定义 HTML。可以用它来添加嵌入式视频、第三方小部件或自定义区块。HTML 会在页面 body 内渲染，因此如有需要，请通过 `<style>` 标签加入你自己的样式。
+
+<Warning>
+  自定义 HTML 会在访客的浏览器中运行。请勿包含来自不可信来源的跟踪脚本，并避免使用可能与页面现有脚本冲突的内联 JavaScript。
+</Warning>
+
+## 管理员登录 URL {#admin-login-url}
+
+着陆页设置中还包含 **Admin Login URL Slug**。默认值为 `login`，但你可以将其更改为独特的值（例如 `my-secure-portal`），以便对自动化机器人隐藏管理员登录入口。只能使用小写字母、数字和连字符。
+
+## 相关页面 {#related-pages}
+
+- [品牌](/zh/appearance/branding) - 徽标、颜色和网站图标
+- [主题](/zh/appearance/themes) - 结账页面主题
+- [系统设置](/zh/system/settings) - 站点常规配置
+- [域名](/zh/system/domains) - 为着陆页设置自定义域名

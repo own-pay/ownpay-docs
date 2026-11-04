@@ -1,0 +1,127 @@
+---
+title: "速率限制"
+description: "OwnPay 滑动窗口速率限制的权威参考，包括限制等级、响应头、429 错误格式、配置和 IP 白名单。"
+keywords: "速率限制, 429, 节流, X-RateLimit, API 节流, 滑动窗口, rate limiting"
+sidebarTitle: "速率限制"
+icon: "clock"
+---
+
+OwnPay 使用**滑动窗口**速率限制器来防范暴力破解攻击、滥用和意外的 API 洪泛。对于未认证的端点按 IP 地址实施限制，对于已认证的端点按 API 密钥实施限制。
+
+---
+
+## 速率限制等级 {#rate-limit-tiers}
+
+| 端点类型 | 限制 | 认证方式 | 备注 |
+| :-- | :-- | :-- | :-- |
+| 商户 API（`/api/v1/*`） | 60 次请求/分钟 | Bearer API 密钥 | 按密钥计算，而非按 IP |
+| 管理 API（`/api/admin/v1/*`） | 60 次请求/分钟 | Bearer API 密钥（admin 权限范围） | 按密钥计算 |
+| 登录尝试 | 10 次尝试/5 分钟 | Web 表单（邮箱/密码） | 按 IP 计算，严格桶 |
+| 密码重置 | 5 次请求/分钟 | Web 表单 | 按 IP 计算 |
+| OTP 设备配对 | 5 次请求/分钟 | JWT | 按 IP 计算 |
+| 全局请求 | 120 次请求/分钟 | 任意 | 按 IP 计算，覆盖所有路由 |
+| Webhook 投递 | 无限制（出站） | 不适用 | 仅限出站；入站回调不受速率限制 |
+
+<Note>
+  登录、密码重置和设备配对端点使用**严格桶**，其限制低于全局等级。失败的尝试会更快地耗尽桶容量，以遏制撞库攻击。
+</Note>
+
+---
+
+## 速率限制响应头 {#rate-limit-headers}
+
+每个 API 响应都包含告知您当前限制状态的响应头：
+
+| 响应头 | 描述 |
+| :-- | :-- |
+| `X-RateLimit-Limit` | 当前窗口内允许的最大请求数 |
+| `X-RateLimit-Remaining` | 当前窗口内剩余的请求数 |
+| `X-RateLimit-Reset` | 窗口重置时的 Unix 时间戳 |
+
+剩余 12 次请求时的响应头示例：
+
+```text
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 12
+X-RateLimit-Reset: 1704067200
+```
+
+---
+
+## 429 响应格式 {#429-response-format}
+
+当您超出速率限制时，OwnPay 会返回 HTTP 429 状态码以及结构化的错误响应体：
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests. Try again in 42 seconds.",
+    "retry_after": 42
+  }
+}
+```
+
+HTTP 响应中还会设置 `Retry-After` 响应头：
+
+```text
+HTTP/1.1 429 Too Many Requests
+Retry-After: 42
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1704067200
+```
+
+请在集成中妥善处理 429 响应。在重试之前等待 `retry_after` 指定的时长。
+
+<Tip>
+  重试时请使用带抖动的指数退避。从 `retry_after` 值开始，之后每次收到 429 时将等待时间加倍。添加一个小的随机抖动（0-2 秒），以防止惊群效应。
+</Tip>
+
+---
+
+## 配置 {#configuration}
+
+速率限制在 `config/app.php` 中配置，并可通过环境变量覆盖：
+
+```ini
+# .env
+RATE_LIMIT_PER_MINUTE=60
+RATE_LIMIT_LOGIN_PER_5MIN=10
+RATE_LIMIT_GLOBAL_PER_MINUTE=120
+RATE_LIMIT_BURST=20
+```
+
+| 变量 | 默认值 | 描述 |
+| :-- | :-- | :-- |
+| `RATE_LIMIT_PER_MINUTE` | 60 | 每个密钥每分钟的 API 请求数 |
+| `RATE_LIMIT_LOGIN_PER_5MIN` | 10 | 每个 IP 每 5 分钟的登录尝试次数 |
+| `RATE_LIMIT_GLOBAL_PER_MINUTE` | 120 | 每个 IP 每分钟的全局请求数 |
+| `RATE_LIMIT_BURST` | 20 | 超出每分钟限制的突发容量 |
+
+---
+
+## IP 白名单和受信任代理 {#ip-whitelisting-and-trusted-proxies}
+
+如果您的 OwnPay 安装位于反向代理或负载均衡器之后，请配置受信任代理，以便速率限制器看到的是真实的客户端 IP，而不是代理 IP。
+
+```ini
+# .env
+TRUSTED_PROXIES=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+```
+
+OwnPay 仅从受信任代理读取 `X-Forwarded-For` 响应头。来自不受信任代理的头会被忽略，以防止 IP 伪造。
+
+<Warning>
+  切勿在生产环境中将 `TRUSTED_PROXIES` 设置为 `*`。这会允许任何客户端伪造其 IP 地址，从而完全绕过速率限制。
+</Warning>
+
+---
+
+## 相关页面 {#related-pages}
+
+- [API 概览](/zh/api/overview) - 认证和端点参考
+- [API 错误](/zh/api/errors) - 完整的错误代码参考
+- [开发者中心](/zh/security/developer-hub) - API 密钥管理与测试
+- [安全与合规](/zh/resources/security-compliance) - 更全面的安全架构

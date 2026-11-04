@@ -1,0 +1,181 @@
+---
+title: "OwnPay प्लगइन और इंटीग्रेशन बनाने के लिए AI टूल्स"
+description: "लाइव डॉक्स के लिए MCP सर्वर, AI Skills और तैयार प्रॉम्प्ट टेम्पलेट का उपयोग करके AI असिस्टेंट के साथ OwnPay प्लगइन, इंटीग्रेशन और कस्टम गेटवे बनाएँ।"
+keywords: "AI टूल्स, MCP server, AI skills, AI agent, Claude, Cursor, AI plugin development, AI prompt templates"
+sidebarTitle: "AI टूल्स"
+icon: "robot"
+---
+
+## AI टूल्स क्या हैं? {#what-are-ai-tools}
+
+OwnPay AI-संचालित डेवलपमेंट टूल्स का एक समूह प्रदान करता है, जिससे आप Claude, ChatGPT और Cursor जैसे AI असिस्टेंट का उपयोग करके प्रोडक्शन-रेडी प्लगइन, इंटीग्रेशन और कस्टम गेटवे बना सकते हैं। इंटरफ़ेस और परिपाटियों को समझने के लिए दर्जनों डॉक्यूमेंटेशन पेज पढ़ने के बजाय, आपका AI एजेंट आपके लिए डॉक्स पढ़ता है और पहले ही प्रयास में सही कोड जनरेट करता है।
+
+AI टूल्स इकोसिस्टम के दो मुख्य घटक हैं:
+
+<CardGroup cols={2}>
+  <Card title="MCP सर्वर" icon="server" href="/hi/developer/ai/mcp">
+    एक Model Context Protocol सर्वर जो आपके AI असिस्टेंट को क्वेरी के समय **सभी OwnPay डॉक्यूमेंटेशन तक लाइव एक्सेस** देता है। हर सवाल वास्तविक डॉक्स पढ़ता है - पुराना ट्रेनिंग डेटा नहीं। Claude Desktop, Cursor, VS Code (Cline/Roo Code) और Windsurf को सपोर्ट करता है।
+  </Card>
+
+  <Card title="AI Skills" icon="sparkles" href="/hi/developer/ai/skills">
+    पहले से बनी निर्देश फ़ाइलें जो आपके कुछ भी पूछने से पहले आपके AI असिस्टेंट को OwnPay आर्किटेक्चर, प्लगइन सिस्टम, कोडिंग परिपाटियाँ और इंटरफ़ेस कॉन्ट्रैक्ट सिखाती हैं। एक बार इंस्टॉल करें, और उसके बाद का हर प्रॉम्प्ट उस संदर्भ से लाभ उठाता है।
+  </Card>
+</CardGroup>
+
+<Tip>
+  सर्वोत्तम परिणामों के लिए MCP और Skills दोनों का एक साथ उपयोग करें। Skills AI को सिखाती हैं कि OwnPay क्या है और इसके बारे में कैसे सोचना है। MCP उसे आवश्यकता पड़ने पर सटीक मेथड सिग्नेचर, हुक नाम और कॉन्फ़िगरेशन विवरण देखने देता है।
+</Tip>
+
+## क्विकस्टार्ट {#quickstart}
+
+तीन चरणों में AI-सहायता प्राप्त OwnPay डेवलपमेंट शुरू करें:
+
+## OwnPay के साथ AI का उपयोग क्यों करें? {#why-use-ai-with-ownpay}
+
+<CardGroup cols={3}>
+  <Card title="तेज़ डेवलपमेंट" icon="bolt">
+    सभी आवश्यक मेथड के साथ एक पूरा गेटवे एडैप्टर सेकंडों में जनरेट करें। जिस काम में पहले डॉक्स पढ़ने और बॉयलरप्लेट लिखने में घंटों लगते थे, अब वह एक ही प्रॉम्प्ट में हो जाता है।
+  </Card>
+
+  <Card title="कम त्रुटियाँ" icon="shield-check">
+    MCP सर्वर आपके AI को सटीक इंटरफ़ेस सिग्नेचर, हुक नाम और रिटर्न टाइप देता है। अब मेथड सिग्नेचर का अनुमान लगाने या आवश्यक मेथड छूटने की समस्या नहीं।
+  </Card>
+
+  <Card title="सुसंगत परिपाटियाँ" icon="circle-check">
+    Skills OwnPay कोडिंग मानकों को स्वचालित रूप से लागू करती हैं - PSR-12 स्टाइल, पैसे के लिए BCMath, कोई खतरनाक फ़ंक्शन कॉल नहीं, उचित CSP nonce हैंडलिंग।
+  </Card>
+
+  <Card title="सभी प्लगइन प्रकार" icon="puzzle">
+    गेटवे, ऐडऑन, थीम और इंटीग्रेशन जनरेट करें। हर टेम्पलेट पूरे प्लगइन लाइफ़साइकल को कवर करता है: manifest, रजिस्ट्रेशन, हुक और सेटिंग्स UI।
+  </Card>
+
+  <Card title="लाइव डॉक्यूमेंटेशन" icon="book">
+    MCP क्वेरी नवीनतम डॉक्स पर चलती हैं। जब OwnPay कोई नया हुक जोड़ता है या कोई इंटरफ़ेस बदलता है, तो आपका AI पहले से इसके बारे में जानता है।
+  </Card>
+
+  <Card title="आपके टूल्स के साथ काम करता है" icon="code">
+    Claude Desktop, Claude Code, Cursor, ChatGPT, VS Code (Cline/Roo Code) और Windsurf - जो भी AI असिस्टेंट आप पहले से पसंद करते हैं, उसका उपयोग करें।
+  </Card>
+</CardGroup>
+
+## AI प्रॉम्प्ट टेम्पलेट {#ai-prompt-templates}
+
+ये कोलैप्सिबल प्रॉम्प्ट पहले से बने निर्देश हैं जिन्हें आप पूरे, काम करने वाले प्लगइन जनरेट करने के लिए Claude, ChatGPT या Cursor में पेस्ट कर सकते हैं। भेजने से पहले कोष्ठक वाले प्लेसहोल्डर को अपने विशिष्ट विवरण से भरें।
+
+<Accordion title="गेटवे प्लगइन प्रॉम्प्ट">
+  इसे कॉपी करके अपने AI असिस्टेंट में पेस्ट करें:
+
+  ```text
+  You are an expert PHP developer. Build a complete OwnPay gateway plugin.
+  
+  Requirements:
+  - Implement both OwnPay\Plugin\PluginInterface and OwnPay\Gateway\GatewayAdapterInterface
+  - Include manifest.json with type "gateway" and capabilities ["gateway", "webhook_receive", "settings", "database"]
+  - Implement initiate(), verify(), verifyWebhook(), refund() methods
+  - Use hash_equals() for all HMAC comparisons in verifyWebhook()
+  - Reject webhook timestamps older than 5 minutes
+  - All monetary amounts are BCMath strings (for example "150.00")
+  - Include fields() method returning credential configuration fields
+  - Include supportedCurrencies() method
+  - Follow PSR-12 coding style
+  - No eval(), exec(), or shell_exec()
+  
+  Gateway name: [YOUR GATEWAY NAME]
+  Gateway API base URL: [YOUR GATEWAY API URL]
+  
+  Read the OwnPay gateway plugin documentation via MCP for the exact interface signatures and return shapes.
+  ```
+</Accordion>
+
+<Accordion title="ऐडऑन प्लगइन प्रॉम्प्ट">
+  इसे कॉपी करके अपने AI असिस्टेंट में पेस्ट करें:
+
+  ```text
+  You are an expert PHP developer. Build a complete OwnPay addon plugin.
+  
+  Requirements:
+  - Implement OwnPay\Plugin\PluginInterface
+  - Include manifest.json with type "addon" and capabilities ["addon", "hooks", "http_outbound", "settings"]
+  - Register at least one action hook in the register() method using EventManager
+  - Include a fields() method for admin settings
+  - Access core services from the Container in the boot() method
+  - All monetary amounts use BCMath strings
+  - Follow PSR-12 coding style
+  - No eval(), exec(), or shell_exec()
+  
+  Addon purpose: [DESCRIBE WHAT YOUR ADDON DOES]
+  
+  Read the OwnPay addon plugin documentation via MCP for the exact PluginInterface methods and hook registration patterns.
+  ```
+</Accordion>
+
+<Accordion title="थीम प्लगइन प्रॉम्प्ट">
+  इसे कॉपी करके अपने AI असिस्टेंट में पेस्ट करें:
+
+  ```text
+  You are an expert PHP and Twig developer. Build a complete OwnPay checkout theme plugin.
+  
+  Requirements:
+  - Implement OwnPay\Plugin\PluginInterface
+  - Include manifest.json with type "theme" and capabilities ["theme", "assets"]
+  - Use addFilter on checkout.template to point to your Twig templates
+  - Use addAction on checkout.head to inject CSS (include CSP nonce)
+  - Use addAction on checkout.footer to inject JS (include CSP nonce)
+  - Provide Twig templates for checkout page and status/result page
+  - Use {{ variable|e }} for escaping user data in Twig
+  - Include a fields() method for theme customization settings (primary color, etc.)
+  - Follow PSR-12 coding style
+  
+  Read the OwnPay theme plugin documentation via MCP for the exact Twig variables available and hook signatures.
+  ```
+</Accordion>
+
+<Accordion title="इंटीग्रेशन प्लगइन प्रॉम्प्ट">
+  इसे कॉपी करके अपने AI असिस्टेंट में पेस्ट करें:
+
+  ```text
+  You are an expert PHP developer. Build a complete OwnPay integration plugin.
+  
+  Requirements:
+  - Implement OwnPay\Plugin\PluginInterface
+  - Include manifest.json with type "integration" and capabilities ["addon", "hooks", "http_outbound", "settings"]
+  - Register action hooks for payment.transaction.completed and refund.issued
+  - Make outbound HTTP calls (curl) with a 5-second timeout
+  - Read configuration from SettingsRepository in the Container
+  - Include a fields() method for external API key/URL configuration
+  - Never throw from hook callbacks - log errors instead
+  - All monetary amounts are BCMath strings
+  - Follow PSR-12 coding style
+  
+  Integration target: [for example, Slack, HubSpot, QuickBooks]
+  
+  Read the OwnPay integration plugin documentation via MCP for the exact hook names and Container service access patterns.
+  ```
+</Accordion>
+
+## समर्थित AI टूल्स {#supported-ai-tools}
+
+<CardGroup cols={2}>
+  <Card title="Cursor" icon="code">
+    Settings \> Features \> MCP में MCP सर्वर जोड़ें। Agent मोड इसे स्वचालित रूप से कॉल करता है।
+  </Card>
+
+  <Card title="Claude Desktop & Claude Code" icon="message">
+    claude\_desktop\_config.json में जोड़ें या claude mcp add चलाएँ।
+  </Card>
+
+  <Card title="VS Code (Cline / Roo Code)" icon="braces">
+    अपने एक्सटेंशन की MCP सेटिंग्स में MCP सर्वर URL जोड़ें।
+  </Card>
+
+  <Card title="Windsurf" icon="wind">
+    ~/.codeium/windsurf/mcp\_config.json में जोड़ें।
+  </Card>
+</CardGroup>
+
+## संबंधित पेज {#related-pages}
+
+- [MCP सर्वर](/hi/developer/ai/mcp) - सेटअप और कॉन्फ़िगरेशन गाइड
+- [AI Skills](/hi/developer/ai/skills) - पहले से बनी skills इंस्टॉल करें और उपयोग करें
+- [डेवलपर क्विकस्टार्ट](/hi/developer/quickstart) - AI के बिना API इंटीग्रेशन
+- [प्लगइन सिस्टम अवलोकन](/hi/developer/plugins/overview) - हुक, manifest और लाइफ़साइकल को समझें

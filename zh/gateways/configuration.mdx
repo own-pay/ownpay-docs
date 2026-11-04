@@ -1,0 +1,82 @@
+---
+title: 配置支付网关
+description: "如何在 OwnPay 中添加、配置、测试和启用基于 API 的支付网关，并使用加密的凭据存储。"
+keywords: "支付网关, 网关配置, API 密钥, 沙箱模式, AES-256-GCM"
+sidebarTitle: 网关
+icon: settings
+---
+
+支付网关是真正负责资金流转的处理商——Stripe、PayPal、bKash、Nagad 以及 100 多个其他网关。您只需在 OwnPay 中配置一次，然后将其分配给品牌，即可在结账时显示。
+
+## 添加网关 {#add-a-gateway}
+
+1. 前往 **Gateways & Currencies** → **Payment Gateways**。
+2. 点击 **\+ Add Gateway**。
+3. 从列表中选择提供商（例如 Stripe、bKash API、Razorpay）。
+4. 输入所需的凭据（见下表）。
+5. 点击 **Save**。
+
+## 输入凭据 {#enter-credentials}
+
+每个网关根据提供商的不同需要不同的凭据。常见字段包括：
+
+| 字段 | 说明 |
+| --- | --- |
+| **API key** | 来自网关仪表板的公钥或私钥 |
+| **API secret** | 用于身份验证的密钥或令牌 |
+| **Merchant ID** | 您在网关处的商户标识 |
+| **Webhook secret** | 用于验证传入 Webhook 的 HMAC 签名密钥 |
+| **Sandbox mode** | 切换以使用网关的测试环境 |
+
+<Note>
+  所有凭据在静态存储时均使用 **AES-256-GCM** 加密，绝不会以明文形式存储在数据库中。只有 OwnPay 应用程序能够使用服务器端加密密钥对其解密。
+</Note>
+
+## 网关设置参考 {#gateway-settings-reference}
+
+| 设置 | 类型 | 说明 |
+| --- | --- | --- |
+| **Min amount** | 数字 | 该网关接受的最低交易金额 |
+| **Max amount** | 数字 | 该网关接受的最高交易金额 |
+| **Allowed currencies** | 多选 | 该网关在结账时支持哪些货币 |
+| **Status** | 开关 | Active（在结账时可用）或 Inactive |
+| **Sandbox mode** | 开关 | 通过提供商的测试环境路由付款 |
+
+## 使用沙箱模式测试 {#test-with-sandbox-mode}
+
+上线之前，请在网关上启用 **Sandbox mode** 并运行一次测试付款：
+
+1. 将 **Sandbox mode** 设置为 **On**。
+2. 将网关状态设置为 **Active** 并将其分配给某个品牌。
+3. 创建一个测试支付链接并完成结账。
+4. 确认该交易出现在 **Payments** → **Transactions** 中，且状态为 **Completed**。
+5. 确认无误后，禁用 Sandbox mode。
+
+## 按品牌启用 {#activate-per-brand}
+
+配置网关后，它在全局范围内可用，但只有在将其分配给品牌后才会在结账时显示：
+
+1. 前往 **People** → **Brands** 并编辑目标品牌。
+2. 在 **Gateways** 部分中，打开该网关的开关。
+3. 只有支持该品牌货币的网关才符合条件。
+
+## 常见问题 {#common-issues}
+
+| 问题 | 原因 | 解决方案 |
+| --- | --- | --- |
+| 结账时出现 **Invalid credentials** 错误 | 复制了错误的 API 密钥或私钥 | 在网关提供商的仪表板中重新检查密钥并再次粘贴 |
+| 交易一直处于 Pending 状态 | 未在网关提供商处配置 Webhook URL | 在网关的仪表板中添加您的 OwnPay Webhook 端点（`/webhook/{gateway-slug}`） |
+| 网关未在结账时显示 | 网关未分配给品牌，或货币不匹配 | 编辑品牌并启用该网关；确认该网关支持品牌的货币 |
+| 沙箱付款失败 | 沙箱密钥与正式密钥不同 | 确保您使用的是沙箱/测试密钥，而不是生产密钥 |
+
+<Warning>
+  切勿将 API 密钥提交到版本控制系统或在聊天中分享。所有凭据管理都应通过 OwnPay 管理界面或加密的环境变量进行。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [手动方式](/zh/gateways/manual-methods) - 配置线下支付方式
+- [货币](/zh/gateways/currencies) - 管理货币和汇率
+- [品牌](/zh/people/brands) - 将网关分配给品牌
+- [短信验证](/zh/gateways/sms-verification) - 自动验证手动付款
+- [Webhooks](/zh/api/webhooks) - 配置 Webhook 端点

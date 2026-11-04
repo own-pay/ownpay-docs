@@ -1,0 +1,166 @@
+---
+title: परफ़ॉर्मेंस और स्केलिंग
+description: "Redis कैशिंग, डेटाबेस ट्यूनिंग, PHP-FPM कॉन्फ़िगरेशन, Nginx ऑप्टिमाइज़ेशन, queue workers और स्केलिंग रणनीतियों के साथ OwnPay का परफ़ॉर्मेंस ऑप्टिमाइज़ करें।"
+keywords: "परफ़ॉर्मेंस, स्केलिंग, performance, scaling, Redis, PHP-FPM, Nginx, डेटाबेस ऑप्टिमाइज़ेशन, queue workers, CDN"
+sidebarTitle: परफ़ॉर्मेंस
+icon: gauge
+---
+
+OwnPay को साधारण हार्डवेयर पर अच्छी तरह चलने के लिए डिज़ाइन किया गया है, लेकिन जैसे-जैसे आपका ट्रांज़ैक्शन वॉल्यूम बढ़ता है, आप स्टैक की हर परत पर लक्षित ऑप्टिमाइज़ेशन कर सकते हैं। यह गाइड सबसे प्रभावशाली बदलावों को कवर करती है।
+
+---
+
+## सेशन और कैश के लिए Redis {#redis-for-sessions-and-cache}
+
+अधिकांश डिप्लॉयमेंट के लिए सबसे बड़ा परफ़ॉर्मेंस सुधार फ़ाइल-आधारित कैश और सेशन से Redis पर स्विच करना है। Redis सेशन रीड, कैश लुकअप और रेट लिमिट ट्रैकिंग के लिए डिस्क I/O को समाप्त कर देता है।
+
+<Steps>
+</Steps>
+
+<Tip>
+  यदि आप queued jobs खोए बिना कैश फ़्लश करना चाहते हैं, तो कैश (DB 0) और queues (DB 1) के लिए अलग-अलग Redis डेटाबेस का उपयोग करें।
+</Tip>
+
+---
+
+## डेटाबेस ऑप्टिमाइज़ेशन {#database-optimization}
+
+फ़िल्टर की गई क्वेरी पर JSON extraction ओवरहेड से बचने के लिए OwnPay का स्कीमा MySQL Stored Generated Columns का उपयोग करता है। मौजूदा composite indexes (`idx_merchant_status`, `idx_merchant_created`) अधिकांश सामान्य क्वेरी पैटर्न को संभालते हैं।
+
+### मुख्य कॉन्फ़िगरेशन {#key-configuration}
+
+```ini
+[mysqld]
+innodb_buffer_pool_size    = 256M    # Increase to 1G+ for high volume
+innodb_flush_log_at_trx_commit = 1
+innodb_flush_method        = O_DIRECT
+max_connections            = 100
+wait_timeout               = 600
+slow_query_log             = 1
+long_query_time            = 2
+```
+
+<Note>
+  `innodb_buffer_pool_size` को MySQL के लिए समर्पित उपलब्ध RAM के लगभग 70% पर सेट करें। 4 GB RAM और Redis वाले सर्वर पर, 1 GB एक उचित शुरुआती बिंदु है।
+</Note>
+
+आप एडमिन पैनल में **Settings \> Database** के अंतर्गत टेबल ऑप्टिमाइज़ कर सकते हैं। यह खंडित स्थान को पुनः प्राप्त करने के लिए सभी `op_` टेबल पर `OPTIMIZE TABLE` चलाता है।
+
+---
+
+## PHP-FPM ट्यूनिंग {#php-fpm-tuning}
+
+PHP-FPM worker कॉन्फ़िगरेशन सीधे प्रभावित करता है कि OwnPay कितने समवर्ती अनुरोधों को संभाल सकता है।
+
+```ini
+[ownpay]
+pm                   = dynamic
+pm.max_children      = 20
+pm.start_servers     = 4
+pm.min_spare_servers = 2
+pm.max_spare_servers = 8
+pm.max_requests      = 500
+slowlog              = storage/logs/php-fpm-slow.log
+request_slowlog_timeout = 10s
+```
+
+अपनी `php.ini` में JIT compilation के साथ OPcache भी सक्षम करें:
+
+```ini
+opcache.enable                  = 1
+opcache.memory_consumption      = 128
+opcache.interned_strings_buffer = 16
+opcache.max_accelerated_files   = 10000
+opcache.revalidate_freq         = 0
+opcache.validate_timestamps     = 0
+opcache.jit                     = tracing
+opcache.jit_buffer_size         = 64M
+```
+
+<Warning>
+  अधिकतम परफ़ॉर्मेंस के लिए प्रोडक्शन में `opcache.validate_timestamps = 0` सेट करें। इसे अक्षम करने के बाद, OwnPay फ़ाइलें अपडेट करते समय आपको PHP-FPM रीस्टार्ट करना होगा।
+</Warning>
+
+---
+
+## Nginx कॉन्फ़िगरेशन {#nginx-configuration}
+
+अपने Nginx server block में gzip compression और static asset caching सक्षम करें:
+
+```nginx
+gzip on;
+gzip_types text/plain text/css application/json application/javascript text/xml;
+gzip_min_length 256;
+
+location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff2)$ {
+    expires 30d;
+    add_header Cache-Control "public, immutable";
+}
+```
+
+SSL के लिए, एक आधुनिक cipher suite का उपयोग करें और OCSP stapling सक्षम करें। अधिकांश डिस्ट्रीब्यूशन पर Nginx की डिफ़ॉल्ट SSL सेटिंग्स पहले से ही उचित हैं, लेकिन आप [SSL Labs](https://www.ssllabs.com/ssltest/) से अपने कॉन्फ़िगरेशन का परीक्षण कर सकते हैं।
+
+---
+
+## स्टैटिक एसेट के लिए CDN {#cdn-for-static-assets}
+
+यदि आपके ब्रांड विभिन्न भौगोलिक क्षेत्रों में कस्टम डोमेन का उपयोग करते हैं, तो चेकआउट डोमेन के आगे एक CDN (Cloudflare, Fastly) रखें। CDN स्टैटिक एसेट (CSS, JS, इमेज, फ़ॉन्ट) को कैश करता है और उन्हें आपके ग्राहकों के करीब के edge nodes से सर्व करता है।
+
+<Info>
+  पेमेंट फ़ॉर्म सबमिशन और वेबहुक कॉलबैक हमेशा सीधे आपके origin सर्वर तक पहुँचते हैं। CDN केवल स्टैटिक फ़ाइलों को कैश करता है।
+</Info>
+
+---
+
+## एसिंक जॉब्स के लिए Queue workers {#queue-workers-for-async-jobs}
+
+बैकग्राउंड जॉब्स (वेबहुक डिलीवरी, ईमेल भेजना, SMS प्रोसेसिंग, एक्सपोर्ट जनरेशन) queue सिस्टम के माध्यम से चलते हैं। Redis को queue driver के रूप में उपयोग करते समय, cron endpoint के साथ जॉब्स प्रोसेस करें:
+
+```bash
+# Add to crontab
+* * * * * php /var/www/ownpay/public/index.php cron/run >> /dev/null 2>&1
+```
+
+उच्च-वॉल्यूम वातावरण के लिए, cron-आधारित worker पर निर्भर रहने के बजाय queue worker को एक समर्पित लंबे समय तक चलने वाली प्रक्रिया के रूप में चलाएँ:
+
+```bash
+php /var/www/ownpay/public/index.php queue:work --daemon
+```
+
+---
+
+## स्केलिंग संबंधी विचार {#scaling-considerations}
+
+| वॉल्यूम | आर्किटेक्चर | मुख्य बदलाव |
+| :-- | :-- | :-- |
+| 1,000 पेमेंट/दिन तक | एकल सर्वर, फ़ाइल कैश | डिफ़ॉल्ट इंस्टॉलेशन पर्याप्त है |
+| 1,000 - 8,000 पेमेंट/दिन | एकल सर्वर, Redis | कैश, सेशन और queues के लिए Redis पर स्विच करें |
+| 8,000 - 50,000 पेमेंट/दिन | एकल सर्वर, ट्यून किया हुआ | PHP-FPM workers, InnoDB buffer pool बढ़ाएँ, OPcache JIT जोड़ें |
+| 50,000\+ पेमेंट/दिन | अलग ऐप \+ डेटाबेस सर्वर | MySQL को 5 GB\+ buffer pool वाले समर्पित होस्ट पर ले जाएँ |
+| 100,000\+ पेमेंट/दिन | हॉरिज़ॉन्टल स्केलिंग | लोड बैलेंसर के पीछे कई ऐप सर्वर, Redis Cluster, read replicas |
+
+<Note>
+  सेशन के लिए Redis का उपयोग करने पर OwnPay का PHP एप्लिकेशन stateless होता है। इससे हॉरिज़ॉन्टल स्केलिंग सरल हो जाती है - बिना किसी कोड बदलाव के अपने लोड बैलेंसर के पीछे और ऐप सर्वर जोड़ें।
+</Note>
+
+---
+
+## मॉनिटरिंग {#monitoring}
+
+स्केल करने का सही समय जानने के लिए इन मुख्य मेट्रिक्स की निगरानी करें:
+
+| मेट्रिक | स्वस्थ सीमा | कहाँ जाँचें |
+| :-- | :-- | :-- |
+| PHP-FPM सक्रिय workers | `pm.max_children` के 80% से कम | `/fpm-status` endpoint |
+| OPcache hit rate | 95% से अधिक | PHP info पेज में `opcache_get_status()` |
+| धीमी क्वेरी | प्रति मिनट शून्य | MySQL slow query log |
+| InnoDB buffer pool hits | 95% से अधिक | `SHOW STATUS LIKE 'Innodb_buffer_pool_read_requests'` |
+| Redis evicted keys | प्रति मिनट शून्य | `redis-cli info stats` |
+
+---
+
+## संबंधित पेज {#related-pages}
+
+- [इंस्टॉलेशन](/hi/installation) - प्रारंभिक सर्वर सेटअप और आवश्यकताएँ
+- [बैकअप और एक्सपोर्ट](/hi/resources/backup-export) - स्केलिंग बदलावों से पहले बैकअप प्रक्रियाएँ
+- [रेट लिमिटिंग](/hi/resources/rate-limiting) - उच्च-ट्रैफ़िक डिप्लॉयमेंट के लिए रेट लिमिट कॉन्फ़िगर करें

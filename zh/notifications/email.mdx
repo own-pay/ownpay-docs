@@ -1,0 +1,88 @@
+---
+title: 邮件通知
+description: "通过 mail-gateway 附加组件配置 SMTP 邮件通知，用于发送交易提醒、密码重置及其他自动消息。"
+keywords: "邮件通知, SMTP, 邮件网关, 邮件模板, 交易提醒, Twig 模板"
+sidebarTitle: 邮件
+icon: mail
+---
+
+OwnPay 会针对关键事件发送自动邮件通知，例如付款成功、退款确认和密码重置。邮件通过 **mail-gateway** 附加组件使用标准 SMTP 发送，让您完全掌控投递基础设施。
+
+<Note>
+  在发送邮件之前，必须先安装并启用 mail-gateway 附加组件。有关安装说明，请参阅[附加组件页面](/zh/system/addons)。
+</Note>
+
+## 配置 SMTP 设置 {#configure-smtp-settings}
+
+<Steps>
+  <Step>
+    在左侧边栏中前往 **Settings**，然后点击 **Mail** 选项卡。
+  </Step>
+  <Step>
+    填写您的 SMTP 凭据：
+
+    | 字段 | 说明 |
+    | --- | --- |
+    | **SMTP Host** | 您的邮件服务器地址（例如 `smtp.gmail.com`） |
+    | **SMTP Port** | 通常为 `587`（TLS）或 `465`（SSL） |
+    | **Username** | SMTP 登录用户名，通常是您的邮箱地址 |
+    | **Password** | SMTP 密码或应用专用密码 |
+    | **Encryption** | 选择与端口匹配的 `tls` 或 `ssl` |
+    | **From Address** | 向收件人显示的发件人邮箱 |
+  </Step>
+  <Step>
+    点击 **Save** 保存配置。OwnPay 会自动测试连接。
+  </Step>
+</Steps>
+
+## 邮件模板 {#email-templates}
+
+OwnPay 自带适用于常见事件的基于 Twig 的邮件模板。您可以在 **Settings \> Mail \> Templates** 中对其进行自定义。
+
+<Tabs>
+  <Tab title="payment_received">
+    在付款成功完成时发送给品牌运营者。包含交易 ID、金额、货币、所用网关和客户邮箱。
+  </Tab>
+  <Tab title="refund_processed">
+    在退款发起并确认后发送。包含原始交易参考、退款金额和当前账本余额。
+  </Tab>
+  <Tab title="password_reset">
+    发送给请求重置密码的员工。包含一个有时效的安全链接。有关完整流程，请参阅[密码重置](/zh/security/password-reset)。
+  </Tab>
+</Tabs>
+
+<Info>
+  所有模板都使用 Twig 模板引擎。您可以使用 `{{ transaction.amount }}` 这样的点号表示法变量访问交易数据、品牌设置和客户字段。
+</Info>
+
+## 测试邮件设置 {#test-your-email-setup}
+
+配置好 SMTP 后，从 **Settings \> Mail \> Send Test Email** 发送一封测试邮件。输入收件人地址并点击 **Send**。检查以下几点：
+
+- 邮件到达收件箱（而不是垃圾邮件）
+- 发件人地址与您配置的 From Address 一致
+- 模板变量渲染正确
+
+## 常见问题 {#common-issues}
+
+<Accordion title="SPF/DKIM/DMARC 验证失败">
+  如果缺少 DNS 身份验证记录，邮件服务商可能会拒收或标记您的邮件。请为您的发件域名添加授权 SMTP 主机的 **SPF** 记录、用于加密签名的 **DKIM** 记录以及 **DMARC** 策略。具体的记录值请参阅您邮件服务商的文档。
+</Accordion>
+
+<Accordion title="Gmail 需要应用专用密码">
+  如果您使用 Gmail 作为 SMTP 提供商，普通账户密码将无法使用。请前往 Google 账户 \> 安全性 \> 两步验证 \> 应用专用密码，为 OwnPay 生成一个专用的 16 位密码。
+</Accordion>
+
+<Accordion title="邮件进入垃圾邮件箱">
+  除了 SPF/DKIM/DMARC 之外，还要确保 From Address 的域名与 SMTP 主机域名一致。逐步预热新的 IP 地址，并避免使用与交易通知相同的 SMTP 凭据发送批量邮件。
+</Accordion>
+
+<Warning>
+  切勿将 SMTP 密码存储在明文配置文件中。OwnPay 使用 AES-256-GCM 对所有邮件凭据进行静态加密。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [附加组件](/zh/system/addons) - 安装和管理 mail-gateway 附加组件
+- [Telegram 通知](/zh/notifications/telegram) - 作为替代渠道的推送通知
+- [密码重置](/zh/security/password-reset) - 通过邮件触发的密码找回流程

@@ -1,0 +1,157 @@
+---
+title: "OwnPay 生态系统：SDK、插件和配套应用"
+description: "了解 OwnPay 生态系统，包括官方 SDK、集成、配套应用、插件市场和社区资源。"
+keywords: "OwnPay 生态系统, 支付 SDK, WooCommerce, WHMCS, 配套应用, 插件市场, 社区"
+sidebarTitle: "生态系统"
+icon: "network"
+---
+
+OwnPay 不仅仅是一个独立的应用程序。围绕该平台，一个由 SDK、插件、移动工具和社区资源组成的生态系统正在不断壮大，使集成、扩展和运营变得更加轻松。
+
+---
+
+## 官方 SDK {#official-sdks}
+
+OwnPay 提供第一方客户端库，让你无需从头编写 HTTP 调用即可集成支付。
+
+<CardGroup cols={3}>
+  <Card title="PHP SDK" icon="code">
+    轻量级 PHP 包，用于创建支付意图、验证 Webhook 和查询交易。适用于任何 PHP 8.1\+ 项目。
+  </Card>
+
+  <Card title="Laravel 包" icon="stack-2">
+    原生 Laravel 集成，提供 facade、配置发布和事件监听器。可直接替换其他支付包。
+  </Card>
+
+  <Card title="Node.js SDK" icon="braces">
+    支持 TypeScript 的 npm 包，适用于 Express、Fastify 和 Next.js 应用程序。包含 Webhook 签名验证工具。
+  </Card>
+</CardGroup>
+
+<Info>
+  所有 SDK 均以 AGPL-3.0 许可证开源，托管在 [OwnPay GitHub 组织](https://github.com/own-pay)上。像安装其他依赖一样，通过 Composer 或 npm 安装即可。
+</Info>
+
+各 SDK 语言的代码示例请参阅[代码示例](/zh/resources/code-examples)页面。
+
+---
+
+## 集成插件 {#integration-plugins}
+
+预构建的插件可将 OwnPay 连接到流行的电子商务和计费平台。这些插件与你现有的环境一起运行在**你自己的**服务器上，并通过商户 API 与 OwnPay 通信。
+
+<CardGroup cols={2}>
+  <Card title="WooCommerce" icon="shopping-cart">
+    在你的 WooCommerce 商店中通过 OwnPay 驱动的网关收款。支持通过 Webhook 自动更新订单状态。
+  </Card>
+
+  <Card title="WHMCS" icon="server">
+    让你的 WHMCS 客户通过 OwnPay 支付发票。支持定期计费回调以及结账时的多网关选择。
+  </Card>
+</CardGroup>
+
+<Note>
+  集成插件由社区维护。请查看[插件市场](https://plugins.ownpay.org)获取最新版本和兼容性信息。
+</Note>
+
+---
+
+## 配套应用 {#companion-app}
+
+OwnPay Android 配套应用与你的安装实例配对，为手动和移动金融服务（MFS）网关提供基于短信的付款验证。
+
+<Columns>
+  <Column>
+    **工作原理**
+
+    - 管理员在仪表板中生成一次性 OTP
+    - 应用使用 OTP 换取 JWT 和 AES 会话密钥
+    - 来自网关（bKash、Nagad、M-Pesa 等）的短信会被转发到你的 OwnPay 服务器
+    - 服务器解析交易详情并自动匹配待处理的付款
+  </Column>
+  <Column>
+    **主要功能**
+
+    - 针对已完成付款、退款和争议的实时推送通知
+    - 可配置的短信隐私过滤器，用于忽略无关消息
+    - 多设备支持（手机和平板可同时使用）
+    - 收入仪表板和待处理交易概览
+    - 在管理面板中进行设备管理和远程撤销
+  </Column>
+</Columns>
+
+---
+
+## 插件市场 {#plugin-marketplace}
+
+[插件市场](https://plugins.ownpay.org)是发现和安装社区构建扩展的中心。
+
+- **网关插件** - 内置 123 个适配器之外的更多支付处理商
+- **主题插件** - 面向特定行业或品牌形象的自定义结账皮肤
+- **附加组件插件** - 管理仪表板小部件、报表工具和工作流自动化
+- **集成插件** - 用于电子商务、CRM 和会计平台的连接器
+
+插件以签名的 ZIP 包形式发布。每个插件在安装前都会经过静态代码分析，确保不会有危险的函数调用进入你的服务器。
+
+<Tip>
+  想发布自己的插件？请阅读[插件开发概览](/zh/developer/plugins/overview)，了解清单格式、钩子系统和沙箱规则。
+</Tip>
+
+---
+
+## 社区资源 {#community-resources}
+
+OwnPay 社区通过多个渠道贡献文档、翻译和支持。
+
+| 资源 | 描述 |
+| :-- | :-- |
+| [GitHub Discussions](https://github.com/own-pay/OwnPay/discussions) | 提问、分享部署方案和提议新功能 |
+| [GitHub Issues](https://github.com/own-pay/OwnPay/issues) | 错误报告和功能请求 |
+| [Discord](https://discord.gg/ownpay) | 与其他运营者和贡献者实时聊天 |
+| [blog.ownpay.org](https://blog.ownpay.org) | 版本发布公告、教程和工程技术深度解析 |
+| [learn.ownpay.org](https://learn.ownpay.org) | 分步集成指南和插件开发教程 |
+| [docs.ownpay.org](https://docs.ownpay.org) | 带交互式示例的完整 REST API 参考 |
+
+---
+
+## 第三方集成 {#third-party-integrations}
+
+除了官方的 WooCommerce 和 WHMCS 插件外，社区还构建了以下集成：
+
+- **Invoice Ninja** - 从发票生成 OwnPay 支付链接
+- **WordPress** - 基于短代码的付款表单和捐赠按钮
+- **ERPNext** - 在 ERPNext 与 OwnPay 账本之间同步付款记录
+- **自定义 REST 客户端** - 任何能够发起 HTTP 调用并验证 HMAC-SHA256 签名的平台
+
+<Note>
+  第三方集成并非由 OwnPay 核心团队官方维护。在部署到生产环境之前，请检查其与你所用版本的兼容性。
+</Note>
+
+---
+
+## 为生态系统做贡献 {#contributing-to-the-ecosystem}
+
+你可以通过多种方式帮助 OwnPay 生态系统发展：
+
+1. **构建插件** - 创建新的网关、主题或附加组件，并发布到插件市场
+2. **编写集成** - 将 OwnPay 连接到你使用的平台，并在 GitHub 上分享
+3. **改进 SDK** - 修复错误、添加功能，或为新语言创建 SDK（欢迎 Python、Go、Java）
+4. **翻译** - 为管理面板和结账页面添加或改进语言目录
+5. **编写文档** - 改进指南、添加教程或扩充 API 文档
+
+有关代码规范和 pull request 流程的详细说明，请参阅[贡献指南](/zh/resources/contributing)。
+
+---
+
+## 版本注册表与更新 {#version-registry-and-updates}
+
+[版本注册表](https://update.ownpay.org)跟踪所有 OwnPay 版本，并提供用于检查可用更新的公共 API。你也可以直接在管理面板的 **系统 \> 系统更新** 中检查更新。
+
+---
+
+## 相关页面 {#related-pages}
+
+- [功能](/zh/resources/features) - 平台功能的完整列表
+- [代码示例](/zh/resources/code-examples) - 多语言集成示例
+- [贡献指南](/zh/resources/contributing) - 如何贡献代码、插件和翻译
+- [更新日志](/zh/resources/changelog) - 详细的版本历史

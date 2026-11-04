@@ -1,0 +1,125 @@
+---
+title: "पेमेंट फ़्लो - लेनदेन स्थितियाँ और जीवनचक्र"
+description: "OwnPay लेनदेन स्थितियों का प्रामाणिक संदर्भ: created, pending, processing, completed, failed, expired, cancelled, refunded, और हर स्थिति के webhooks।"
+keywords: "payment flow, transaction statuses, payment lifecycle, payment processing, transaction states, payment status, पेमेंट फ़्लो, लेनदेन स्थिति"
+sidebarTitle: "पेमेंट फ़्लो"
+icon: "cash"
+---
+
+import LlmsDirective from "/hi/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+यह OwnPay लेनदेन स्थितियों का **प्रामाणिक संदर्भ** है। हर पेमेंट लिंक, API पेमेंट और इनवॉइस पेमेंट एक ही स्टेट मशीन से होकर गुज़रता है। जब आप इंटीग्रेशन बनाते हैं या लेनदेन का समस्या निवारण करते हैं, तो यही वह पेज है जिसे देखना चाहिए।
+
+## लेनदेन स्टेट डायग्राम {#transaction-state-diagram}
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+stateDiagram-v2
+[*] --> Created
+Created --> Pending: पेमेंट लिंक खोला गया / API कॉल
+Pending --> Processing: ग्राहक पेमेंट सबमिट करता है
+Processing --> Completed: गेटवे स्वीकृत करता है
+Processing --> Failed: गेटवे अस्वीकार करता है
+Pending --> Expired: ऑटो-एक्सपायरी टाइमर चलता है
+Pending --> Cancelled: मर्चेंट रद्द करता है
+Completed --> Refunded: मर्चेंट रिफ़ंड शुरू करता है
+Failed --> Pending: ग्राहक पुनः प्रयास करता है
+Refunded --> [*]
+Completed --> [*]
+Failed --> [*]
+Expired --> [*]
+Cancelled --> [*]
+
+style Created fill:#E8F4FD,stroke:#0F97ED,color:#102963
+style Pending fill:#E8F4FD,stroke:#0F97ED,color:#102963
+style Processing fill:#E8F4FD,stroke:#0F97ED,color:#102963
+style Completed fill:#0F97ED,stroke:#102963,color:#ffffff
+style Failed fill:#c62828,stroke:#102963,color:#ffffff
+style Expired fill:#f9a825,stroke:#102963,color:#102963
+style Cancelled fill:#f9a825,stroke:#102963,color:#102963
+style Refunded fill:#102963,stroke:#0F97ED,color:#ffffff
+`}>
+</Mermaid>
+
+## स्थितियों का विवरण {#state-descriptions}
+
+### Created (बनाया गया) {#created}
+
+पेमेंट इंटेंट डेटाबेस में मौजूद है लेकिन ग्राहक ने अभी तक उसके साथ इंटरैक्ट नहीं किया है। यह API से बनाए गए पेमेंट और नए जनरेट किए गए पेमेंट लिंक की प्रारंभिक स्थिति है। कोई webhook नहीं भेजा जाता।
+
+<Badge color="blue">संक्रमणकालीन</Badge>
+
+### Pending (लंबित) {#pending}
+
+ग्राहक ने चेकआउट पेज खोला है और पेमेंट फ़ॉर्म देख रहा है। कोई फ़ंड ऑथराइज़ नहीं हुआ है। पेमेंट इस स्थिति में तब तक रहता है जब तक ग्राहक पेमेंट विवरण सबमिट नहीं करता या ऑटो-एक्सपायरी टाइमर नहीं चलता।
+
+<Badge color="blue">संक्रमणकालीन</Badge>
+
+### Processing (प्रोसेस हो रहा है) {#processing}
+
+ग्राहक ने अपने पेमेंट विवरण सबमिट कर दिए हैं और OwnPay ने गेटवे को ऑथराइज़ेशन अनुरोध भेज दिया है। ग्राहक को एक लोडिंग संकेतक दिखता है। OwnPay गेटवे के जवाब की प्रतीक्षा कर रहा है।
+
+<Badge color="blue">संक्रमणकालीन</Badge>
+
+### Completed (पूर्ण) {#completed}
+
+गेटवे ने पेमेंट स्वीकृत कर दिया। OwnPay लेनदेन को डबल-एंट्री लेजर में दर्ज करता है, `payment.completed` इवेंट चलाता है, और आपके कॉन्फ़िगर किए गए URL पर एक webhook भेजता है। ग्राहक को सफलता पेज दिखता है।
+
+<Badge color="green">अंतिम: हाँ</Badge>
+
+### Failed (विफल) {#failed}
+
+गेटवे ने पेमेंट अस्वीकार कर दिया - अपर्याप्त फ़ंड, अमान्य कार्ड, धोखाधड़ी पहचान, या कोई अस्थायी नेटवर्क त्रुटि। एक `payment.failed` webhook भेजा जाता है। ग्राहक Pending स्थिति से पुनः प्रयास कर सकता है।
+
+<Badge color="red">अंतिम: हाँ</Badge>
+
+### Expired (समाप्त) {#expired}
+
+पेमेंट लिंक या चेकआउट सेशन ग्राहक की कार्रवाई के बिना टाइम आउट हो गया। कॉन्फ़िगर करने योग्य ऑटो-एक्सपायरी टाइमर एक शेड्यूल्ड जॉब चलाता है जो पेमेंट को Expired में ले जाता है। कोई webhook नहीं भेजा जाता।
+
+<Badge color="yellow">अंतिम: हाँ</Badge>
+
+### Cancelled (रद्द) {#cancelled}
+
+किसी मर्चेंट या स्टाफ़ सदस्य ने पेमेंट पूरा होने से पहले उसे मैन्युअल रूप से रद्द कर दिया। एक `payment.cancelled` webhook भेजा जाता है।
+
+<Badge color="yellow">अंतिम: हाँ</Badge>
+
+### Refunded (रिफ़ंड किया गया) {#refunded}
+
+पहले से पूर्ण किए गए पेमेंट को रिफ़ंड किया गया (पूर्ण या आंशिक)। गेटवे ने ग्राहक को फ़ंड लौटा दिए और OwnPay ने उलटी लेजर प्रविष्टियाँ दर्ज कीं। एक `payment.refunded` webhook भेजा जाता है।
+
+<Badge color="blue">अंतिम: हाँ</Badge>
+
+## हर स्थिति के webhook इवेंट {#webhook-events-per-state}
+
+| स्थिति | Webhook इवेंट | पेलोड में शामिल |
+| :-- | :-- | :-- |
+| Completed | `payment.completed` | लेनदेन ID, राशि, मुद्रा, गेटवे, शुल्क |
+| Failed | `payment.failed` | लेनदेन ID, त्रुटि कोड, त्रुटि संदेश, गेटवे |
+| Cancelled | `payment.cancelled` | लेनदेन ID, किसने रद्द किया, कारण |
+| Refunded | `payment.refunded` | लेनदेन ID, रिफ़ंड राशि, रिफ़ंड ID |
+
+<Note>
+  **Pending**, **Processing** और **Expired** स्थितियाँ webhooks ट्रिगर **नहीं** करतीं। पेमेंट परिणामों की पुष्टि के लिए आपके इंटीग्रेशन को अंतिम स्थितियों (Completed, Failed, Cancelled, Refunded) पर निर्भर रहना चाहिए।
+</Note>
+
+## ऑटो-एक्सपायरी {#auto-expiry}
+
+अवैतनिक पेमेंट एक कॉन्फ़िगर करने योग्य टाइमआउट (डिफ़ॉल्ट: 24 घंटे) के बाद स्वचालित रूप से **Expired** में चले जाते हैं। क्रॉन जॉब (`php public/index.php cron`) हर मिनट चलता है और पुराने लंबित पेमेंट की जाँच करता है। एक्सपायरी अवधि को **System \> Settings** में समायोजित करें।
+
+<Info>
+  अगर आपको Processing चरण के दौरान रीयल-टाइम स्थिति अपडेट चाहिए, तो पोलिंग का उपयोग करें या गेटवे के अपने कॉलबैक पर निर्भर रहें। OwnPay केवल अंतिम स्थितियों पर webhooks भेजता है।
+</Info>
+
+## संबंधित पेज {#related-pages}
+
+- [लेनदेन](/hi/payments/transactions) - डैशबोर्ड में लेनदेन इतिहास देखें और फ़िल्टर करें
+- [Webhooks](/hi/api/webhooks) - webhook URL कॉन्फ़िगर करें और HMAC-SHA256 सिग्नेचर सत्यापित करें
+- [गेटवे](/hi/fundamentals/gateways) - समझें कि गेटवे रूटिंग प्रोसेसिंग को कैसे प्रभावित करती है
+- [डेवलपर क्विकस्टार्ट](/hi/developer/quickstart) - अपने एप्लिकेशन में webhooks इंटीग्रेट करें
+- [सामान्य त्रुटियाँ](/hi/resources/common-errors) - पेमेंट विफलताओं का समस्या निवारण करें

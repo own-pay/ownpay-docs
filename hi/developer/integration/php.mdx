@@ -1,0 +1,150 @@
+---
+title: "PHP SDK"
+description: "पेमेंट बनाने, स्टेटस सत्यापित करने और टाइप-सेफ़ रिस्पॉन्स के साथ वेबहुक संभालने के लिए आधिकारिक OwnPay PHP SDK।"
+keywords: "PHP SDK, OwnPay PHP, composer, payment SDK, webhook helper, PHP payment integration"
+sidebarTitle: "PHP SDK"
+icon: "file-code"
+---
+
+आधिकारिक OwnPay PHP SDK, Merchant API के लिए एक टाइप्ड क्लाइंट, एक वेबहुक सत्यापन हेल्पर और स्वचालित एरर हैंडलिंग प्रदान करता है।
+
+## इंस्टॉलेशन {#installation}
+
+```bash
+composer require ownpay/php-sdk
+```
+
+PHP 8.3\+ आवश्यक है (OwnPay के रनटाइम से मेल खाता हुआ)।
+
+## पेमेंट बनाना {#creating-a-payment}
+
+```php
+use OwnPay\SDK\Client;
+
+$client = new Client(
+    apiKey:  $_ENV['OWNPAY_API_KEY'],
+    baseUrl: $_ENV['OWNPAY_BASE_URL'],
+);
+
+$payment = $client->payments()->create([
+    'amount'         => '50.00',
+    'currency'       => 'USD',
+    'customer_email' => 'customer@example.com',
+    'customer_name'  => 'Jane Doe',
+    'description'    => 'Order #1042',
+    'metadata'       => ['order_id' => '1042'],
+    'redirect_url'   => 'https://your-store.com/callback',
+    'cancel_url'     => 'https://your-store.com/cancel',
+]);
+
+// $payment['data']['checkout_url'] - redirect customer here
+// $payment['data']['id']           - store for later verification
+header('Location: ' . $payment['data']['checkout_url']);
+exit;
+```
+
+## पेमेंट सत्यापित करना {#verifying-a-payment}
+
+ग्राहक के चेकआउट से लौटने के बाद, ऑर्डर पूरा करने से पहले पेमेंट स्टेटस सत्यापित करें:
+
+```php
+$payment = $client->payments()->get('pay_abc123');
+
+if ($payment['data']['status'] === 'completed') {
+    fulfillOrder($payment['data']['metadata']['order_id']);
+} else {
+    echo 'Payment not completed. Status: ' . $payment['data']['status'];
+}
+```
+
+## ट्रांज़ैक्शन की सूची बनाना {#listing-transactions}
+
+```php
+$transactions = $client->transactions()->list([
+    'status'  => 'completed',
+    'page'    => 1,
+    'per_page' => 20,
+]);
+
+foreach ($transactions['data']['data'] as $txn) {
+    printf("%s  %s %s\n", $txn['id'], $txn['amount'], $txn['currency']);
+}
+```
+
+## SDK हेल्पर के साथ वेबहुक हैंडलिंग {#webhook-handling-with-sdk-helper}
+
+SDK में एक `Webhook` क्लास शामिल है जो सिग्नेचर सत्यापन और इवेंट पार्सिंग संभालती है। आधिकारिक सत्यापन संदर्भ के लिए [वेबहुक](/hi/api/webhooks) देखें।
+
+```php
+use OwnPay\SDK\Webhook;
+
+$rawBody   = file_get_contents('php://input');
+$signature = $_SERVER['HTTP_X_OWNPAY_SIGNATURE'] ?? '';
+$timestamp = (int) ($_SERVER['HTTP_X_OWNPAY_TIMESTAMP'] ?? 0);
+
+$webhook = new Webhook($_ENV['OWNPAY_WEBHOOK_SECRET']);
+
+try {
+    $event = $webhook->verify($rawBody, $signature, $timestamp);
+} catch (\OwnPay\SDK\Exceptions\InvalidSignatureException $e) {
+    http_response_code(401);
+    exit('Invalid signature');
+} catch (\OwnPay\SDK\Exceptions\StaleEventException $e) {
+    http_response_code(403);
+    exit('Timestamp too old');
+}
+
+// Route by event type
+if ($event->type === 'payment.completed') {
+    fulfillOrder($event->data['metadata']['order_id'] ?? '');
+}
+
+http_response_code(200);
+```
+
+## एरर हैंडलिंग {#error-handling}
+
+SDK हर एरर श्रेणी के लिए टाइप्ड एक्सेप्शन थ्रो करता है:
+
+```php
+use OwnPay\SDK\Exceptions\{
+    AuthenticationException,
+    ValidationException,
+    NotFoundException,
+    RateLimitException,
+    OwnPayException,
+};
+
+try {
+    $payment = $client->payments()->create($payload);
+} catch (AuthenticationException $e) {
+    // 401 - check your API key
+} catch (ValidationException $e) {
+    // 422 - $e->getFields() returns the field-level errors array
+    foreach ($e->getFields() as $fieldError) {
+        echo $fieldError['field'] . ': ' . $fieldError['message'];
+    }
+} catch (RateLimitException $e) {
+    // 429 - retry after $e->getRetryAfter() seconds
+    sleep($e->getRetryAfter());
+} catch (OwnPayException $e) {
+    // Any other OwnPay error
+    error_log($e->getMessage());
+}
+```
+
+## एनवायरनमेंट कॉन्फ़िगरेशन {#environment-configuration}
+
+```env
+# .env
+OWNPAY_BASE_URL=https://your-domain.com
+OWNPAY_API_KEY=op_live_abc123.def456
+OWNPAY_WEBHOOK_SECRET=whsec_abc123...
+```
+
+## संबंधित पेज {#related-pages}
+
+- [API अवलोकन](/hi/api/overview)
+- [ऑथेंटिकेशन](/hi/api/authentication)
+- [वेबहुक](/hi/api/webhooks)
+- [Laravel इंटीग्रेशन](/hi/developer/integration/laravel)

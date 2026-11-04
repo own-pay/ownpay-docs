@@ -1,0 +1,71 @@
+---
+title: 交易管理
+description: "如何在 OwnPay 管理后台查看、搜索、筛选和管理交易。交易界面操作的权威参考。"
+keywords: "交易, 交易搜索, 交易筛选, 交易详情, 手动状态, 导出 CSV, transactions"
+sidebarTitle: 交易
+icon: receipt
+---
+
+交易页面是您监控通过 OwnPay 处理的所有付款的中心。这是在管理界面中查找、检查和处理交易的权威页面。
+
+## 查看交易 {#view-transactions}
+
+1. 前往 **Payments** → **Transactions**。
+2. 表格会加载当前所选品牌的所有交易。
+3. 每行显示交易 ID、客户电子邮件、金额、网关、状态标记和时间戳。
+4. 点击任意行上的 **View** 打开交易详情面板。
+
+## 搜索和筛选 {#search-and-filter}
+
+使用表格上方的筛选工具栏缩小结果范围：
+
+| 筛选条件 | 使用方法 |
+| --- | --- |
+| **Status tabs** | 点击标签页仅显示该状态：All、Completed、Pending、Failed、Refunded 或 Cancelled |
+| **Search box** | 输入交易 ID、客户电子邮件或金额以查找特定交易 |
+| **Gateway dropdown** | 选择特定网关，仅查看通过该网关处理的交易 |
+| **Date range** | 选择起止日期，将结果限制在某一时间段内 |
+| **Currency filter** | 当您的品牌支持多种货币时按货币筛选 |
+
+## 交易详情视图 {#transaction-detail-view}
+
+点击 **View** 会打开一个包含三个部分的面板：
+
+- **付款详情** - 状态、金额、网关手续费、净额、网关交易 ID 以及生命周期时间戳。
+- **客户信息** - 姓名、电子邮件、电话和 IP 地址。
+- **账本分录** - 与此交易关联的复式记账日记账过账记录。
+
+## 交易状态 {#transaction-statuses}
+
+OwnPay 为每笔交易使用一组明确定义的状态。完整的生命周期说明请参阅[付款流程](/zh/fundamentals/payment-flow)。
+
+| 状态 | 含义 |
+| --- | --- |
+| **Pending** | 客户已打开结账页面但尚未付款 |
+| **Awaiting verification** | 客户已提交付款凭证（仅限手动网关） |
+| **Completed** | 付款已确认，资金已记入账本 |
+| **Failed** | 网关拒绝了该交易 |
+| **Refunded** | 资金已退还给客户 |
+| **Cancelled** | 结账已过期或被客户取消 |
+
+## 手动更改状态 {#manual-status-changes}
+
+对于手动网关（银行转账、移动钱包），交易会以 **awaiting verification** 状态到达。您可以：
+
+- 在银行或钱包对账单上核实付款后，点击 **Mark Completed**。
+- 如果付款凭证无效，点击 **Mark Failed**。
+
+<Warning>
+  除非您已在银行或钱包对账单上核实付款，否则请勿强制完成交易。欺诈性的完成操作会破坏您的账本余额。
+</Warning>
+
+## 导出交易 {#export-transactions}
+
+点击交易页面上的 **Export CSV** 按钮，即可下载当前所有筛选结果的电子表格。导出内容包括交易 ID、客户电子邮件、金额、货币、网关、状态和时间戳列。
+
+## 相关页面 {#related-pages}
+
+- [付款流程](/zh/fundamentals/payment-flow) - 所有交易状态的权威说明
+- [退款](/zh/payments/refunds) - 从交易详情视图发起退款
+- [账本](/zh/payments/ledger) - 与交易关联的复式会计分录
+- [发票](/zh/payments/invoices) - 查看来自发票结账的付款

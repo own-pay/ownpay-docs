@@ -1,0 +1,81 @@
+---
+title: "仪表盘"
+description: "查看 OwnPay 仪表盘中跨所有品牌的关键指标，按日期范围筛选，浏览图表，并通过快捷链接跳转到详细报表。"
+keywords: "仪表盘, 指标, 收入, 交易数量, 成功率, KPI, 分析, dashboard"
+sidebarTitle: "仪表盘"
+icon: "layout-dashboard"
+---
+
+仪表盘是您登录后看到的第一个页面。它提供跨所有品牌的支付运营实时概览，支持可筛选的日期范围和可视化图表。
+
+## 关键指标 {#key-metrics}
+
+页面顶部显示四张汇总卡片：
+
+<CardGroup>
+  <Card title="总收入" icon="currency-dollar">
+    所选期间内所有成功完成的付款总和。金额使用 `bcmath` 精度，并以每个品牌配置的货币显示。
+  </Card>
+
+  <Card title="交易数量" icon="hash">
+    付款尝试的总数，按已完成和失败进行细分。
+  </Card>
+
+  <Card title="成功率" icon="check">
+    成功完成的付款占总尝试次数的百分比。
+  </Card>
+
+  <Card title="活跃品牌" icon="building">
+    在所选期间内至少处理过一笔交易的品牌数量。
+  </Card>
+</CardGroup>
+
+## 日期范围筛选 {#date-range-filters}
+
+使用页面顶部的日期选择器设置自定义报表时间窗口。预设选项包括：
+
+- **今天**
+- **过去 7 天**
+- **过去 30 天**
+- **本月**
+- **今年**
+
+<Tip>
+  更改日期范围后，所有指标和图表都会立即更新，无需重新加载页面。
+</Tip>
+
+## 图表和可视化 {#charts-and-visualizations}
+
+在汇总卡片下方，仪表盘显示：
+
+- **收入趋势** - 显示所选期间内每日收入的折线图或柱状图
+- **网关分布** - 显示哪些网关处理了最多交易量的饼图
+- **最近交易** - 带有状态标记的最近 10 笔交易速览表
+
+## 快捷链接 {#quick-links}
+
+仪表盘底部提供常用部分的快捷卡片：
+
+<CardGroup>
+  <Card title="交易" href="/zh/payments/transactions">
+    查看和搜索所有付款记录。
+  </Card>
+
+  <Card title="审计日志" href="/zh/reports/audit-log">
+    查看员工操作以确保合规。
+  </Card>
+
+  <Card title="余额核对" href="/zh/reports/balance-verification">
+    核对账本余额。
+  </Card>
+</CardGroup>
+
+<Note>
+  仪表盘数据在 Redis 中缓存 60 秒。如果您需要完全实时的数据，请改为访问具体的报表页面。
+</Note>
+
+## 相关页面 {#related-pages}
+
+- [审计日志](/zh/reports/audit-log) - 逐项操作的详细审计记录
+- [余额核对](/zh/reports/balance-verification) - 核对系统余额与计算余额
+- [交易](/zh/payments/transactions) - 完整的交易搜索和管理

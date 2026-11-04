@@ -1,0 +1,102 @@
+---
+title: "प्लगइन आर्किटेक्चर: प्रकार, सैंडबॉक्स और हुक"
+description: "OwnPay के प्लगइन आर्किटेक्चर का अवलोकन, जिसमें चार प्लगइन प्रकार, सैंडबॉक्स, कैपेबिलिटीज़ और कोर व्यवहार का विस्तार करने के लिए हुक सिस्टम शामिल हैं।"
+keywords: "plugin system, plugin architecture, gateway plugins, addon plugins, theme plugins, integration plugins, plugin sandbox"
+sidebarTitle: अवलोकन
+icon: puzzle
+---
+
+प्लगइन कोर कोड को बदले बिना OwnPay का विस्तार करते हैं। पेमेंट गेटवे जोड़ने, कस्टम सुविधाएँ बनाने, चेकआउट को नया डिज़ाइन देने या बाहरी प्लेटफ़ॉर्म के साथ इंटीग्रेट करने के लिए एक प्लगइन लिखें।
+
+## चार प्लगइन प्रकार {#four-plugin-types}
+
+<Columns>
+  <Column>
+### गेटवे प्लगइन {#gateway-plugins}
+
+    नए पेमेंट मेथड जोड़ें: Stripe, PayPal, bKash, बैंक ट्रांसफ़र, क्रिप्टो। पेमेंट प्रोसेसिंग, सत्यापन, रिफ़ंड और वेबहुक संभालने के लिए `GatewayInterface` लागू करें।
+
+    [गेटवे बनाएँ](/hi/developer/plugin-types/gateway)
+  </Column>
+  <Column>
+### ऐडऑन प्लगइन {#addon-plugins}
+
+    पेमेंट प्रोसेसिंग के बिना कार्यक्षमता का विस्तार करें: रिपोर्टिंग डैशबोर्ड, सब्सक्रिप्शन प्रबंधन, CRM सिंक, ईमेल कस्टमाइज़ेशन, शेड्यूल्ड जॉब।
+
+    [ऐडऑन बनाएँ](/hi/developer/plugin-types/addon)
+  </Column>
+  <Column>
+### थीम प्लगइन {#theme-plugins}
+
+    चेकआउट अनुभव कस्टमाइज़ करें: Twig टेम्पलेट, CSS, JavaScript, ब्रांडिंग ओवरराइड।
+
+    [थीम बनाएँ](/hi/developer/plugin-types/theme)
+  </Column>
+  <Column>
+### इंटीग्रेशन प्लगइन {#integration-plugins}
+
+    बाहरी प्लेटफ़ॉर्म जोड़ें: QuickBooks सिंक, HubSpot पुश, Slack नोटिफ़िकेशन, ERP इंटीग्रेशन।
+
+    [इंटीग्रेशन बनाएँ](/hi/developer/plugin-types/integration)
+  </Column>
+</Columns>
+
+## प्लगइन सैंडबॉक्स {#plugin-sandbox}
+
+हर प्लगइन एक सैंडबॉक्स के अंदर चलता है जो सुरक्षा बाधाएँ लागू करता है:
+
+- प्लगइन डायरेक्टरी के बाहर कोई सीधी फ़ाइलसिस्टम पहुँच नहीं
+- कोई `eval()`, `exec()` या `system()` कॉल नहीं
+- डेटाबेस क्वेरी केवल प्रदान किए गए क्वेरी बिल्डर के माध्यम से
+- कॉन्फ़िगर करने योग्य अनुमति-सूचियों के साथ प्लगइन HTTP क्लाइंट के माध्यम से आउटबाउंड HTTP
+
+<Info>
+  सैंडबॉक्स PHP स्तर पर लागू होता है। प्रतिबंधित ऑपरेशन का प्रयास करने वाले प्लगइन को `PluginSandboxException` मिलता है।
+</Info>
+
+## कैपेबिलिटीज़ {#capabilities}
+
+प्लगइन अपने `manifest.json` में कैपेबिलिटीज़ घोषित करते हैं। कैपेबिलिटीज़ अनुमति गेट हैं जो तय करती हैं कि एक प्लगइन किन सिस्टम संसाधनों तक पहुँच सकता है:
+
+| कैपेबिलिटी | यह क्या सक्षम करती है |
+| --- | --- |
+| `payment_process` | पेमेंट और रिफ़ंड प्रोसेस करना |
+| `webhook_receive` | वेबहुक एंडपॉइंट रजिस्टर करना |
+| `admin_page` | एडमिन पैनल में पेज जोड़ना |
+| `api_routes` | कस्टम API एंडपॉइंट रजिस्टर करना |
+| `database` | माइग्रेशन बनाना और चलाना |
+| `assets` | CSS और JavaScript फ़ाइलें सर्व करना |
+
+पूर्ण [कैपेबिलिटीज़](/hi/developer/plugins/capabilities) संदर्भ देखें।
+
+## हुक सिस्टम {#hook-system}
+
+प्लगइन `EventManager` द्वारा संचालित WordPress-शैली के एक्शन और फ़िल्टर हुक सिस्टम के माध्यम से OwnPay कोर के साथ इंटरैक्ट करते हैं:
+
+- **एक्शन** - फ़ायर-एंड-फ़ॉरगेट कॉलबैक (इवेंट पर प्रतिक्रिया देते हैं)
+- **फ़िल्टर** - पाइपलाइन कॉलबैक जो डेटा रूपांतरित करते हैं
+
+```php
+// React to a payment completion (action)
+$events->addAction('payment.transaction.completed', function (array $txn): void {
+    sendNotification($txn);
+});
+
+// Add a surcharge (filter)
+$events->addFilter('payment.fee.calculate', function (string $fee, array $ctx): string {
+    return bcadd($fee, '1.00', 2);
+});
+```
+
+60\+ हुक पॉइंट वाली पूर्ण [हुक](/hi/developer/plugins/hooks) सूची देखें।
+
+## डॉक्यूमेंटेशन ट्री {#documentation-tree}
+
+<Tree />
+
+## संबंधित पेज {#related-pages}
+
+- [डायरेक्टरी संरचना](/hi/developer/plugins/directory-structure)
+- [मैनिफ़ेस्ट संदर्भ](/hi/developer/plugins/manifest)
+- [हुक संदर्भ](/hi/developer/plugins/hooks)
+- [प्लगइन लाइफ़साइकल](/hi/developer/plugins/lifecycle)

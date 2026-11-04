@@ -1,0 +1,94 @@
+---
+title: "प्लगइन सिस्टम - विस्तार योग्य आर्किटेक्चर"
+description: "OwnPay मैनिफ़ेस्ट-आधारित डिस्कवरी, हुक, क्षमताओं और प्लगइन सैंडबॉक्स का उपयोग करके gateway, addon, theme और integration प्लगइन के साथ अपने कोर का विस्तार कैसे करता है।"
+keywords: "plugin system, plugin architecture, gateway plugins, theme plugins, addon plugins, integration plugins, hooks, filters, capabilities, प्लगइन सिस्टम"
+sidebarTitle: "प्लगइन"
+icon: "puzzle"
+---
+
+import LlmsDirective from "/hi/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay का कोर रूटिंग, लेजर, ब्रांड और चेकआउट फ़्रेमवर्क संभालता है। बाकी सब कुछ - पेमेंट प्रदाता, कस्टम थीम, अतिरिक्त सुविधाएँ और थर्ड-पार्टी इंटीग्रेशन - **प्लगइन** के माध्यम से प्रदान किया जाता है। इसका मतलब है कि आप कोर कोड की एक भी लाइन बदले बिना OwnPay का विस्तार कर सकते हैं।
+
+## चार प्लगइन प्रकार {#four-plugin-types}
+
+<CardGroup cols={2}>
+  <Card title="Gateway" icon="wallet">
+    एक नया पेमेंट प्रदाता जोड़ें। हर गेटवे प्लगइन पेमेंट एडेप्टर अनुबंध को लागू करता है: पेमेंट प्रोसेस करना, कॉलबैक संभालना, रिफ़ंड प्रबंधित करना, और समर्थित मुद्राएँ घोषित करना। उदाहरण: Stripe, bKash, Razorpay।
+  </Card>
+
+  <Card title="Addon" icon="circle-plus">
+    एडमिन पैनल या चेकआउट में सुविधाएँ जोड़ें। ऐडऑन एडमिन पेज, API एंडपॉइंट, शेड्यूल्ड जॉब और UI कंपोनेंट रजिस्टर कर सकते हैं। उदाहरण: सब्सक्रिप्शन प्रबंधन, CRM सिंक, उन्नत रिपोर्टिंग।
+  </Card>
+
+  <Card title="Theme" icon="palette">
+    चेकआउट अनुभव को कस्टमाइज़ करें। थीम प्लगइन Twig टेम्पलेट, CSS, JavaScript और एसेट फ़ाइलें प्रदान करते हैं जो प्रति ब्रांड डिफ़ॉल्ट चेकआउट रूप को ओवरराइड करती हैं।
+  </Card>
+
+  <Card title="Integration" icon="plug">
+    OwnPay को बाहरी प्लेटफ़ॉर्म से जोड़ें। इंटीग्रेशन प्लगइन WooCommerce, WHMCS, Laravel और अन्य फ़्रेमवर्क के लिए OAuth फ़्लो, डेटा सिंकिंग और webhook अनुवाद संभालते हैं।
+  </Card>
+</CardGroup>
+
+## मैनिफ़ेस्ट-आधारित डिस्कवरी {#manifest-based-discovery}
+
+हर प्लगइन `modules/` डायरेक्टरी में रहता है और एक `manifest.json` फ़ाइल के माध्यम से खुद को घोषित करता है। OwnPay का प्लगइन लोडर बूट के समय इस डायरेक्टरी को स्कैन करता है, हर मैनिफ़ेस्ट पढ़ता है, संरचना को सत्यापित करता है, और प्लगइन को PSR-4 ऑटोलोडर के साथ रजिस्टर करता है।
+
+```json
+{
+  "slug": "stripe",
+  "name": "Stripe Payment Gateway",
+  "version": "1.0.0",
+  "type": "gateway",
+  "entrypoint": "src/StripeGateway.php",
+  "namespace": "OwnPay\\Gateways\\Stripe"
+}
+```
+
+<Tree />
+
+## हुक सिस्टम {#hook-system}
+
+प्लगइन OwnPay के साथ और एक-दूसरे के साथ दो तंत्रों के माध्यम से इंटरैक्ट करते हैं:
+
+**फ़िल्टर** किसी कार्रवाई के चलने से पहले डेटा को संशोधित करते हैं:
+
+```php
+// A plugin adjusts the payment amount
+$amount = Hook::apply('payment.amount', $amount, $payment);
+```
+
+**एक्शन** इवेंट होने के बाद उन पर प्रतिक्रिया करते हैं:
+
+```php
+// A plugin sends a Slack notification after payment completes
+Hook::do('payment.completed', $payment);
+```
+
+OwnPay `payment.*`, `customer.*`, `gateway.*`, `webhook.*` और `system.*` जैसी श्रेणियों में 60 से अधिक हुक उपलब्ध कराता है।
+
+## क्षमता सिस्टम {#capabilities-system}
+
+प्लगइन अपने मैनिफ़ेस्ट में एक **capabilities** ऐरे के माध्यम से घोषित करते हैं कि उन्हें क्या चाहिए। OwnPay प्लगइन लोड करने से पहले इन क्षमताओं की जाँच करता है। इससे सिस्टम एक्टिवेशन से पहले एडमिनिस्ट्रेटर को गायब निर्भरताओं के बारे में चेतावनी दे पाता है।
+
+सामान्य क्षमताएँ: `payment_processing`, `admin_ui`, `cron_jobs`, `webhook_handler`, `api_endpoints`।
+
+## प्लगइन सैंडबॉक्स {#plugin-sandbox}
+
+OwnPay प्लगइन अपलोड को प्लेटफ़ॉर्म मालिक (मास्टर एडमिनिस्ट्रेटर) तक सीमित करता है। अपलोड पर एक **footgun स्कैनर** चलता है और `eval()` और सीधे OS कमांड निष्पादन जैसे खतरनाक फ़ंक्शन को ब्लॉक करता है। मानक PHP ऑपरेशन - रिफ़्लेक्शन, कॉलबैक, फ़ाइल I/O - की अनुमति है।
+
+<Note>
+  सुरक्षा सीमा **केवल-मालिक अपलोड** है, इन-प्रोसेस आइसोलेशन नहीं। प्लगइन पूर्ण एप्लिकेशन विश्वास के साथ चलते हैं, WordPress प्लगइन मॉडल की तरह। केवल उन्हीं स्रोतों से प्लगइन इंस्टॉल करें जिन पर आप भरोसा करते हैं।
+</Note>
+
+## संबंधित पेज {#related-pages}
+
+- [प्लगइन अवलोकन (डेवलपर)](/hi/developer/plugins/overview) - अपना पहला प्लगइन बनाएँ और रजिस्टर करें
+- [हुक संदर्भ](/hi/developer/plugins/hooks) - उपलब्ध फ़िल्टर और एक्शन की पूरी सूची
+- [इवेंट संदर्भ](/hi/developer/plugins/events) - इवेंट श्रेणियाँ और लिसनर रजिस्ट्रेशन
+- [क्षमताएँ](/hi/developer/plugins/capabilities) - प्लगइन क्षमताएँ घोषित करें और जाँचें
+- [गेटवे प्लगइन बनाएँ](/hi/developer/plugin-types/gateway) - चरण-दर-चरण गेटवे डेवलपमेंट गाइड

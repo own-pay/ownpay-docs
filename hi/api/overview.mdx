@@ -1,0 +1,126 @@
+---
+title: "API अवलोकन"
+description: "OwnPay REST API का संदर्भ: बेस URL, Bearer प्रमाणीकरण, तीन API लेयर, अनुरोध और रिस्पॉन्स फ़ॉर्मेट, त्रुटियाँ, idempotency और रेट लिमिटिंग।"
+keywords: "OwnPay API, REST API, payment API, API अवलोकन, base URL, API layers, Merchant API, Mobile API, Admin API"
+sidebarTitle: "अवलोकन"
+icon: "terminal-2"
+---
+
+OwnPay API की मदद से आप पेमेंट बना सकते हैं, ट्रांज़ैक्शन प्रबंधित कर सकते हैं, रिफ़ंड संभाल सकते हैं और रीयल-टाइम वेबहुक प्राप्त कर सकते हैं। यह पेज API के काम करने के तरीके का एकमात्र आधिकारिक संदर्भ है - बाकी सभी API पेज यहीं लिंक करते हैं।
+
+## बेस URL {#base-url}
+
+सभी API अनुरोध आपके OwnPay इंस्टेंस के एक ही बेस पाथ पर जाते हैं:
+
+```text
+https://your-domain.com/api/v1
+```
+
+<Note>
+  `your-domain.com` को अपने वास्तविक OwnPay डोमेन से बदलें। सभी एंडपॉइंट के लिए HTTPS आवश्यक है।
+</Note>
+
+## प्रमाणीकरण {#authentication}
+
+हर अनुरोध में `Authorization` हेडर में एक Bearer टोकन शामिल होना चाहिए। अपनी API कुंजियाँ जनरेट करने, उनका स्कोप तय करने और उन्हें रोटेट करने के लिए पूरी [प्रमाणीकरण](/hi/api/authentication) गाइड देखें।
+
+```http
+Authorization: Bearer op_live_abc123.def456
+```
+
+## तीन API लेयर {#three-api-layers}
+
+OwnPay तीन अलग-अलग API लेयर प्रदान करता है, जिनमें से हर एक अलग उपयोगकर्ता वर्ग के लिए है और अपने स्वयं के OpenAPI स्पेसिफ़िकेशन पर आधारित है।
+
+<Columns>
+  <Column>
+### Merchant API {#merchant-api}
+
+    आपके एप्लिकेशन के लिए व्यावसायिक ऑपरेशन: पेमेंट बनाना, ट्रांज़ैक्शन की सूची देखना, पेमेंट लिंक प्रबंधित करना और रिफ़ंड संभालना। यही वह API है जिसका आप सबसे अधिक उपयोग करेंगे।
+
+    [Merchant API स्पेसिफ़िकेशन देखें](/api/merchant_api.yaml)
+  </Column>
+  <Column>
+### Mobile API {#mobile-api}
+
+    केवल OwnPay Android companion ऐप द्वारा उपयोग किया जाता है। SMS सत्यापन, डिवाइस पेयरिंग और पुश-आधारित ट्रांज़ैक्शन स्वीकृतियों को संभालता है।
+
+    [Mobile API स्पेसिफ़िकेशन देखें](/api/mobile_api.yaml)
+  </Column>
+  <Column>
+### Admin API {#admin-api}
+
+    प्लेटफ़ॉर्म प्रबंधन ऑपरेशन: ब्रांड प्रबंधित करना, गेटवे कॉन्फ़िगर करना, उपयोगकर्ताओं को नियंत्रित करना और सिस्टम का प्रशासन करना। इसके लिए उन्नत अनुमतियाँ आवश्यक हैं।
+
+    [Admin API स्पेसिफ़िकेशन देखें](/api/admin_api.yaml)
+  </Column>
+</Columns>
+
+## अनुरोध और रिस्पॉन्स फ़ॉर्मेट {#request-and-response-format}
+
+सभी अनुरोध और रिस्पॉन्स **UTF-8** एन्कोडिंग के साथ **JSON** का उपयोग करते हैं।
+
+### परिपाटियाँ {#conventions}
+
+| परिपाटी | विवरण |
+| --- | --- |
+| कंटेंट टाइप | `application/json` |
+| कैरेक्टर एन्कोडिंग | UTF-8 |
+| तिथि फ़ॉर्मेट | ISO 8601 (`2024-06-15T10:30:00Z`) |
+| मौद्रिक राशियाँ | bcmath के माध्यम से स्ट्रिंग (उदाहरण के लिए `"5000"`, `"99.99"`) |
+| पहचानकर्ता | प्रीफ़िक्स वाली स्ट्रिंग (`pay_...`, `txn_...`) |
+
+<Tip>
+  सभी मौद्रिक राशियाँ **स्ट्रिंग** के रूप में लौटाई जाती हैं, क्योंकि OwnPay सटीकता के लिए PHP के bcmath एक्सटेंशन का उपयोग करता है। राशियों को कभी भी float के रूप में पार्स न करें - अपनी भाषा में arbitrary-precision अंकगणित का उपयोग करें।
+</Tip>
+
+## त्रुटि हैंडलिंग {#error-handling}
+
+हर त्रुटि रिस्पॉन्स एक सुसंगत JSON संरचना का पालन करता है। सभी स्टेटस कोड, त्रुटि कोड और समस्या-निवारण चरणों के लिए पूरा [त्रुटि कोड](/hi/api/errors) संदर्भ देखें।
+
+## Idempotency {#idempotency}
+
+राइट एंडपॉइंट (`POST`, `PATCH`, `DELETE`) के लिए, डुप्लिकेट प्रोसेसिंग से बचने हेतु आप `Idempotency-Key` हेडर शामिल कर सकते हैं:
+
+```http
+Idempotency-Key: ord_1042_20240615
+```
+
+OwnPay पहले अनुरोध का परिणाम संग्रहीत करता है और 24 घंटे की अवधि के भीतर उसी कुंजी वाले बाद के अनुरोधों के लिए वही रिस्पॉन्स लौटाता है।
+
+## रेट लिमिटिंग {#rate-limiting}
+
+सभी API एंडपॉइंट रेट लिमिट लागू करते हैं। OwnPay हर रिस्पॉन्स पर मानक रेट-लिमिट हेडर लौटाता है:
+
+```http
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 59
+X-RateLimit-Reset: 1718000060
+```
+
+टियर विवरण और सर्वोत्तम प्रथाओं के लिए [रेट लिमिटिंग](/hi/resources/rate-limiting) देखें।
+
+## त्वरित लिंक {#quick-links}
+
+<CardGroup cols={3}>
+  <Card title="पेमेंट बनाएँ" icon="credit-card" href="/api/merchant_api.yaml">
+    Merchant API स्पेसिफ़िकेशन पर जाएँ और POST /payments एंडपॉइंट खोजें।
+  </Card>
+
+  <Card title="वेबहुक सत्यापित करें" icon="shield-check" href="/hi/api/webhooks">
+    PHP, Node.js और Python में कोड उदाहरणों के साथ आधिकारिक वेबहुक सिग्नेचर सत्यापन।
+  </Card>
+
+  <Card title="SDKs" icon="code" href="/hi/developer/quickstart">
+    आपके इंटीग्रेशन को तेज़ करने के लिए PHP, Laravel और Node.js के आधिकारिक SDK।
+  </Card>
+</CardGroup>
+
+## संबंधित पेज {#related-pages}
+
+- [प्रमाणीकरण](/hi/api/authentication)
+- [त्रुटि कोड](/hi/api/errors)
+- [वेबहुक](/hi/api/webhooks)
+- [रेट लिमिटिंग](/hi/resources/rate-limiting)
+- [API कुंजियाँ](/hi/security/api-keys)
+- [Merchant API स्पेसिफ़िकेशन](/api/merchant_api.yaml)

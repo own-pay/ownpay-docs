@@ -1,0 +1,103 @@
+---
+title: "迁移指南"
+description: "通过迁移前检查清单、自动迁移流程、迁移后验证和回滚步骤，安全地在不同版本之间升级 OwnPay。"
+keywords: "迁移, 升级, 版本升级, 数据库迁移, 回滚, 破坏性变更, migration, upgrade"
+sidebarTitle: "迁移指南"
+icon: "arrows-exchange"
+---
+
+在不同版本之间升级 OwnPay 涉及数据库结构变更、文件更新和缓存清理。本指南将带您完成从准备到验证的整个过程。
+
+---
+
+## 版本历史 {#version-history}
+
+| 从 | 到 | 主要变更 |
+| :-- | :-- | :-- |
+| v0.1.0 | v0.2.0 | 新表：`op_disputes`、`op_fee_rules`。`op_transactions`、`op_gateways` 新增列。按网关跟踪 CSP 来源。 |
+
+<Note>
+  请查看[更新日志](/zh/resources/changelog)，了解每个版本的完整变更列表。
+</Note>
+
+---
+
+## 迁移前检查清单 {#pre-migration-checklist}
+
+在开始升级之前完成每一项。跳过其中任何一步都可能导致数据丢失或安装损坏。
+
+<Steps>
+</Steps>
+
+---
+
+## 迁移流程 {#migration-process}
+
+OwnPay 使用在启动时运行的**自动迁移**系统。您无需手动运行迁移命令。
+
+### 自动迁移的工作原理 {#how-auto-migration-works}
+
+当 `Kernel::boot()` 运行时，它会将当前的结构版本（存储在 `op_system_settings` 中）与代码版本进行比较。如果两者不同，它会按顺序执行 `database/migrations/` 中待处理的迁移文件。
+
+每个迁移文件都采用安全的模式：
+
+```sql
+-- Migration: 001_add_disputes_table.sql
+
+CREATE TABLE IF NOT EXISTS op_disputes (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  -- ...
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Add column only if it does not exist
+SET @dbname = DATABASE();
+SET @tablename = 'op_transactions';
+SET @columnname = 'dispute_status';
+SET @preparedStatement = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+   WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = @tablename AND COLUMN_NAME = @columnname) > 0,
+  'SELECT 1',
+  CONCAT('ALTER TABLE ', @tablename, ' ADD COLUMN ', @columnname, ' VARCHAR(50) DEFAULT NULL')
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+```
+
+这种 `SHOW COLUMNS / ALTER TABLE` 模式意味着迁移是**幂等的** - 多次运行也是安全的。
+
+### 运行升级 {#running-the-upgrade}
+
+<Steps>
+</Steps>
+
+---
+
+## 迁移后步骤 {#post-migration-steps}
+
+迁移完成后，请验证一切是否正常工作。
+
+<Steps>
+</Steps>
+
+---
+
+## 回滚 {#rollback}
+
+如果升级后出现问题，请从迁移前的备份中恢复。
+
+<Steps>
+</Steps>
+
+<Warning>
+  如果新版本已经处理了交易，再进行回滚将导致数据不一致。恢复后的数据库将不包含在升级与回滚之间完成的交易。请与您的网关后台进行对账。
+</Warning>
+
+---
+
+## 相关页面 {#related-pages}
+
+- [更新日志](/zh/resources/changelog) - 每个版本的详细发布说明
+- [备份与导出](/zh/resources/backup-export) - 备份步骤
+- [性能与扩展](/zh/resources/performance-scaling) - 升级后的优化
+- [常见错误](/zh/resources/common-errors) - 排查迁移失败问题

@@ -1,0 +1,108 @@
+---
+title: "WHMCS इंटीग्रेशन"
+description: "होस्टिंग इनवॉइस पर कार्ड और मोबाइल वॉलेट पेमेंट स्वीकार करने के लिए आधिकारिक OwnPay WHMCS पेमेंट गेटवे मॉड्यूल इंस्टॉल और कॉन्फ़िगर करें।"
+keywords: "WHMCS payment module, hosting invoices, WHMCS gateway, card payments, WHMCS integration"
+sidebarTitle: "WHMCS"
+icon: "server"
+---
+
+होस्टिंग और सर्विस इनवॉइस पर सीधे क्रेडिट कार्ड, डेबिट कार्ड और स्थानीय मोबाइल पेमेंट स्वीकार करने के लिए OwnPay को अपने WHMCS बिलिंग प्लेटफ़ॉर्म के साथ इंटीग्रेट करें।
+
+<CardGroup cols={2}>
+  <Card title="WHMCS Marketplace" href="https://marketplace.whmcs.com/product/8845-ownpay-whmcs">
+    WHMCS Marketplace से आधिकारिक मॉड्यूल डाउनलोड करें।
+  </Card>
+
+  <Card title="GitHub" href="https://github.com/own-pay/OwnPay-WHMCS">
+    सोर्स कोड देखें, बग रिपोर्ट करें या योगदान दें।
+  </Card>
+</CardGroup>
+
+## पूर्वापेक्षाएँ {#prerequisites}
+
+- WHMCS 8.0\+
+- एक चालू OwnPay इंस्टेंस
+- **Developers → API Keys** से एक API कुंजी और वेबहुक सीक्रेट
+
+## इंस्टॉलेशन {#installation}
+
+## कॉन्फ़िगरेशन {#configuration}
+
+### गेटवे सक्षम करें {#enable-the-gateway}
+
+1. WHMCS Admin में लॉग इन करें
+2. **System Settings → Payment Gateways** पर जाएँ
+3. इसे सक्रिय करने के लिए **OwnPay** पर क्लिक करें
+
+### गेटवे सेटिंग्स कॉन्फ़िगर करें {#configure-gateway-settings}
+
+**Manage Active Gateways** के अंतर्गत, ये भरें:
+
+| फ़ील्ड | विवरण |
+| --- | --- |
+| Display Name | क्लाइंट्स को दिखाया जाने वाला नाम (उदाहरण के लिए "Credit/Debit Card / Mobile Banking") |
+| API URL | आपका OwnPay बेस URL (उदाहरण के लिए `https://pay.yourdomain.com`) |
+| API Key | **Developers → API Keys** से आपकी OwnPay API कुंजी |
+| Webhook Secret | वेबहुक सत्यापन के लिए साइनिंग सीक्रेट |
+| Test Mode | सैंडबॉक्स गेटवे का उपयोग करने के लिए सक्षम करें |
+
+## पेमेंट फ़्लो {#payment-flow}
+
+```text
+WHMCS invoice created
+       |
+       v
+Customer clicks "Pay Now"
+       |
+       v
+Module creates payment via OwnPay API
+       |
+       v
+Customer redirected to OwnPay checkout
+       |
+       v
+Payment completed → OwnPay sends webhook
+       |
+       v
+Callback marks WHMCS invoice as paid
+```
+
+## वेबहुक कॉन्फ़िगरेशन {#webhook-configuration}
+
+1. आपका कॉलबैक URL है:
+
+```text
+https://your-whmcs-domain.com/modules/gateways/callback/ownpay.php
+```
+
+2. OwnPay में, **Developers → Webhooks** पर जाएँ और यह URL जोड़ें
+3. `payment.completed` इवेंट चुनें
+4. वेबहुक साइनिंग सीक्रेट को WHMCS गेटवे सेटिंग्स में कॉपी करें
+
+## टेस्ट मोड {#test-mode}
+
+सैंडबॉक्स गेटवे का उपयोग करने के लिए WHMCS गेटवे सेटिंग्स में **Test Mode** सक्षम करें। सफल पेमेंट के लिए कार्ड नंबर `4242 4242 4242 4242` से टेस्ट करें।
+
+## समर्थित सुविधाएँ {#supported-features}
+
+- वेबहुक कॉलबैक पर स्वचालित इनवॉइस पेमेंट
+- हर कॉलबैक पर सिग्नेचर सत्यापन
+- टेस्ट मोड टॉगल
+- मल्टी-करेंसी सपोर्ट
+- WHMCS एडमिन से रिफ़ंड हैंडलिंग
+
+## समस्या निवारण {#troubleshooting}
+
+यदि पेमेंट स्वचालित रूप से इनवॉइस पर लागू नहीं होते हैं:
+
+1. **Billing → Gateway Log** पर जाएँ और `ownpay` से फ़िल्टर करें
+2. जाँचें कि वेबहुक सीक्रेट OwnPay और WHMCS दोनों में बिल्कुल मेल खाता है
+3. सत्यापित करें कि आपका OwnPay इंस्टेंस कॉलबैक URL तक पहुँच सकता है
+4. विस्तृत रिक्वेस्ट/रिस्पॉन्स लॉग के लिए WHMCS में डीबग लॉगिंग सक्षम करें
+
+## संबंधित पेज {#related-pages}
+
+- [PHP SDK](/hi/developer/integration/php)
+- [WooCommerce प्लगइन](/hi/developer/integration/woocommerce)
+- [वेबहुक](/hi/api/webhooks)
+- [पेमेंट टेस्ट करना](/hi/developer/testing)

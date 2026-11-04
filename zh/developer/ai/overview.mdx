@@ -1,0 +1,181 @@
+---
+title: "用于构建 OwnPay 插件和集成的 AI 工具"
+description: "借助提供实时文档的 MCP 服务器、AI Skills 和现成的提示词模板，使用 AI 助手构建 OwnPay 插件、集成和自定义网关。"
+keywords: "AI 工具, MCP 服务器, AI skills, AI 智能体, Claude, Cursor, AI 插件开发, AI 提示词模板"
+sidebarTitle: "AI 工具"
+icon: "robot"
+---
+
+## 什么是 AI 工具？ {#what-are-ai-tools}
+
+OwnPay 提供了一套 AI 驱动的开发工具，让你可以使用 Claude、ChatGPT 和 Cursor 等 AI 助手构建可用于生产环境的插件、集成和自定义网关。你无需通读数十个文档页面来理解接口和约定，AI 智能体会替你阅读文档，并在首次尝试时就生成正确的代码。
+
+AI 工具生态系统包含两个主要组件：
+
+<CardGroup cols={2}>
+  <Card title="MCP 服务器" icon="server" href="/zh/developer/ai/mcp">
+    一个 Model Context Protocol 服务器，让你的 AI 助手在查询时**实时访问全部 OwnPay 文档**。每个问题都会读取真实文档，而非过时的训练数据。支持 Claude Desktop、Cursor、VS Code（Cline/Roo Code）和 Windsurf。
+  </Card>
+
+  <Card title="AI Skills" icon="sparkles" href="/zh/developer/ai/skills">
+    预构建的指令文件，在你提问之前就向 AI 助手传授 OwnPay 的架构、插件系统、编码约定和接口契约。只需安装一次，之后的每个提示词都能受益于这些上下文。
+  </Card>
+</CardGroup>
+
+<Tip>
+  同时使用 MCP 和 Skills 可获得最佳效果。Skills 让 AI 了解 OwnPay 是什么以及如何思考它；MCP 则让 AI 按需查找确切的方法签名、钩子名称和配置细节。
+</Tip>
+
+## 快速入门 {#quickstart}
+
+只需三步即可开始 AI 辅助的 OwnPay 开发：
+
+## 为什么在 OwnPay 中使用 AI？ {#why-use-ai-with-ownpay}
+
+<CardGroup cols={3}>
+  <Card title="更快的开发速度" icon="bolt">
+    在几秒钟内生成包含所有必需方法的完整网关适配器。过去需要花费数小时阅读文档、编写样板代码的工作，现在只需一个提示词。
+  </Card>
+
+  <Card title="更少的错误" icon="shield-check">
+    MCP 服务器会向 AI 提供确切的接口签名、钩子名称和返回类型。不再需要猜测方法签名，也不会遗漏必需的方法。
+  </Card>
+
+  <Card title="一致的约定" icon="circle-check">
+    Skills 会自动执行 OwnPay 编码标准——PSR-12 风格、使用 BCMath 处理金额、禁止危险函数调用、正确处理 CSP nonce。
+  </Card>
+
+  <Card title="支持所有插件类型" icon="puzzle">
+    生成网关、扩展、主题和集成。每个模板都覆盖完整的插件生命周期：manifest、注册、钩子和设置界面。
+  </Card>
+
+  <Card title="实时文档" icon="book">
+    MCP 查询基于最新文档运行。当 OwnPay 新增钩子或更改接口时，你的 AI 已经知晓。
+  </Card>
+
+  <Card title="兼容你的工具" icon="code">
+    Claude Desktop、Claude Code、Cursor、ChatGPT、VS Code（Cline/Roo Code）和 Windsurf——使用你已习惯的任意 AI 助手即可。
+  </Card>
+</CardGroup>
+
+## AI 提示词模板 {#ai-prompt-templates}
+
+这些可折叠的提示词是预先编写好的指令，你可以将其粘贴到 Claude、ChatGPT 或 Cursor 中，以生成完整可用的插件。发送前，请将方括号中的占位符替换为你的具体信息。
+
+<Accordion title="网关插件提示词">
+  将以下内容复制并粘贴到你的 AI 助手中：
+
+  ```text
+  You are an expert PHP developer. Build a complete OwnPay gateway plugin.
+  
+  Requirements:
+  - Implement both OwnPay\Plugin\PluginInterface and OwnPay\Gateway\GatewayAdapterInterface
+  - Include manifest.json with type "gateway" and capabilities ["gateway", "webhook_receive", "settings", "database"]
+  - Implement initiate(), verify(), verifyWebhook(), refund() methods
+  - Use hash_equals() for all HMAC comparisons in verifyWebhook()
+  - Reject webhook timestamps older than 5 minutes
+  - All monetary amounts are BCMath strings (for example "150.00")
+  - Include fields() method returning credential configuration fields
+  - Include supportedCurrencies() method
+  - Follow PSR-12 coding style
+  - No eval(), exec(), or shell_exec()
+  
+  Gateway name: [YOUR GATEWAY NAME]
+  Gateway API base URL: [YOUR GATEWAY API URL]
+  
+  Read the OwnPay gateway plugin documentation via MCP for the exact interface signatures and return shapes.
+  ```
+</Accordion>
+
+<Accordion title="扩展插件提示词">
+  将以下内容复制并粘贴到你的 AI 助手中：
+
+  ```text
+  You are an expert PHP developer. Build a complete OwnPay addon plugin.
+  
+  Requirements:
+  - Implement OwnPay\Plugin\PluginInterface
+  - Include manifest.json with type "addon" and capabilities ["addon", "hooks", "http_outbound", "settings"]
+  - Register at least one action hook in the register() method using EventManager
+  - Include a fields() method for admin settings
+  - Access core services from the Container in the boot() method
+  - All monetary amounts use BCMath strings
+  - Follow PSR-12 coding style
+  - No eval(), exec(), or shell_exec()
+  
+  Addon purpose: [DESCRIBE WHAT YOUR ADDON DOES]
+  
+  Read the OwnPay addon plugin documentation via MCP for the exact PluginInterface methods and hook registration patterns.
+  ```
+</Accordion>
+
+<Accordion title="主题插件提示词">
+  将以下内容复制并粘贴到你的 AI 助手中：
+
+  ```text
+  You are an expert PHP and Twig developer. Build a complete OwnPay checkout theme plugin.
+  
+  Requirements:
+  - Implement OwnPay\Plugin\PluginInterface
+  - Include manifest.json with type "theme" and capabilities ["theme", "assets"]
+  - Use addFilter on checkout.template to point to your Twig templates
+  - Use addAction on checkout.head to inject CSS (include CSP nonce)
+  - Use addAction on checkout.footer to inject JS (include CSP nonce)
+  - Provide Twig templates for checkout page and status/result page
+  - Use {{ variable|e }} for escaping user data in Twig
+  - Include a fields() method for theme customization settings (primary color, etc.)
+  - Follow PSR-12 coding style
+  
+  Read the OwnPay theme plugin documentation via MCP for the exact Twig variables available and hook signatures.
+  ```
+</Accordion>
+
+<Accordion title="集成插件提示词">
+  将以下内容复制并粘贴到你的 AI 助手中：
+
+  ```text
+  You are an expert PHP developer. Build a complete OwnPay integration plugin.
+  
+  Requirements:
+  - Implement OwnPay\Plugin\PluginInterface
+  - Include manifest.json with type "integration" and capabilities ["addon", "hooks", "http_outbound", "settings"]
+  - Register action hooks for payment.transaction.completed and refund.issued
+  - Make outbound HTTP calls (curl) with a 5-second timeout
+  - Read configuration from SettingsRepository in the Container
+  - Include a fields() method for external API key/URL configuration
+  - Never throw from hook callbacks - log errors instead
+  - All monetary amounts are BCMath strings
+  - Follow PSR-12 coding style
+  
+  Integration target: [for example, Slack, HubSpot, QuickBooks]
+  
+  Read the OwnPay integration plugin documentation via MCP for the exact hook names and Container service access patterns.
+  ```
+</Accordion>
+
+## 支持的 AI 工具 {#supported-ai-tools}
+
+<CardGroup cols={2}>
+  <Card title="Cursor" icon="code">
+    在 Settings \> Features \> MCP 中添加 MCP 服务器。Agent 模式会自动调用它。
+  </Card>
+
+  <Card title="Claude Desktop 和 Claude Code" icon="message">
+    添加到 claude\_desktop\_config.json，或运行 claude mcp add。
+  </Card>
+
+  <Card title="VS Code（Cline / Roo Code）" icon="braces">
+    在扩展的 MCP 设置中添加 MCP 服务器 URL。
+  </Card>
+
+  <Card title="Windsurf" icon="wind">
+    添加到 ~/.codeium/windsurf/mcp\_config.json。
+  </Card>
+</CardGroup>
+
+## 相关页面 {#related-pages}
+
+- [MCP 服务器](/zh/developer/ai/mcp) - 设置与配置指南
+- [AI Skills](/zh/developer/ai/skills) - 安装和使用预构建的 skills
+- [开发者快速入门](/zh/developer/quickstart) - 不借助 AI 的 API 集成
+- [插件系统概览](/zh/developer/plugins/overview) - 了解钩子、manifest 和生命周期

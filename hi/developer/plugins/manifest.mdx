@@ -1,0 +1,108 @@
+---
+title: "प्लगइन मैनिफ़ेस्ट"
+description: "OwnPay प्लगइन के लिए पूर्ण manifest.json फ़ील्ड संदर्भ, जिसमें सभी फ़ील्ड, कैपेबिलिटी मान और सत्यापन नियम शामिल हैं।"
+keywords: "manifest.json, plugin metadata, plugin version, plugin capabilities, plugin manifest validation"
+sidebarTitle: "मैनिफ़ेस्ट"
+icon: "file-text"
+---
+
+हर OwnPay प्लगइन की रूट डायरेक्टरी में एक `manifest.json` होना चाहिए। प्लगइन लोडर किसी भी अन्य चीज़ से पहले इस फ़ाइल को पढ़ता है - यदि सत्यापन विफल होता है, तो प्लगइन लोड नहीं होता।
+
+## फ़ील्ड संदर्भ {#field-reference}
+
+| फ़ील्ड | प्रकार | आवश्यक | विवरण |
+| --- | --- | --- | --- |
+| `name` | string | हाँ | मानव-पठनीय प्लगइन नाम |
+| `slug` | string | हाँ | अद्वितीय मशीन पहचानकर्ता (लोअरकेस, हाइफ़न) |
+| `version` | string | हाँ | सिमेंटिक संस्करण (उदाहरण के लिए `1.2.3`) |
+| `type` | string | हाँ | इनमें से एक: `gateway`, `addon`, `theme`, `integration` |
+| `description` | string | नहीं | प्लगइन क्या करता है इसका संक्षिप्त विवरण |
+| `author` | string | नहीं | लेखक का नाम या संगठन |
+| `homepage` | string | नहीं | प्लगइन के होमपेज या रिपॉज़िटरी का URL |
+| `capabilities` | array | हाँ | प्लगइन को आवश्यक कैपेबिलिटी स्ट्रिंग्स की सूची |
+| `cspOrigins` | array | नहीं | एसेट के लिए अतिरिक्त Content-Security-Policy ऑरिजिन |
+| `icon` | string | नहीं | प्लगइन रूट के सापेक्ष SVG या PNG आइकन का पाथ |
+| `permissions` | array | नहीं | प्लगइन प्रबंधित करने के लिए आवश्यक एडमिन अनुमति स्लग |
+| `minimumOwnPayVersion` | string | नहीं | आवश्यक न्यूनतम OwnPay संस्करण (semver) |
+| `phpVersion` | string | नहीं | आवश्यक न्यूनतम PHP संस्करण (डिफ़ॉल्ट: `8.3`) |
+
+## कैपेबिलिटी मान {#capability-values}
+
+केवल वही कैपेबिलिटीज़ घोषित करें जिनका आपका प्लगइन वास्तव में उपयोग करता है। सैंडबॉक्स इन्हें अनुमति गेट के रूप में लागू करता है।
+
+| कैपेबिलिटी | प्रभाव |
+| --- | --- |
+| `payment_process` | प्लगइन `GatewayInterface` लागू कर सकता है |
+| `webhook_receive` | प्लगइन वेबहुक एंडपॉइंट हैंडलर रजिस्टर कर सकता है |
+| `admin_page` | प्लगइन एडमिन साइडबार मेनू में आइटम जोड़ सकता है |
+| `api_routes` | प्लगइन `routes/api.php` के माध्यम से कस्टम API रूट रजिस्टर कर सकता है |
+| `database` | प्लगइन डेटाबेस माइग्रेशन परिभाषित और चला सकता है |
+| `assets` | प्लगइन `assets/` से CSS और JS फ़ाइलें सर्व कर सकता है |
+| `settings` | प्लगइन एक सेटिंग्स पेज परिभाषित कर सकता है |
+| `schedule` | प्लगइन शेड्यूल्ड (cron) कार्य रजिस्टर कर सकता है |
+
+## सत्यापन नियम {#validation-rules}
+
+| नियम | विवरण |
+| --- | --- |
+| स्लग फ़ॉर्मेट | `^[a-z][a-z0-9-]{1,48}[a-z0-9]$` से मेल खाना चाहिए |
+| संस्करण फ़ॉर्मेट | मान्य semver (`MAJOR.MINOR.PATCH`) होना चाहिए |
+| प्रकार | चार समर्थित प्रकारों में से एक होना चाहिए |
+| कैपेबिलिटीज़ | प्रत्येक एक ज्ञात कैपेबिलिटी स्ट्रिंग होनी चाहिए |
+
+यदि सत्यापन विफल होता है, तो OwnPay एरर लॉग करता है और प्लगइन को छोड़ देता है। **System → Logs** में लॉग जाँचें।
+
+## उदाहरण {#examples}
+
+### गेटवे मैनिफ़ेस्ट {#gateway-manifest}
+
+```json
+{
+  "name": "Stripe Gateway",
+  "slug": "gateway-stripe",
+  "version": "2.1.0",
+  "type": "gateway",
+  "description": "Accept Visa, Mastercard, and Amex payments via Stripe",
+  "author": "OwnPay Team",
+  "homepage": "https://github.com/own-pay/gateway-stripe",
+  "capabilities": ["payment_process", "webhook_receive", "settings", "database"],
+  "minimumOwnPayVersion": "0.2.0",
+  "phpVersion": "8.3"
+}
+```
+
+### ऐडऑन मैनिफ़ेस्ट {#addon-manifest}
+
+```json
+{
+  "name": "Telegram Bot",
+  "slug": "addon-telegram-bot",
+  "version": "1.0.0",
+  "type": "addon",
+  "description": "Send payment notifications to Telegram",
+  "capabilities": ["settings", "admin_page"],
+  "author": "Community"
+}
+```
+
+### थीम मैनिफ़ेस्ट {#theme-manifest}
+
+```json
+{
+  "name": "Modern Checkout",
+  "slug": "theme-modern",
+  "version": "1.3.0",
+  "type": "theme",
+  "description": "Clean, responsive checkout theme",
+  "capabilities": ["assets"],
+  "cspOrigins": ["https://fonts.googleapis.com"],
+  "icon": "icon.svg"
+}
+```
+
+## संबंधित पेज {#related-pages}
+
+- [डायरेक्टरी संरचना](/hi/developer/plugins/directory-structure)
+- [कैपेबिलिटीज़ संदर्भ](/hi/developer/plugins/capabilities)
+- [प्लगइन लाइफ़साइकल](/hi/developer/plugins/lifecycle)
+- [हुक संदर्भ](/hi/developer/plugins/hooks)

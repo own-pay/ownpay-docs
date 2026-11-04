@@ -1,0 +1,170 @@
+---
+title: "面向 AI 智能体的 OwnPay Skills - 平台知识包"
+description: "安装 OwnPay skills，让 AI 智能体全面掌握 OwnPay 平台、支付网关架构和开发模式。"
+keywords: "AI skills, 智能体 skills, OwnPay skill.md, Claude skills, Cursor skills, 支付网关 AI, MCP skills"
+sidebarTitle: "AI Skills"
+icon: "sparkles"
+---
+
+OwnPay 提供 **skills**，用于教会 AI 智能体如何使用 OwnPay 平台。skill 是一种结构化的知识文件，为 AI 工具提供有关 OwnPay 架构、API、约定和最佳实践的上下文。
+
+<Info>
+  安装 OwnPay skill，即可在 OwnPay 中使用 AI 工具时获得更好的效果。该 skill 让智能体掌握支付网关架构、多品牌系统、插件开发和 API 模式等知识。
+</Info>
+
+## 什么是 skills？ {#what-are-skills}
+
+Skills 是指导 AI 智能体如何高效使用某个产品的文件。安装 OwnPay skill 后，Claude、Cursor 和 VS Code 等 AI 工具将获得：
+
+- **架构知识** - 理解多品牌、网关和账本系统
+- **API 模式** - 如何使用 REST API、webhooks 和 SDK
+- **插件开发** - 如何构建网关、扩展和主题插件
+- **最佳实践** - 安全、错误处理和测试模式
+- **代码示例** - PHP、Node.js 和 cURL 的可运行示例
+
+## 安装 skill {#install-the-skill}
+
+### 快速安装 {#quick-install}
+
+在终端中运行以下命令：
+
+```bash
+npx skills add {{docs-url}}
+```
+
+该命令会为你系统上所有兼容的 AI 工具下载并安装 OwnPay skill。
+
+### 手动安装 {#manual-installation}
+
+<Tabs>
+  <Tab title="Claude Code">
+    ```bash
+    # Download the skill file
+    curl -o ~/.claude/skills/ownpay/SKILL.md {{skills-url}}
+    
+    # The skill is now available in Claude Code
+    ```
+  </Tab>
+  <Tab title="Cursor">
+    1. 创建 skills 目录：`mkdir -p .cursor/skills/ownpay`
+    2. 下载 skill：
+
+    ```bash
+    curl -o .cursor/skills/ownpay/SKILL.md {{skills-url}}
+    ```
+
+    3. 重启 Cursor 以加载该 skill
+  </Tab>
+  <Tab title="VS Code (Copilot)">
+    1. 创建 skills 目录：`mkdir -p .vscode/skills/ownpay`
+    2. 下载 skill：
+
+    ```bash
+    curl -o .vscode/skills/ownpay/SKILL.md {{skills-url}}
+    ```
+
+    3. 重新加载 VS Code 以加载该 skill
+  </Tab>
+  <Tab title="Gemini CLI">
+    ```bash
+    # Create skills directory
+    mkdir -p ~/.gemini/skills/ownpay
+    
+    # Download the skill
+    curl -o ~/.gemini/skills/ownpay/SKILL.md {{skills-url}}
+    ```
+  </Tab>
+</Tabs>
+
+## skill 教授的内容 {#what-the-skill-teaches}
+
+OwnPay skill 涵盖以下领域：
+
+### 核心架构 {#core-architecture}
+
+- **多品牌系统** - 品牌如何隔离客户、网关和设置
+- **支付流程** - 从创建结账到结算的全过程
+- **复式记账账本** - 财务完整性与簿记
+- **插件系统** - 网关、扩展和主题插件的架构
+
+### API 集成 {#api-integration}
+
+- **REST API** - 身份验证、端点、错误处理
+- **Webhooks** - 事件类型、签名验证、重试逻辑
+- **SDK** - PHP 和 Node.js SDK 的使用模式
+- **Payment intents** - 创建和确认支付
+
+### 开发模式 {#development-patterns}
+
+- **网关插件** - 构建自定义支付网关集成
+- **扩展插件** - 为 OwnPay 添加新功能
+- **主题插件** - 自定义结账体验
+- **钩子和过滤器** - 事件驱动的自定义
+
+### 运维 {#operations}
+
+- **安装** - 共享主机、VPS 和 Docker 部署
+- **配置** - 环境变量、cron 任务、缓存
+- **安全** - PCI 合规、API 密钥管理、双重身份验证
+- **故障排查** - 常见问题与解决方案
+
+## 将 skill 与 MCP 结合使用 {#using-the-skill-with-mcp}
+
+为获得最佳体验，请将 skill 与 [OwnPay MCP 服务器](/zh/developer/ai-mcp) 结合使用：
+
+1. **安装 skill** - 为 AI 智能体提供背景知识
+2. **连接 MCP 服务器** - 让 AI 智能体实时访问文档
+
+两者结合后，AI 智能体既理解 OwnPay 的架构，又能搜索最新的文档。
+
+<Tip>
+  skill 让 AI 了解 OwnPay _如何_ 运作；MCP 服务器则让它能够获取文档中 _写了什么_。同时使用两者可获得最准确的结果。
+</Tip>
+
+## 安装后的示例提示词 {#example-prompts-after-installing}
+
+安装 skill 后，可以尝试以下提示词：
+
+### 开发 {#development}
+
+- _"为一个新的支付服务商创建网关插件"_
+- _"为 payment.completed 事件构建一个 webhook 处理程序"_
+- _"演示如何使用 PHP SDK 创建 payment intent"_
+
+### 架构 {#architecture}
+
+- _"解释多品牌数据隔离是如何实现的"_
+- _"复式记账账本如何跟踪交易？"_
+- _"有哪些钩子可用于自定义支付流程？"_
+
+### 运维 {#operations}
+
+- _"如何在 cPanel 共享主机上部署 OwnPay？"_
+- _"配置 Redis 缓存以提升性能"_
+- _"为 webhook 重试设置 cron 任务"_
+
+## Skill 文件位置 {#skill-file-location}
+
+skill 文件托管于：
+
+```text
+{{skills-url}}
+```
+
+Mintlify 会根据你的文档结构和内容自动生成该文件。其中包括：
+
+- 项目概览和描述
+- 功能列表和能力
+- API 端点摘要
+- 来自文档的代码示例
+- 架构模式和约定
+
+## 更新 skill {#updating-the-skill}
+
+部署新文档时，skill 文件会自动更新。无需手动更新——只需将文档更改推送到 GitHub，skill 就会重新生成。
+
+## 相关页面 {#related-pages}
+
+- [MCP 服务器](/zh/developer/ai/mcp)
+- [开发者快速入门](/zh/developer/quickstart)
+- [插件系统概览](/zh/developer/plugins/overview)

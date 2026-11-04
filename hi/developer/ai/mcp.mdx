@@ -1,0 +1,210 @@
+---
+title: "OwnPay MCP सर्वर - AI टूल्स को लाइव डॉक्यूमेंटेशन से कनेक्ट करें"
+description: "रीयल-टाइम कंटेंट एक्सेस के लिए Model Context Protocol सर्वर के माध्यम से Claude, Cursor और Windsurf जैसे AI टूल्स को OwnPay डॉक्स से कनेक्ट करें।"
+keywords: ["MCP server", "Model Context Protocol", "AI टूल्स", "Claude", "Cursor", "ChatGPT", "OwnPay docs", "Windsurf"]
+sidebarTitle: "MCP सर्वर"
+icon: "brain"
+---
+
+OwnPay डॉक्यूमेंटेशन एक सार्वजनिक **Model Context Protocol (MCP) सर्वर** होस्ट करता है, जो AI असिस्टेंट और कोडिंग एजेंट को लाइव डॉक्यूमेंटेशन से सीधे कंटेंट खोजने और प्राप्त करने देता है। स्थिर ट्रेनिंग डेटा या सामान्य वेब सर्च पर निर्भर रहने के बजाय, आपके AI टूल्स को वास्तविक डॉक्स से सटीक, रीयल-टाइम स्पेसिफ़िकेशन मिलते हैं।
+
+<Info>
+  MCP सर्वर `{{docs-url}}` पर उपलब्ध है। यह केवल-पठनीय है, सार्वजनिक रूप से सुलभ है, और इसके लिए किसी प्रमाणीकरण की आवश्यकता नहीं है।
+</Info>
+
+## 1. MCP क्या है? {#1-what-is-mcp}
+
+**Model Context Protocol** एक ओपन स्टैंडर्ड है जिसे AI एप्लिकेशन को बाहरी डेटा स्रोतों से जोड़ने के लिए डिज़ाइन किया गया है। जब आप अपने स्थानीय AI डेवलपमेंट टूल को OwnPay MCP सर्वर से कनेक्ट करते हैं, तो उसे तीन विशिष्ट टूल मिलते हैं:
+
+1. **Search**: सभी OwnPay डॉक्यूमेंटेशन पेजों में खोज करता है और प्रासंगिक अंश और लिंक लौटाता है।
+2. **Query docs filesystem**: बैच रीड के लिए shell-स्टाइल कमांड का उपयोग करके पेज पढ़ता और नेविगेट करता है।
+3. **Submit feedback**: पुरानी या गलत जानकारी की रिपोर्ट सीधे OwnPay डॉक्यूमेंटेशन टीम को भेजता है।
+
+---
+
+## 2. अपना AI टूल कनेक्ट करें {#2-connect-your-ai-tool}
+
+OwnPay MCP सर्वर को अपने पसंदीदा एनवायरनमेंट में जोड़ने के लिए इन चरणों का पालन करें:
+
+<Tabs>
+  <Tab title="Cursor">
+    OwnPay MCP सर्वर को Cursor से कनेक्ट करने के लिए:
+
+    <Steps>
+      <Step title="MCP सेटिंग्स खोलें">
+        1. Cursor की सेटिंग्स खोलें।
+        2. **Features** \> **MCP** पर जाएँ।
+        3. **\+ Add New MCP Server** पर क्लिक करें।
+      </Step>
+      <Step title="सर्वर कॉन्फ़िगर करें">
+        डायलॉग में निम्नलिखित विवरण दर्ज करें:
+
+        - **Name:** `ownpay-docs`
+        - **Type:** `sse`
+        - **URL:** `{{mcp-url}}`
+      </Step>
+      <Step title="कनेक्शन सत्यापित करें">
+        Cursor के चैट पेन में पूछें: _"आपके पास कौन-से टूल उपलब्ध हैं?"_ इसमें search और query टूल सक्रिय होने के साथ `ownpay-docs` सूचीबद्ध होना चाहिए।
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Claude Desktop">
+    Claude Desktop एप्लिकेशन में सर्वर जोड़ने के लिए:
+
+    <Steps>
+      <Step title="कॉन्फ़िगरेशन फ़ाइल खोलें">
+        अपनी Claude Desktop कॉन्फ़िगरेशन फ़ाइल खोलें:
+
+        - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+        - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+      </Step>
+      <Step title="सर्वर कॉन्फ़िग जोड़ें">
+        `mcpServers` ऑब्जेक्ट के अंदर निम्नलिखित स्निपेट डालें:
+
+        ```json
+        {
+          "mcpServers": {
+            "ownpay-docs": {
+              "command": "npx",
+              "args": [
+                "-y",
+                "@modelcontextprotocol/server-sse",
+                "{{mcp-url}}"
+              ]
+            }
+          }
+        }
+        ```
+      </Step>
+      <Step title="Claude को रीस्टार्ट करें">
+        Claude Desktop को फिर से लॉन्च करें। आपको एक छोटा प्लग आइकन दिखाई देगा जो दर्शाता है कि `ownpay-docs` सफलतापूर्वक कनेक्ट हो गया है।
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Windsurf">
+    सर्वर को Windsurf के Cascade असिस्टेंट से कनेक्ट करने के लिए:
+
+    <Steps>
+      <Step title="कॉन्फ़िगरेशन फ़ाइल खोलें">
+        `~/.codeium/windsurf/mcp_config.json` पर ग्लोबल Windsurf MCP कॉन्फ़िगरेशन फ़ाइल खोलें।
+      </Step>
+      <Step title="सर्वर कॉन्फ़िगरेशन जोड़ें">
+        कॉन्फ़िगरेशन ब्लॉक डालें:
+
+        ```json
+        {
+          "mcpServers": {
+            "ownpay-docs": {
+              "serverUrl": "{{mcp-url}}"
+            }
+          }
+        }
+        ```
+      </Step>
+      <Step title="Windsurf को रीस्टार्ट करें">
+        Cascade में सर्च इंडेक्सिंग सक्षम करने के लिए एडिटर को रीस्टार्ट करें।
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="VS Code (Cline/Roo Code)">
+    यदि आप Cline या Roo Code जैसे एक्सटेंशन के साथ VS Code का उपयोग कर रहे हैं:
+
+    <Steps>
+      <Step title="सेटिंग्स खोलें">
+        एक्सटेंशन की MCP कॉन्फ़िगरेशन सेटिंग्स पर जाएँ।
+      </Step>
+      <Step title="HTTP/SSE एंट्री जोड़ें">
+        एक नई HTTP सर्वर एंट्री मैपिंग जोड़ें:
+
+        - **Name:** `ownpay-docs`
+        - **Type:** `sse`
+        - **URL:** `{{mcp-url}}`
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Claude Code">
+    Claude Code कमांड-लाइन इंटरफ़ेस के माध्यम से सर्वर जोड़ने के लिए:
+
+    ```bash
+    claude mcp add --transport http ownpay-docs {{mcpUrl}}
+    ```
+
+    इसका उपयोग करके जोड़े जाने की पुष्टि करें:
+
+    ```bash
+    claude mcp list
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 3. AI असिस्टेंट के लिए सिस्टम प्रॉम्प्ट {#3-system-prompt-for-ai-assistants}
+
+अपने AI को OwnPay के साथ काम करने का तरीका बताने के लिए, इस सिस्टम प्रॉम्प्ट को अपने कस्टम GPT निर्देशों, Claude Project या Cursor सिस्टम सेटिंग्स में कॉपी और पेस्ट करें:
+
+```text
+You are an expert developer assistant specialized in the OwnPay payment orchestration platform. You have access to the OwnPay documentation MCP server at "{{mcp-url}}".
+
+When answering questions or generating code:
+1. Architecture Overview:
+   - OwnPay is a self-hosted, open-source payment gateway platform.
+   - It supports multi-brand (multi-tenant) scoping, where each brand has isolated database parameters, gateways, ledger logs, and custom checkout domains.
+   - Core database tables include: `op_brands`, `op_gateways`, `op_transactions`, `op_ledger_entries`, `op_plugins`, and `op_domains`.
+   - Pluggable extension directories: `modules/gateways/` (payment adapters), `modules/addons/` (filters and actions), and `modules/themes/` (custom Twig-based checkouts).
+
+2. API Specifications:
+   - Root-level endpoints:
+     - POST `/api/v1/payments` (Create payment session redirect)
+     - GET `/api/v1/payments/{trx_id}` (Verify payment status)
+     - POST `/api/v1/refunds` (Refund transaction amount)
+   - Uses Bearer Token authentication: Authorization: Bearer op_abc123.def456
+
+3. Best Practices & Conventions:
+   - Use PSR-12 coding style for all PHP code.
+   - Always perform server-to-server validation for webhook events; never trust client-side parameters.
+   - Implement timing-attack-safe checks using `hash_equals()` for HMAC comparisons.
+   - Enforce a 5-minute replay-window timeout on webhook header timestamps.
+
+If a question requires precise file paths, settings schemas, or hooks details, proactively call the ownpay-docs MCP server tools to search the live documentation.
+```
+
+---
+
+## 4. डिस्कवरी और स्पेसिफ़िकेशन {#4-discovery-and-specifications}
+
+MCP सर्वर स्वचालित डिस्कवरी को सपोर्ट करता है। स्वचालित क्लाइंट कनेक्शन लागू करने वाले सिस्टम यहाँ कॉन्फ़िगरेशन मेटाडेटा क्वेरी कर सकते हैं:
+
+```text
+{{mcp-url}}/.well-known/mcp
+```
+
+### सर्वर रेट लिमिट {#server-rate-limits}
+
+सेवा की स्थिरता बनाए रखने के लिए, सार्वजनिक एंडपॉइंट निम्नलिखित प्रति घंटा अनुरोध दरें लागू करते हैं:
+
+| स्कोप | सीमा |
+| --- | --- |
+| प्रति उपयोगकर्ता IP | 5,000 अनुरोध/घंटा |
+| प्रति साइट Search | 10,000 अनुरोध/घंटा |
+| प्रति साइट Query Docs Filesystem | 10,000 अनुरोध/घंटा |
+
+---
+
+## 5. उदाहरण क्वेरी {#5-example-queries}
+
+कॉन्फ़िगर हो जाने के बाद, AI के इंटीग्रेशन को इस तरह की क्वेरी से टेस्ट करें:
+
+- _"मैं कस्टम वेबहुक इवेंट फ़िल्टर कैसे रजिस्टर करूँ?"_
+- _"मुझे दिखाएँ कि कस्टम चेकआउट थीम के लिए Twig टेम्पलेट कैसे बनाएँ"_
+- _"`payment.transaction.completed` का पेलोड लेआउट क्या है? "_
+- _"अपरिवर्तनीय double-entry लेजर मर्चेंट सेटलमेंट को कैसे ट्रैक करता है?"_
+- _"white-label चेकआउट सेशन शुरू करने के लिए एक cURL अनुरोध बनाएँ"_
+
+---
+
+## संबंधित पेज {#related-pages}
+
+- [AI Skills](/hi/developer/ai/skills)
+- [डेवलपर क्विकस्टार्ट](/hi/developer/quickstart)
+- [प्लगइन सिस्टम अवलोकन](/hi/developer/plugins/overview)

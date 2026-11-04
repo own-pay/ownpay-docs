@@ -1,0 +1,127 @@
+---
+title: "रेट लिमिटिंग"
+description: "OwnPay की sliding window रेट लिमिटिंग के लिए आधिकारिक संदर्भ, जिसमें टियर, रिस्पॉन्स हेडर, 429 एरर फ़ॉर्मेट, कॉन्फ़िगरेशन और IP व्हाइटलिस्टिंग शामिल हैं।"
+keywords: "रेट लिमिटिंग, rate limiting, 429, throttle, X-RateLimit, API throttle, sliding window"
+sidebarTitle: "रेट लिमिटिंग"
+icon: "clock"
+---
+
+OwnPay ब्रूट-फ़ोर्स हमलों, दुरुपयोग और आकस्मिक API बाढ़ से बचाने के लिए एक **sliding window** रेट लिमिटर का उपयोग करता है। अनऑथेंटिकेटेड एंडपॉइंट के लिए सीमाएँ प्रति IP पते पर और ऑथेंटिकेटेड एंडपॉइंट के लिए प्रति API key पर लागू की जाती हैं।
+
+---
+
+## रेट लिमिट टियर {#rate-limit-tiers}
+
+| एंडपॉइंट प्रकार | सीमा | ऑथ तरीका | नोट्स |
+| :-- | :-- | :-- | :-- |
+| Merchant API (`/api/v1/*`) | 60 अनुरोध/मिनट | Bearer API key | प्रति key, प्रति IP नहीं |
+| Admin API (`/api/admin/v1/*`) | 60 अनुरोध/मिनट | Bearer API key (admin scope) | प्रति key |
+| लॉगिन प्रयास | 10 प्रयास/5 मिनट | वेब फ़ॉर्म (ईमेल/पासवर्ड) | प्रति IP, strict bucket |
+| पासवर्ड रीसेट | 5 अनुरोध/मिनट | वेब फ़ॉर्म | प्रति IP |
+| OTP डिवाइस पेयरिंग | 5 अनुरोध/मिनट | JWT | प्रति IP |
+| ग्लोबल अनुरोध | 120 अनुरोध/मिनट | कोई भी | प्रति IP, सभी रूट के लिए catch-all |
+| वेबहुक डिलीवरी | कोई सीमा नहीं (आउटबाउंड) | N/A | केवल आउटबाउंड; इनबाउंड कॉलबैक रेट-लिमिटेड नहीं हैं |
+
+<Note>
+  लॉगिन, पासवर्ड रीसेट और डिवाइस पेयरिंग एंडपॉइंट ग्लोबल टियर से छोटी सीमा वाले **strict bucket** का उपयोग करते हैं। क्रेडेंशियल स्टफ़िंग को रोकने के लिए विफल प्रयास bucket को तेज़ी से खाली करते हैं।
+</Note>
+
+---
+
+## रेट लिमिट हेडर {#rate-limit-headers}
+
+हर API रिस्पॉन्स में ऐसे हेडर शामिल होते हैं जो आपकी वर्तमान सीमा स्थिति बताते हैं:
+
+| हेडर | विवरण |
+| :-- | :-- |
+| `X-RateLimit-Limit` | वर्तमान विंडो में अनुमत अधिकतम अनुरोध |
+| `X-RateLimit-Remaining` | वर्तमान विंडो में शेष अनुरोध |
+| `X-RateLimit-Reset` | Unix टाइमस्टैम्प जब विंडो रीसेट होती है |
+
+जब आपके पास 12 अनुरोध शेष हों, तब के उदाहरण रिस्पॉन्स हेडर:
+
+```text
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 12
+X-RateLimit-Reset: 1704067200
+```
+
+---
+
+## 429 रिस्पॉन्स फ़ॉर्मेट {#429-response-format}
+
+जब आप रेट लिमिट पार कर जाते हैं, तो OwnPay एक संरचित एरर बॉडी के साथ HTTP 429 स्टेटस लौटाता है:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests. Try again in 42 seconds.",
+    "retry_after": 42
+  }
+}
+```
+
+HTTP रिस्पॉन्स पर `Retry-After` हेडर भी सेट होता है:
+
+```text
+HTTP/1.1 429 Too Many Requests
+Retry-After: 42
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1704067200
+```
+
+अपने इंटीग्रेशन को 429 रिस्पॉन्स को सुचारू रूप से संभालने के लिए बनाएँ। पुनः प्रयास करने से पहले `retry_after` अवधि तक प्रतीक्षा करें।
+
+<Tip>
+  पुनः प्रयास करते समय jitter के साथ exponential backoff का उपयोग करें। `retry_after` मान से शुरू करें, फिर हर अगले 429 पर प्रतीक्षा दोगुनी करें। thundering herd प्रभाव से बचने के लिए एक छोटा रैंडम jitter (0-2 सेकंड) जोड़ें।
+</Tip>
+
+---
+
+## कॉन्फ़िगरेशन {#configuration}
+
+रेट लिमिट `config/app.php` में कॉन्फ़िगर की जाती हैं और environment variables से ओवरराइड की जा सकती हैं:
+
+```ini
+# .env
+RATE_LIMIT_PER_MINUTE=60
+RATE_LIMIT_LOGIN_PER_5MIN=10
+RATE_LIMIT_GLOBAL_PER_MINUTE=120
+RATE_LIMIT_BURST=20
+```
+
+| वेरिएबल | डिफ़ॉल्ट | विवरण |
+| :-- | :-- | :-- |
+| `RATE_LIMIT_PER_MINUTE` | 60 | प्रति key प्रति मिनट API अनुरोध |
+| `RATE_LIMIT_LOGIN_PER_5MIN` | 10 | प्रति IP प्रति 5 मिनट लॉगिन प्रयास |
+| `RATE_LIMIT_GLOBAL_PER_MINUTE` | 120 | प्रति IP प्रति मिनट ग्लोबल अनुरोध |
+| `RATE_LIMIT_BURST` | 20 | प्रति-मिनट सीमा के ऊपर burst की अनुमति |
+
+---
+
+## IP व्हाइटलिस्टिंग और विश्वसनीय प्रॉक्सी {#ip-whitelisting-and-trusted-proxies}
+
+यदि आपका OwnPay इंस्टॉलेशन किसी reverse proxy या लोड बैलेंसर के पीछे है, तो विश्वसनीय प्रॉक्सी कॉन्फ़िगर करें ताकि रेट लिमिटर प्रॉक्सी IP के बजाय असली क्लाइंट IP देखे।
+
+```ini
+# .env
+TRUSTED_PROXIES=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+```
+
+OwnPay केवल विश्वसनीय प्रॉक्सी से `X-Forwarded-For` हेडर पढ़ता है। IP spoofing को रोकने के लिए अविश्वसनीय प्रॉक्सी हेडर को अनदेखा किया जाता है।
+
+<Warning>
+  प्रोडक्शन में कभी भी `TRUSTED_PROXIES` को `*` पर सेट न करें। इससे कोई भी क्लाइंट अपना IP पता spoof कर सकता है और रेट लिमिट को पूरी तरह बायपास कर सकता है।
+</Warning>
+
+---
+
+## संबंधित पेज {#related-pages}
+
+- [API अवलोकन](/hi/api/overview) - ऑथेंटिकेशन और एंडपॉइंट संदर्भ
+- [API त्रुटियाँ](/hi/api/errors) - पूर्ण एरर कोड संदर्भ
+- [डेवलपर हब](/hi/security/developer-hub) - API key प्रबंधन और परीक्षण
+- [सुरक्षा और अनुपालन](/hi/resources/security-compliance) - व्यापक सुरक्षा आर्किटेक्चर

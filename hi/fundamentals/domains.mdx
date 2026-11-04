@@ -1,0 +1,105 @@
+---
+title: "कस्टम डोमेन - व्हाइट-लेबल चेकआउट URL"
+description: "DomainMiddleware रूटिंग, DNS कॉन्फ़िगरेशन, डोमेन सत्यापन, स्वचालित SSL और URL जनरेशन के साथ हर OwnPay ब्रांड को उसके अपने कस्टम डोमेन पर चलाएँ।"
+keywords: "custom domains, SSL provisioning, DNS verification, brand domains, checkout isolation, white-label domain, कस्टम डोमेन"
+sidebarTitle: "डोमेन"
+icon: "world"
+---
+
+import LlmsDirective from "/hi/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay एक व्हाइट-लेबल पेमेंट इंजन है। आपके ग्राहकों को **आपका** ब्रांड दिखना चाहिए - कोई साझा प्लेटफ़ॉर्म URL नहीं। डोमेन सिस्टम हर ब्रांड को स्वचालित SSL और टेनेंट्स के बीच शून्य लीकेज के साथ अपने पूर्ण योग्य डोमेन के तहत काम करने देता है।
+
+## कस्टम डोमेन कैसे काम करते हैं {#how-custom-domains-work}
+
+जब कोई अनुरोध आता है, तो OwnPay का `DomainMiddleware` `HTTP_HOST` हेडर की जाँच करता है और उसे `op_domains` टेबल से मिलाता है। अगर यह किसी ब्रांड के कस्टम डोमेन से मेल खाता है, तो OwnPay उस ब्रांड का `merchant_id` अनुरोध संदर्भ में जोड़ता है और उसकी विज़ुअल पहचान लोड करता है।
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+sequenceDiagram
+participant C as ग्राहक ब्राउज़र
+participant DNS as DNS रिज़ॉल्वर
+participant N as Nginx
+participant DM as DomainMiddleware
+participant BT as BrandThemeService
+participant CO as चेकआउट पेज
+
+C->>DNS: pay.acme.com रिज़ॉल्व करें
+DNS-->>C: A रिकॉर्ड -> OwnPay सर्वर IP
+C->>N: GET /pay/inv_123 (Host: pay.acme.com)
+N->>DM: अनुरोध फ़ॉरवर्ड करें
+DM->>DM: HTTP_HOST द्वारा op_domains में खोजें
+DM->>DM: merchant_id, domain_type जोड़ें
+DM->>BT: ब्रांड लोगो, रंग, CSS लोड करें
+BT-->>CO: ब्रांड एसेट लौटाएँ
+CO-->>C: ब्रांडेड चेकआउट पेज रेंडर करें
+`}>
+</Mermaid>
+
+## डोमेन प्रकार {#domain-types}
+
+| प्रकार | उद्देश्य | उदाहरण |
+| :-- | :-- | :-- |
+| **checkout** | चेकआउट, इनवॉइस और पेमेंट पेज सर्व करता है | `pay.yourbrand.com` |
+| **api** | केवल API एंडपॉइंट सर्व करता है | `api.yourbrand.com` |
+
+**मास्टर डोमेन** (`APP_DOMAIN` एनवायरनमेंट वेरिएबल के माध्यम से कॉन्फ़िगर किया गया) एकमात्र डोमेन है जो एडमिन पैनल (`/admin/*`) तक पहुँच सकता है। कस्टम डोमेन एडमिन रूट के लिए 404 लौटाते हैं - यह एक सुरक्षा सुविधा है, बग नहीं।
+
+## DNS कॉन्फ़िगरेशन {#dns-configuration}
+
+इनमें से किसी एक रिकॉर्ड का उपयोग करके अपने कस्टम डोमेन को अपने OwnPay सर्वर की ओर पॉइंट करें:
+
+| रिकॉर्ड प्रकार | नाम | मान |
+| :-- | :-- | :-- |
+| **A** | `pay` | `203.0.113.10` (आपका सर्वर IP) |
+| **CNAME** | `pay` | `ownpay.yourdomain.com` |
+
+<Info>
+  अगर रूट डोमेन पर आपके पास पहले से A रिकॉर्ड है, तो `pay` सबडोमेन के लिए CNAME आमतौर पर सबसे साफ़ तरीका है।
+</Info>
+
+## डोमेन सत्यापन प्रक्रिया {#domain-verification-flow}
+
+<Steps>
+  <Step title="OwnPay में डोमेन जोड़ें">
+    **System \> Domains** पर जाएँ, **Add Domain** पर क्लिक करें, और `pay.yourbrand.com` दर्ज करें। डोमेन प्रकार को `checkout` पर सेट करें और इसे अपने ब्रांड को असाइन करें।
+  </Step>
+  <Step title="DNS कॉन्फ़िगर करें">
+    अपने DNS प्रदाता पर A या CNAME रिकॉर्ड जोड़ें। DNS प्रोपेगेशन में आमतौर पर कुछ मिनटों से लेकर कुछ घंटों तक का समय लगता है।
+  </Step>
+  <Step title="DNS सत्यापित करें">
+    OwnPay डोमेन सेटिंग्स में **Verify DNS** पर क्लिक करें। OwnPay एक DNS लुकअप करता है और जाँचता है कि रिकॉर्ड आपके सर्वर की ओर पॉइंट करता है। सत्यापित होने के बाद, `dns_verified` को `1` पर सेट कर दिया जाता है।
+  </Step>
+  <Step title="SSL प्रोविज़न किया जाता है">
+    DNS सत्यापन के बाद, OwnPay डोमेन के लिए एक SSL सर्टिफ़िकेट प्रोविज़न करता है। चेकआउट पेज स्वचालित रूप से HTTPS पर सर्व किए जाते हैं।
+  </Step>
+</Steps>
+
+<Warning>
+  जब तक DNS सत्यापन पास नहीं होता, कस्टम डोमेन **503 Service Unavailable** रिस्पॉन्स लौटाता है। सत्यापन से पहले सुनिश्चित करें कि आपके DNS रिकॉर्ड सही तरीके से कॉन्फ़िगर किए गए हैं।
+</Warning>
+
+## URL जनरेशन {#url-generation}
+
+सभी ग्राहक-संबंधी और गेटवे-संबंधी URL `DomainUrlService` द्वारा बनाए जाते हैं - कभी हार्डकोड नहीं किए जाते। प्राथमिकता क्रम है:
+
+1. `GATEWAY_CALLBACK_URL` एनवायरनमेंट वेरिएबल
+2. ब्रांड का कस्टम डोमेन
+3. `.env` से `APP_URL`
+4. वर्तमान अनुरोध होस्ट
+
+<Note>
+  अगर आपको अपने कोड में चेकआउट या कॉलबैक URL जनरेट करना है, तो हमेशा `buildCheckoutUrl()` और `buildCallbackUrl()` जैसे `DomainUrlService` मेथड का उपयोग करें। जब ब्रांड कस्टम डोमेन का उपयोग करेंगे तो हार्डकोड किए गए URL टूट जाएँगे।
+</Note>
+
+## संबंधित पेज {#related-pages}
+
+- [सिस्टम - डोमेन](/hi/system/domains) - समस्या निवारण के साथ चरण-दर-चरण सेटअप गाइड
+- [अपीयरेंस - ब्रांडिंग](/hi/appearance/branding) - लोगो, रंग और चेकआउट डिज़ाइन कस्टमाइज़ करें
+- [ब्रांड](/hi/fundamentals/brands) - ब्रांड-स्तरीय आइसोलेशन और सेटिंग्स को समझें
+- [OwnPay कैसे काम करता है](/hi/fundamentals/how-ownpay-works) - पूर्ण आर्किटेक्चर अवलोकन
+- [पेमेंट फ़्लो](/hi/fundamentals/payment-flow) - लेनदेन जीवनचक्र में चेकआउट पेज की भूमिका

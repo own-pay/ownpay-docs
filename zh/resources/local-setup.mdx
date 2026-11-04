@@ -1,0 +1,172 @@
+---
+title: "为本地开发设置 OwnPay"
+sidebarTitle: "本地设置"
+description: "使用 PHP、Composer、MySQL 和内置的 Laravel 开发服务器，在 macOS、Linux 或 Windows 上本地运行 OwnPay，用于开发和贡献。"
+---
+
+在您的机器上运行 **OwnPay** 以进行开发和贡献 - 支持 **Windows**、**macOS** 或 **Linux**。安装好前置条件后，下面的快速路径大约只需 **2 分钟**。
+
+> 刚接触这个代码库？请先阅读 **[ARCHITECTURE.md](/zh/resources/architecture)**。
+
+---
+
+## 前置条件 {#prerequisites}
+
+| 工具 | 版本 | 用途 | 获取方式 |
+|------|---------|-----|--------|
+| **PHP** | **8.3+**，需包含 `bcmath`、`json`、`mbstring`、`openssl`、`pdo`、`pdo_mysql`、`curl` | 运行时 | [php.net/downloads](https://www.php.net/downloads) · [windows.php.net](https://windows.php.net/download/) |
+| **Composer** | 2.x | PHP 依赖 | [getcomposer.org/download](https://getcomposer.org/download/) |
+| **MySQL** *或* **MariaDB** | MySQL 8.0+ / MariaDB 10.4+ | 数据库 | [dev.mysql.com](https://dev.mysql.com/downloads/mysql/) · [mariadb.org](https://mariadb.org/download/) |
+| **Git** | 任意 | 克隆仓库 | [git-scm.com/downloads](https://git-scm.com/downloads) |
+| **Node.js** *（可选）* | 18+ | 仅用于 JS/CSS 代码检查 | [nodejs.org](https://nodejs.org/en/download) |
+
+> **提示：** 下面的一体化环境（Laragon / Herd / Docker）捆绑了 PHP + MySQL + Web 服务器，因此您无需单独安装它们。
+
+检查您的 PHP 版本和扩展：
+
+```bash
+php -v
+php -m
+```
+
+---
+
+## 快速开始 - 所有平台（约 2 分钟） {#quick-start-all-platforms-~2-minutes}
+
+这里使用 PHP 内置的 Web 服务器，因此在 Windows、macOS 和 Linux 上的操作完全相同，无需配置 Web 服务器。
+
+```bash
+# 1. Clone
+git clone https://github.com/own-pay/OwnPay.git
+cd OwnPay
+
+# 2. Install PHP dependencies
+composer install
+
+# 3. Create an empty database (MySQL example)
+mysql -u root -p -e "CREATE DATABASE ownpay CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 4. Serve the public/ directory
+php -S localhost:8000 -t public
+```
+
+现在在浏览器中打开 **[http://localhost:8000](http://localhost:8000)**。您将被重定向到 **`/install` 向导** - 它会为您生成 `.env`、导入数据库结构并创建管理员账户，无需手动编辑 `.env`。
+
+```mermaid
+flowchart LR
+    A[克隆] --> B[composer install]
+    B --> C[创建空数据库]
+    C --> D["php -S localhost:8000 -t public"]
+    D --> E[打开 localhost:8000]
+    E --> F[/安装向导/]
+    F --> G[环境要求检查]
+    G --> H[数据库凭据]
+    H --> I[管理员账户]
+    I --> J[完成 → 登录]
+```
+
+> 安装程序会在 `storage/.installed` 写入一个锁文件。若要重新运行安装程序，请删除该文件（并删除/重建数据库）。
+
+---
+
+## 各平台的一体化环境 {#platform-specific-all-in-one-stacks}
+
+更喜欢真正的 Web 服务器和美观的 `*.test` 域名？请使用捆绑环境。快速开始的步骤依然适用 - 只需将环境的 Web 根目录指向 `public/`。
+
+### 🪟 Windows - Laragon（推荐） {#🪟-windows-laragon-recommended}
+
+[Laragon](https://laragon.org/download/) 捆绑了 PHP、MySQL、Apache/Nginx，并会自动创建 `.test` 域名。
+
+1. 安装 Laragon 并启动（**Start All**）。
+2. 确保捆绑的 PHP 版本为 **8.3+**（Menu → PHP → Version），必要时进行切换。
+3. 将项目放到 Laragon 的 `www` 文件夹中：`C:\laragon\www\ownpay`。
+4. Laragon 会自动创建虚拟主机 **`http://ownpay.test`**（如果没有出现，请点击 Menu → **Reload**/**Restart All**）。
+5. 在 **HeidiSQL**（已捆绑）中创建数据库，或运行上面的 `CREATE DATABASE` 命令。
+6. 访问 **[http://ownpay.test](http://ownpay.test)** → 安装向导将运行。
+
+> Laragon 的文档根目录会通过捆绑的重写规则自动映射到项目的 `public/`。
+
+### 🍎 macOS - Laravel Herd（推荐） {#🍎-macos-laravel-herd-recommended}
+
+[Herd](https://herd.laravel.com/) 是一个免费的一键式 PHP 环境（PHP + Nginx + 用于 `.test` 域名的 dnsmasq）。
+
+1. 安装 Herd。它自带 PHP 8.3+ 和 Composer。
+2. 将包含项目的文件夹添加为 **Parked** 路径（Herd → Settings → General），或在父目录中执行 `herd park`。
+3. Herd 会在 **`https://ownpay.test`** 提供该站点（Herd 会自动将站点指向 `public/`）。
+4. 使用 [DBngin](https://dbngin.com/)（免费）或 Homebrew（`brew install mysql && brew services start mysql`）启动 MySQL，然后创建 `ownpay` 数据库。
+5. 访问 **[https://ownpay.test](https://ownpay.test)** → 安装向导将运行。
+
+仅使用 Homebrew 的替代方案：执行 `brew install php@8.3 composer mysql`，然后使用**快速开始**中的内置服务器方式。
+
+### 🐧 Linux - 原生软件包 {#🐧-linux-native-packages}
+
+```bash
+# Debian / Ubuntu
+sudo apt update
+sudo apt install -y php8.3-cli php8.3-mysql php8.3-mbstring php8.3-bcmath \
+                    php8.3-curl php8.3-xml unzip mariadb-server composer
+
+sudo systemctl start mariadb
+sudo mysql -e "CREATE DATABASE ownpay CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+git clone https://github.com/own-pay/OwnPay.git && cd OwnPay
+composer install
+php -S localhost:8000 -t public
+```
+
+（Fedora：`sudo dnf install php-cli php-mysqlnd php-mbstring php-bcmath php-json composer mariadb-server`。）
+
+如需类似生产环境的 Nginx/Apache 虚拟主机，请将文档根目录指向 `public/`，并将所有请求路由到 `public/index.php`（已包含 Apache 的 `.htaccess`；仓库根目录中还附带了 `nginx.conf.example`）。
+
+---
+
+## 安装后 - 验证您的设置 {#after-install-verify-your-setup}
+
+运行与 CI 相同的检查：
+
+```bash
+composer test       # PHPUnit
+composer analyse    # PHPStan (level 9)
+composer lint       # Twig + JS + CSS lint  (Node required for js/css)
+```
+
+在干净的检出版本上，这三项都应通过。
+
+---
+
+## 可选：本地支付网关回调 {#optional-local-payment-gateway-callbacks}
+
+外部网关（bKash、Stripe 等）无法访问 `localhost`/`*.test`。若要测试真实的重定向/Webhook，请使用隧道暴露您的本地服务器，并在 `.env` 中设置 `GATEWAY_CALLBACK_URL`：
+
+```bash
+# example with ngrok (https://ngrok.com/download)
+ngrok http 8000
+# then in .env:  GATEWAY_CALLBACK_URL=https://<your-id>.ngrok-free.app
+```
+
+---
+
+## 故障排除 {#troubleshooting}
+
+| 症状 | 解决方法 |
+|---------|-----|
+| `/install` 提示缺少某个扩展 | 安装列出的 `php-*` 扩展并重启服务器。使用 `php -m` 重新检查。 |
+| `composer install` 因 `ext-*` 失败 | 您的 CLI PHP 缺少某个扩展。请安装它（例如 `php8.3-bcmath`）- 注意 **CLI** 的 php.ini 可能与 Web 的不同。 |
+| 向导中提示 "Could not connect to database" | 确认 MySQL 正在运行且数据库已存在；在 macOS/Linux 上，默认用户通常是 `root`，密码为空或使用 socket 认证。 |
+| 空白页 / 500 错误且无详细信息 | 在 `.env` 中设置 `APP_DEBUG=true` 以显示详细的开发错误页（切勿在生产环境中使用），并检查 `storage/logs/`。 |
+| 安装完成后仍不断重定向 | 仅在打算重新安装时才删除 `storage/.installed`；否则请清空 `storage/cache/`。 |
+| 写入 `.env`/`storage/` 时出现权限错误 | 确保项目根目录和 `storage/` 对您的用户 / Web 服务器用户可写。 |
+
+---
+
+## 项目结构与入手之处 {#project-layout-&-where-to-start}
+
+完整的结构图请参阅 **[ARCHITECTURE.md](/zh/resources/architecture)**。大多数贡献会涉及：
+
+- `src/Controller/` - HTTP 处理器
+- `src/Service/` - 业务逻辑
+- `src/Repository/` - 数据访问
+- `modules/gateways/` - 支付集成（请参阅[插件开发者指南](https://learn.ownpay.org/plugins-developer-guide)）
+- `templates/` - Twig 视图
+
+祝您开发愉快！🚀

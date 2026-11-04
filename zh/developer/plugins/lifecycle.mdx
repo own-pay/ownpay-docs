@@ -1,0 +1,122 @@
+---
+title: "插件生命周期"
+description: "OwnPay 插件从上传、激活到卸载的生命周期各阶段，附带 Mermaid 状态图和品牌级作用域说明。"
+keywords: "插件生命周期, 插件激活, 插件停用, 插件卸载, 插件阶段, 插件上传"
+sidebarTitle: "生命周期"
+icon: "refresh"
+---
+
+从你上传插件到将其移除，插件会经历若干不同的阶段。了解这一生命周期有助于你将代码放在正确的位置。
+
+## 状态图 {#state-diagram}
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+stateDiagram-v2
+[*] --> Uploaded: 上传 ZIP
+Uploaded --> Installed: 清单有效，已运行迁移
+Installed --> Activated: 为品牌激活
+Activated --> Running: 调用 boot()，注册钩子
+Running --> Deactivated: 停用
+Deactivated --> Activated: 重新激活
+Deactivated --> Uninstalled: 卸载
+Uninstalled --> [*]
+`}>
+</Mermaid>
+
+## 阶段详情 {#stage-details}
+
+### 上传 {#upload}
+
+你可以在管理面板的 **System → Plugins → Upload** 中上传 ZIP 文件。`PluginSandbox` 会扫描该压缩包：
+
+- 检查是否存在有效的 `manifest.json`
+- 校验插件类型和 slug 格式
+- 扫描 PHP 文件中被禁用的函数（`eval`、`exec` 等）
+- 任何检查未通过都会拒绝上传
+
+### 安装 {#install}
+
+如果上传通过校验：
+
+1. ZIP 被解压到 `plugins/{slug}/`
+2. 解析 `manifest.json` 并将其存储到 `op_plugins` 数据库表中
+3. `migrations/` 中的数据库迁移在一个事务内按顺序运行
+4. 插件进入 `installed` 状态
+
+<Note>
+  安装是平台级操作——无论你有多少个品牌，它都只会执行一次。
+</Note>
+
+### 激活 {#activate}
+
+激活是**按品牌**进行的。当你为某个品牌激活插件时：
+
+1. 实例化插件类
+2. 调用 `register()`——注册钩子和过滤器
+3. 调用 `boot()`——插件可以访问服务和容器
+4. 加载 `routes/api.php` 和 `routes/web.php` 中的路由
+5. 插件对该品牌进入 `running` 状态
+
+```php
+public function register(EventManager $events, Container $container): void
+{
+ // Called once per brand activation
+ $events->addAction('payment.transaction.completed', $this->onPayment(...));
+}
+
+public function boot(): void
+{
+ // Called after register, all services are available
+ $this->service = $this->container->get(MyService::class);
+}
+```
+
+### 停用 {#deactivate}
+
+停用同样是按品牌进行的：
+
+- 移除该插件为此品牌注册的所有钩子（`removeByOwner`）
+- 卸载路由
+- **数据会被保留**——数据库表、设置和文件都会保留
+
+### 卸载 {#uninstall}
+
+卸载是**不可逆的**平台级操作：
+
+1. 在一个事务内回滚所有迁移（`down()` 方法）
+2. 删除 `op_plugins` 中的对应行
+3. 从磁盘中删除所有插件文件
+4. 删除存储在数据库中的设置
+
+<Warning>
+  卸载是永久性的。卸载后无法恢复插件数据——如需重新开始，请再次上传 ZIP。
+</Warning>
+
+### 重新安装 {#reinstall}
+
+要重新安装插件，请再次上传 ZIP。如果清单中的版本更高，OwnPay 会以增量方式运行新的迁移（它会记录哪些迁移已经运行过）。
+
+## 品牌级与平台级 {#brand-level-vs-platform-level}
+
+| 操作 | 作用域 | 示例 |
+| --- | --- | --- |
+| 上传 | 平台 | 只需上传一次 ZIP |
+| 安装 | 平台 | 迁移只运行一次 |
+| 激活 | 按品牌 | 为品牌 A 启用 Stripe，但不为品牌 B 启用 |
+| 停用 | 按品牌 | 禁用但不移除 |
+| 卸载 | 平台 | 移除所有痕迹 |
+
+## 更新流程 {#update-flow}
+
+1. 上传新的 ZIP，其 `manifest.json` 中的 `version` 更高
+2. OwnPay 检测到版本升级，并运行所有新的迁移
+3. 现有数据被保留
+4. 如果插件对某个品牌处于激活状态，它会自动重新启动
+
+## 相关页面 {#related-pages}
+
+- [目录结构](/zh/developer/plugins/directory-structure)
+- [清单参考](/zh/developer/plugins/manifest)
+- [钩子参考](/zh/developer/plugins/hooks)
+- [能力参考](/zh/developer/plugins/capabilities)

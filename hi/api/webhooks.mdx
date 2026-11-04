@@ -1,0 +1,193 @@
+---
+title: वेबहुक
+description: "OwnPay वेबहुक पेलोड, इवेंट प्रकार, PHP, Node.js और Python में HMAC-SHA256 सिग्नेचर सत्यापन, रीप्ले सुरक्षा और पुनः प्रयास शेड्यूल का संदर्भ।"
+keywords: "वेबहुक, webhooks, webhook verification, HMAC-SHA256, webhook signature, payment events, webhook retry, idempotency"
+sidebarTitle: वेबहुक
+icon: webhook
+---
+
+जब पेमेंट इवेंट होते हैं, तो OwnPay आपके सर्वर पर HTTP POST अनुरोध भेजता है। यह पेज वेबहुक सत्यापन का आधिकारिक संदर्भ है - वेबहुक का उल्लेख करने वाले बाकी सभी पेज यहीं लिंक करते हैं।
+
+## वेबहुक पेलोड फ़ॉर्मेट {#webhook-payload-format}
+
+OwnPay तीन कस्टम हेडर के साथ JSON POST अनुरोधों के रूप में वेबहुक भेजता है:
+
+```http
+Content-Type: application/json
+X-OwnPay-Signature: sha256=abc123...
+X-OwnPay-Timestamp: 1718000000
+X-OwnPay-Event: payment.completed
+```
+
+अनुरोध बॉडी में इवेंट का नाम, एक टाइमस्टैम्प और इवेंट डेटा होता है:
+
+```json
+{
+  "event": "payment.completed",
+  "created_at": "2024-06-15T10:30:00Z",
+  "data": {
+    "id": "pay_abc123",
+    "amount": "1500",
+    "currency": "USD",
+    "status": "completed",
+    "customer": {
+      "name": "Rahim Uddin",
+      "email": "rahim@example.com"
+    },
+    "metadata": {
+      "order_id": "1042"
+    }
+  }
+}
+```
+
+## इवेंट प्रकार {#event-types}
+
+| इवेंट | विवरण |
+| --- | --- |
+| `payment.completed` | पेमेंट पूरी तरह पुष्ट और सेटल हो गया |
+| `payment.failed` | पेमेंट प्रयास अस्वीकार हुआ या उसमें त्रुटि आई |
+| `payment.expired` | ग्राहक ने टाइमआउट अवधि के भीतर भुगतान नहीं किया |
+| `refund.issued` | ग्राहक को रिफ़ंड शुरू किया गया |
+| `refund.completed` | गेटवे पर रिफ़ंड सेटल हो गया |
+| `refund.failed` | गेटवे ने रिफ़ंड अस्वीकार कर दिया |
+| `customer.created` | एक नया ग्राहक रिकॉर्ड बनाया गया |
+| `webhook.test` | Developer Hub से भेजा गया टेस्ट इवेंट |
+
+## सिग्नेचर सत्यापन {#signature-verification}
+
+<Warning>
+  किसी भी इवेंट को प्रोसेस करने से पहले हमेशा वेबहुक सिग्नेचर सत्यापित करें। सत्यापन छोड़ने से हमलावर नकली इवेंट बना सकते हैं।
+</Warning>
+
+### सत्यापन कैसे काम करता है {#how-verification-works}
+
+OwnPay आपके वेबहुक सीक्रेट का उपयोग करके रॉ अनुरोध बॉडी का HMAC-SHA256 हैश निकालता है। सिग्नेचर हेडर में `sha256=` के बाद hex-एन्कोडेड HMAC होता है।
+
+```text
+HMAC-SHA256(webhook_secret, raw_request_body) → hex digest
+```
+
+### PHP सत्यापन {#php-verification}
+
+```php
+$signature = $_SERVER['HTTP_X_OWNPAY_SIGNATURE'] ?? '';
+$timestamp = (int) ($_SERVER['HTTP_X_OWNPAY_TIMESTAMP'] ?? 0);
+$rawBody = file_get_contents('php://input');
+$secret = getenv('OWNPAY_WEBHOOK_SECRET');
+
+// Prevent replay attacks (reject events older than 5 minutes)
+if (abs(time() - $timestamp) > 300) {
+    http_response_code(403);
+    exit('Timestamp outside tolerance');
+}
+
+$expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
+
+if (!hash_equals($expected, $signature)) {
+    http_response_code(401);
+    exit('Invalid signature');
+}
+
+$event = json_decode($rawBody, true);
+// Process $event...
+http_response_code(200);
+```
+
+### Node.js सत्यापन {#node-js-verification}
+
+```javascript
+import crypto from 'crypto';
+
+function verifyWebhook(req, secret) {
+  const signature = req.headers['x-ownpay-signature'];
+  const timestamp = parseInt(req.headers['x-ownpay-timestamp'], 10);
+  const rawBody = req.rawBody.toString('utf8');
+
+  // Reject timestamps older than 5 minutes
+  if (Math.abs(Date.now() / 1000 - timestamp) > 300) {
+    return false;
+  }
+
+  const hmac = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex');
+
+  const expected = `sha256=${hmac}`;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+}
+```
+
+### Python सत्यापन {#python-verification}
+
+```python
+import hmac
+import hashlib
+import time
+import json
+
+def verify_webhook(signature: str, timestamp: int, raw_body: bytes, secret: str) -> bool:
+    # Reject timestamps older than 5 minutes
+    if abs(int(time.time()) - timestamp) > 300:
+        return False
+
+    expected = 'sha256=' + hmac.new(
+        secret.encode('utf-8'), raw_body, hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(expected, signature)
+```
+
+## टाइमस्टैम्प और रीप्ले अटैक से बचाव {#timestamp-and-replay-attack-prevention}
+
+हर वेबहुक में `X-OwnPay-Timestamp` हेडर शामिल होता है। आपके रिसीवर को चाहिए कि वह:
+
+1. टाइमस्टैम्प की तुलना अपने सर्वर की घड़ी से करे
+2. **5 मिनट** से अधिक पुराने टाइमस्टैम्प वाले किसी भी इवेंट को अस्वीकार करे
+3. वैकल्पिक रूप से, सहनशीलता अवधि के भीतर डुप्लिकेट डिलीवरी पकड़ने के लिए प्रोसेस किए गए इवेंट ID संग्रहीत करे
+
+## Idempotency {#idempotency}
+
+वेबहुक डिलीवरी **at-least-once** होती है। आपके हैंडलर को एक ही इवेंट एक से अधिक बार मिल सकता है। हैंडलर को हमेशा idempotent बनाएँ:
+
+```php
+function handlePaymentCompleted(array $data): void
+{
+    $orderId = $data['metadata']['order_id'] ?? '';
+    $order = Order::where('id', $orderId)->first();
+
+    if ($order?->status === 'paid') {
+        return; // Already processed
+    }
+
+    $order?->update(['status' => 'paid']);
+}
+```
+
+## अपेक्षित रिस्पॉन्स {#expected-response}
+
+जब आपका एंडपॉइंट **10 सेकंड** के भीतर कोई भी **HTTP 2xx** स्टेटस लौटाता है, तो OwnPay डिलीवरी को सफल मानता है। इसके अलावा कुछ भी होने पर पुनः प्रयास शुरू हो जाता है।
+
+## पुनः प्रयास शेड्यूल {#retry-schedule}
+
+| प्रयास | विफलता के बाद देरी |
+| --- | --- |
+| 1 | तुरंत |
+| 2 | 1 मिनट |
+| 3 | 5 मिनट |
+| 4 | 30 मिनट |
+| 5 | 2 घंटे |
+| 6 | 6 घंटे |
+| 7\+ | Dead-lettered (लॉग किया जाता है, आगे कोई पुनः प्रयास नहीं) |
+
+<Note>
+  आप **Developers → Webhooks → Delivery Log** से विफल डिलीवरी की जाँच कर सकते हैं और उन्हें फिर से भेज सकते हैं।
+</Note>
+
+## संबंधित पेज {#related-pages}
+
+- [API अवलोकन](/hi/api/overview)
+- [वेबहुक इंटीग्रेशन ट्यूटोरियल](/hi/developer/webhook-integration)
+- [त्रुटि कोड](/hi/api/errors)
+- [Developer Hub](/hi/security/developer-hub)

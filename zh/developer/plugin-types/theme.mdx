@@ -1,0 +1,254 @@
+---
+title: "主题插件开发 - 自定义结账外观"
+description: "构建主题插件，通过 Blade 模板、静态资源、布局覆盖和品牌级样式来自定义 OwnPay 结账页面。"
+keywords: "主题插件, 结账自定义, Blade 模板, 品牌样式, 结账主题"
+sidebarTitle: "主题开发"
+icon: "brush"
+---
+
+主题控制 OwnPay 面向客户的结账体验的视觉外观。主题插件通过事件钩子覆盖结账模板路径并注入 CSS/JS 资源，无需修改任何核心文件。
+
+## 主题插件的工作原理 {#how-theme-plugins-work}
+
+主题是类型为 `"theme"` 的普通插件。它们由 `PluginLoader` 从 `modules/themes/{slug}/` 加载，与 Addon 使用相同的两阶段生命周期。
+
+结账控制器通过应用以下三个过滤器钩子来决定渲染哪个模板：
+
+| 钩子 | 用途 |
+| --- | --- |
+| `checkout.template` | 主支付网关选择和结账页面 |
+| `checkout.status.template` | 成功/失败/待处理结果页面 |
+| `checkout.payment_link.template` | 支付链接金额输入页面 |
+
+## 目录结构 {#directory-structure}
+
+```text
+modules/themes/my-theme/
++-- manifest.json           # Required. Plugin metadata.
++-- Theme.php               # Required. Entrypoint class.
++-- templates/              # Required. Twig templates.
+|   +-- checkout.twig       # Main checkout page
+|   +-- checkout-status.twig # Payment result page
+|   +-- payment-link-amount.twig # Payment link page
++-- assets/                 # Optional. CSS/JS files.
+    +-- checkout.css
+    +-- checkout.js
+```
+
+## manifest.json 文件 {#the-manifest-json-file}
+
+```json
+{
+  "name": "OwnPay Theme",
+  "slug": "own-pay",
+  "version": "2.0.0",
+  "description": "Default OwnPay checkout theme - premium, responsive, multi-gateway.",
+  "author": "OwnPay",
+  "type": "theme",
+  "entrypoint": "Theme.php",
+  "namespace": "OwnPay\\Modules\\Themes\\OwnPay",
+  "requires": {
+    "ownpay": ">=0.1.0"
+  },
+  "settings": {
+    "footer_text": "Secured by OwnPay",
+    "show_dark_toggle": "enabled",
+    "timeout_enabled": "enabled",
+    "timeout_minutes": 10,
+    "custom_css": "",
+    "custom_js": ""
+  }
+}
+```
+
+## 入口类 {#the-entrypoint-class}
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace OwnPay\Modules\Themes\MyTheme;
+
+use OwnPay\Container;
+use OwnPay\Event\EventManager;
+use OwnPay\Plugin\Capability;
+use OwnPay\Plugin\PluginInterface;
+
+final class Theme implements PluginInterface
+{
+    public static function metadata(): array
+    {
+        return [
+            'name'        => 'My Theme',
+            'slug'        => 'my-theme',
+            'version'     => '1.0.0',
+            'description' => 'A custom checkout theme for OwnPay.',
+            'author'      => 'Your Name',
+            'type'        => 'theme',
+        ];
+    }
+
+    public function capabilities(): array
+    {
+        return [Capability::THEME];
+    }
+
+    public function register(EventManager $events, Container $container): void
+    {
+        $events->addFilter('checkout.template', function (string $template): string {
+            return 'checkout/checkout.twig';
+        });
+
+        $events->addFilter('checkout.status.template', function (string $template): string {
+            return 'checkout/checkout-status.twig';
+        });
+
+        $events->addFilter('checkout.payment_link.template', function (string $template): string {
+            return 'checkout/payment-link-amount.twig';
+        });
+
+        $events->addAction('checkout.head', function (): void {
+            echo '<link rel="stylesheet" href="/assets/css/my-theme-checkout.css">';
+        });
+
+        $events->addAction('checkout.footer', function () use ($container): void {
+            $nonceVal  = $container->has('csp_nonce') ? $container->get('csp_nonce') : '';
+            $nonceAttr = is_string($nonceVal) && $nonceVal !== ''
+                ? ' nonce="' . htmlspecialchars($nonceVal, ENT_QUOTES, 'UTF-8') . '"'
+                : '';
+            echo '<script' . $nonceAttr . ' src="/assets/js/my-theme-checkout.js"></script>';
+        });
+    }
+
+    public function boot(Container $container): void {}
+    public function deactivate(Container $container): void {}
+    public function uninstall(Container $container): void {}
+
+    public function fields(): array
+    {
+        return [
+            [
+                'name'    => 'primary_color',
+                'label'   => 'Primary Color',
+                'type'    => 'color',
+                'default' => '#0D9488',
+            ],
+            [
+                'name'    => 'show_powered_by',
+                'label'   => 'Show "Powered by OwnPay"',
+                'type'    => 'toggle',
+                'default' => '1',
+            ],
+        ];
+    }
+}
+```
+
+## 品牌主题数据 {#brand-theme-data}
+
+结账控制器会调用 `BrandThemeService::getBrandTheme(int $merchantId)`，并将结果作为 Twig 变量 `brand` 传入：
+
+```php
+[
+    'name'           => 'MyBrand',
+    'logo'           => '/storage/logo.png',
+    'color'          => '#0D9488',
+    'accent_color'   => '#0F766E',
+    'support_email'  => 'support@mybrand.com',
+    'custom_css'     => '/* brand CSS */',
+    'footer_text'    => 'Secured by MyBrand',
+    'show_powered_by'=> true,
+]
+```
+
+## Twig 模板开发 {#twig-template-development}
+
+```twig
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ brand.name|e }} - Checkout</title>
+    {{ hook('checkout.head')|raw }}
+    {% if brand.custom_css %}
+        <style>{{ brand.custom_css }}</style>
+    {% endif %}
+</head>
+<body>
+    <main class="checkout-container">
+        {% if brand.logo %}
+            <img src="{{ brand.logo|e }}" alt="{{ brand.name|e }}" />
+        {% endif %}
+
+        <div class="checkout-amount">
+            {{ transaction.currency|e }} {{ transaction.amount|e }}
+        </div>
+
+        {% block checkout_content %}{% endblock %}
+
+        <footer>
+            {% if brand.show_powered_by %}
+                <span>{{ brand.footer_text|e }}</span>
+            {% endif %}
+        </footer>
+    </main>
+
+    {{ hook('checkout.footer')|raw }}
+    {% if brand.custom_js %}
+        <script>{{ brand.custom_js }}</script>
+    {% endif %}
+</body>
+</html>
+```
+
+## CSP nonce 集成 {#csp-nonce-integration}
+
+```php
+$events->addAction('checkout.footer', function () use ($container): void {
+    $nonce     = $container->has('csp_nonce') ? $container->get('csp_nonce') : '';
+    $nonceAttr = is_string($nonce) && $nonce !== ''
+        ? ' nonce="' . htmlspecialchars($nonce, ENT_QUOTES, 'UTF-8') . '"'
+        : '';
+    echo '<script' . $nonceAttr . ' src="/assets/js/my-theme-checkout.js"></script>';
+});
+```
+
+## 主题完整钩子参考 {#full-hook-reference-for-themes}
+
+| 钩子 | 类型 | 用途 |
+| --- | --- | --- |
+| `checkout.template` | Filter | 覆盖主结账模板路径 |
+| `checkout.status.template` | Filter | 覆盖结果页面模板路径 |
+| `checkout.payment_link.template` | Filter | 覆盖支付链接页面模板 |
+| `checkout.render` | Filter | 向结账 Twig 上下文注入变量 |
+| `checkout.head` | Action | 向 `<head>` 注入 CSS/字体 |
+| `checkout.footer` | Action | 向 `<footer>` 注入 JS |
+| `checkout.before` | Action | 在解析结账模板之前执行响应 |
+| `checkout.csp.sources` | Filter | 向 CSP 添加外部域名 |
+
+## 安全要求 {#security-requirements}
+
+- 在 Twig 中始终使用 `{{ variable }}`（已转义），对用户数据绝不要使用 `{{ variable|raw }}`
+- 每个 `<script>` 标签都必须带有来自容器的 nonce
+- 禁止使用 `eval()` 或操作系统命令
+- 使用十六进制正则表达式校验颜色字段
+- 对外部域名使用 `checkout.csp.sources` 过滤器
+
+## 安装与激活 {#installation-and-activation}
+
+1. 将插件目录打包为 ZIP
+2. 通过 Admin \> Appearance \> Themes \> "Install Theme" 上传
+3. 在主题列表中激活
+4. 通过 Admin \> Appearance \> Themes \> "Set Active" 将其设为当前主题
+
+<Note>
+  `active_theme` 的值必须与清单中的 `slug` 完全一致。如果不一致，系统将回退到内置的 `own-pay` 主题。
+</Note>
+
+## 相关页面 {#related-pages}
+
+- [网关插件开发](/zh/developer/plugin-types/gateway)
+- [Addon 插件开发](/zh/developer/plugin-types/addon)
+- [集成插件开发](/zh/developer/plugin-types/integration)
+- [钩子参考](/zh/developer/plugins/hooks)
+- [清单参考](/zh/developer/plugins/manifest)

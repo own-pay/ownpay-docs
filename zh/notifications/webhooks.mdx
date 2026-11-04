@@ -1,0 +1,80 @@
+---
+title: Webhooks
+description: "配置带有 HMAC-SHA256 签名的外发 webhook，在付款、退款及其他操作发生时接收实时事件通知。"
+keywords: "webhooks, 外发 webhook, HMAC-SHA256, 事件通知, webhook 签名, 死信队列"
+sidebarTitle: Webhooks
+icon: webhook
+---
+
+Webhook 让您的外部系统在 OwnPay 中发生事件时接收实时通知。每个 webhook 负载都使用 HMAC-SHA256 签名，以便您验证其真实性。Webhook 管理位于[开发者中心](/zh/security/developer-hub)。
+
+## 创建 webhook 端点 {#create-a-webhook-endpoint}
+
+<Steps>
+  <Step>
+    从左侧边栏打开 **Developer Hub**，然后点击 **Webhooks** 标签页。
+  </Step>
+  <Step>
+    点击 **Add Endpoint**。输入您的 HTTPS URL，例如 `https://your-app.com/api/ownpay/webhook`。
+  </Step>
+  <Step>
+    从复选框列表中选择您要接收的事件。您可以选择所有事件，也可以挑选特定事件。
+  </Step>
+  <Step>
+    点击 **Save**。OwnPay 会生成一个唯一的**签名密钥**。请立即复制此密钥，它不会再次显示。
+  </Step>
+</Steps>
+
+<Warning>
+  Webhook 端点 URL 必须使用 HTTPS。OwnPay 拒绝向普通 HTTP 地址投递负载。
+</Warning>
+
+## 可用事件 {#available-events}
+
+| 事件 | 触发时机 |
+| --- | --- |
+| `payment.completed` | 付款成功完成 |
+| `payment.failed` | 付款尝试在网关处失败 |
+| `payment.expired` | 付款链接或发票过期未付 |
+| `refund.issued` | 退款已创建并处理 |
+| `refund.failed` | 退款尝试在网关处失败 |
+| `customer.created` | 新增客户记录 |
+| `customer.updated` | 客户详细信息被修改 |
+| `dispute.opened` | 收到拒付或争议 |
+| `dispute.resolved` | 争议达成最终结果 |
+
+## 签名验证 {#signature-verification}
+
+每个 webhook 请求都包含一个 `X-OwnPay-Signature` 标头，其中含有使用您的签名密钥对原始负载正文计算的 HMAC-SHA256 哈希值。
+
+<Tip>
+  有关完整的验证算法、代码示例和库推荐，请参阅 [webhook API 参考](/zh/api/webhooks)。
+</Tip>
+
+## 投递与重试 {#delivery-and-retries}
+
+OwnPay 会跟踪每一次投递尝试。当端点返回非 2xx 状态码或在 10 秒后超时时，系统会按递增的时间表重试：
+
+| 尝试 | 延迟 |
+| --- | --- |
+| 第 1 次重试 | 1 分钟 |
+| 第 2 次重试 | 5 分钟 |
+| 第 3 次重试 | 30 分钟 |
+| 第 4 次重试 | 2 小时 |
+| 第 5 次重试 | 6 小时 |
+
+如果所有重试都已用尽，该事件将进入**死信队列**。您可以在开发者中心检查并手动重放进入死信队列的事件。
+
+<Info>
+  成功的投递（2xx 响应）会连同响应状态码和响应正文一起记录，以供审计。
+</Info>
+
+## 测试 webhook {#test-a-webhook}
+
+点击任意端点旁的 **Test Webhook** 按钮，即可发送一个示例 `payment.completed` 负载。这在开发期间非常有用，可在上线前验证您的签名验证逻辑和端点路由。
+
+## 相关页面 {#related-pages}
+
+- [开发者中心](/zh/security/developer-hub) - 开发者工具部分概览
+- [API 密钥](/zh/security/api-keys) - 管理 API 访问凭据
+- [Webhook API 参考](/zh/api/webhooks) - 签名验证算法和负载结构

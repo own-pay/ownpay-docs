@@ -1,0 +1,83 @@
+---
+title: "配套应用"
+description: "安装并配对 OwnPay Android 配套应用，以转发收到的付款确认短信、了解权限要求并监控心跳。"
+keywords: "配套应用, Android 应用, 短信转发, 付款短信, 心跳, 设备配对, 移动应用"
+sidebarTitle: "配套应用"
+icon: "device-mobile"
+---
+
+OwnPay 配套应用是一款 Android 应用程序，用于将您的 Android 手机与自托管的 OwnPay 实例连接起来。它在短信方面的**唯一用途**是将**收到的付款确认短信**（例如来自 bKash、Nagad、Rocket、Upay 的移动货币收款通知）转发给 OwnPay，以实现交易的自动验证。
+
+<Warning>
+  **配套应用仅读取包含付款交易确认信息的收到的短信。**
+
+  - 它**不会**读取、转发或处理发出的、已发送的或草稿短信。
+  - 它**不会**读取或处理其他服务的 OTP 消息、验证码或 2FA 代码。
+  - 它**不会**读取或处理个人消息、推广短信或任何其他非付款短信。
+  - 它会在设备端应用隐私过滤器：只有符合已知付款收据模式的短信才会被转发到您的 OwnPay 服务器。所有其他短信都会被静默忽略，绝不会离开设备。
+</Warning>
+
+<Info>
+  配套应用未在 Google Play 上架。请直接从 [OwnPay GitHub releases]({{github}}) 页面下载 APK。
+</Info>
+
+## 应用的功能 {#what-the-app-does}
+
+- **接收付款短信**——监听**收到的**短信，并应用隐私过滤器，**仅**放行付款确认消息（移动货币收款通知、银行转账确认）
+- **转发到 OwnPay**——通过 Mobile API **仅**将过滤后的付款短信内容发送到您的实例。所有非付款短信都不会离开设备
+- **发送心跳**——定期 ping，让 OwnPay 知道设备在线
+- **接收推送命令**——接受来自管理面板的远程指令
+
+<Note>
+  该应用无法访问发出的、已发送的或草稿消息。它无法读取 OTP 验证码、个人对话或除收到的付款确认之外的任何短信。
+</Note>
+
+## 安装和配对 {#install-and-pair}
+
+<Steps>
+  <Step>
+    从 GitHub releases 页面下载最新的 `ownpay-companion-v{{version}}.apk` 并将其安装到您的 Android 设备上。您可能需要在设备设置中启用**允许安装未知来源应用**。
+  </Step>
+  <Step>
+    打开应用，输入您的 OwnPay 实例 URL（例如 `https://pay.yourdomain.com`）以及在[设备](/zh/mobile/devices)页面生成的 **Mobile API 密钥**。
+  </Step>
+  <Step>
+    点按 **Pair Device**。应用会发送注册请求，并显示带有所分配设备名称的确认界面。
+  </Step>
+  <Step>
+    返回 OwnPay 管理面板，前往 **Mobile \> Devices**，确认该设备已显示且状态为 **Online**。
+  </Step>
+</Steps>
+
+## 权限要求 {#permission-requirements}
+
+配套应用需要以下 Android 权限：
+
+| 权限 | 用途 |
+| --- | --- |
+| **读取短信**（`RECEIVE_SMS`、`READ_SMS`） | 仅接收**收到的**付款确认短信。绝不访问发出的/已发送的/草稿短信。设备端过滤器会在转发前拦截所有非付款短信。 |
+| **前台服务**（`FOREGROUND_SERVICE`） | 保持持久连接，用于心跳和推送命令 |
+| **电池优化豁免** | 防止操作系统终止后台服务 |
+
+<Warning>
+  如果没有电池优化豁免，Android 可能会强行终止配套应用的后台服务，导致短信遗漏和心跳超时。请务必在设备的电池设置中将该应用加入白名单。
+</Warning>
+
+## 心跳机制 {#heartbeat-mechanism}
+
+应用每 **60 秒**向您的 OwnPay 实例发送一次心跳。如果 OwnPay 在 **10 分钟**内未收到心跳，管理面板中的设备状态将变为 **Offline**。有关健康监控的详细信息，请参阅[设备](/zh/mobile/devices)。
+
+## 配对故障排查 {#troubleshooting-pairing}
+
+| 症状 | 原因 | 修复方法 |
+| --- | --- | --- |
+| `Connection refused` 错误 | 实例 URL 不正确或无法访问 | 确认 URL 包含 `https://`，并且可以从设备所在的网络访问服务器 |
+| `Invalid API key` | Mobile API 密钥错误或已过期 | 在设备页面重新生成密钥，并在应用中重新输入 |
+| 设备显示 Offline | 电池优化终止了服务 | 前往 Android 设置 \> 应用 \> OwnPay \> 电池 \> 不受限制 |
+| 短信未转发 | 未授予短信权限 | 打开 Android 设置 \> 应用 \> OwnPay \> 权限 \> 短信 \> 允许 |
+
+## 相关页面 {#related-pages}
+
+- [设备](/zh/mobile/devices) - 管理已配对设备并监控健康状况
+- [短信模板](/zh/mobile/sms-templates) - 配置用于短信验证的正则模式
+- [短信中心](/zh/notifications/sms-center) - 查看收到的付款短信日志和出站通知队列

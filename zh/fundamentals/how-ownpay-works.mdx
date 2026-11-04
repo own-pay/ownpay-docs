@@ -1,0 +1,127 @@
+---
+title: "OwnPay 的工作原理"
+description: "OwnPay 如何将客户付款路由到正确的网关、在复式记账账本中记录，并向您的应用发送 Webhook，以及相关核心概念。"
+keywords: "OwnPay 架构, 支付编排器, 工作原理, 支付路由器, 网关路由, 支付流程, 多品牌架构"
+sidebarTitle: "OwnPay 的工作原理"
+icon: "brain"
+---
+
+import LlmsDirective from "/zh/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay 位于您的业务与 123\+ 个支付提供商之间。当客户点击"支付"时，OwnPay 会将付款路由到正确的网关，在复式记账账本中记录结果，并向您的应用程序发送 Webhook——这一切都运行在您自己掌控的基础设施上。
+
+## 全局概览 {#the-big-picture}
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+sequenceDiagram
+participant C as 客户
+participant CO as OwnPay 结账
+participant R as OwnPay 路由器
+participant G as 支付网关
+participant M as 商户应用
+
+C->>CO: 点击"支付"（支付链接 / API）
+CO->>R: 创建支付意图
+R->>R: 选择网关（品牌配置）
+R->>CO: 返回结账 URL
+CO->>C: 重定向到结账页面
+C->>G: 输入支付信息
+G->>G: 向银行/处理商请求授权
+G-->>CO: 回调返回结果
+CO->>R: 更新交易状态
+R->>R: 写入账本分录（借/贷）
+R-->>C: 显示成功/失败页面
+R->>M: Webhook 通知（HMAC-SHA256）
+`}>
+</Mermaid>
+
+无论付款来自托管结账页面、支付链接还是 Merchant API，这一流程都以相同方式进行。
+
+## 核心概念一览 {#key-concepts-at-a-glance}
+
+<CardGroup cols={3}>
+  <Card title="品牌" icon="building-store" href="/zh/fundamentals/brands">
+    隔离的商户租户——每个品牌都有自己的网关、域名、员工、API 密钥和账本。
+  </Card>
+
+  <Card title="支付流程" icon="circle-arrow-right" href="/zh/fundamentals/payment-flow">
+    交易从创建、处理到完成、失败或过期的完整生命周期。
+  </Card>
+
+  <Card title="网关" icon="wallet" href="/zh/fundamentals/gateways">
+    基于插件的 123\+ 个支付提供商集成，支持加密凭据存储和按品牌分配。
+  </Card>
+
+  <Card title="账本" icon="book" href="/zh/fundamentals/ledger">
+    复式记账，按品牌将每一笔资金变动记录为平衡的借贷对。
+  </Card>
+
+  <Card title="插件" icon="puzzle" href="/zh/fundamentals/plugins">
+    可扩展架构，提供四种插件类型——网关、附加组件、主题和集成——并使用钩子和事件。
+  </Card>
+
+  <Card title="域名" icon="world" href="/zh/fundamentals/domains">
+    按品牌配置的白标自定义域名，支持自动 DNS 验证和 SSL 证书签发。
+  </Card>
+</CardGroup>
+
+## OwnPay 的独特之处 {#what-makes-ownpay-different}
+
+- **自托管，完全的数据主权**——您的服务器、您的数据库、您的规则。客户个人身份信息（PII）在静态存储时使用 AES-256-GCM 加密。没有任何第三方能看到您的数据。
+- **开箱即用的 123\+ 个网关**——国际处理商（Stripe、PayPal）以及区域领先者（bKash、Nagad、GCash、Razorpay、SSLCommerz），每个版本都会新增更多网关。
+- **OwnPay 零交易费**——基于 AGPL-3.0 许可。您只需支付网关自身的处理费用。
+- **AGPL-3.0 许可，永久免费**——没有功能限制、没有许可等级、没有回传遥测。完整源代码见 [GitHub]({{github}})。
+- **可通过插件扩展**——无需修改核心代码即可添加网关、主题、附加组件和集成。提供 60 多个钩子和完整的事件系统。
+- **复式记账账本**——会计级财务跟踪，基于 `bcmath` 的精确计算、品牌隔离以及内置对账功能。
+
+## OwnPay 适合谁？ {#who-is-ownpay-for}
+
+| 受众 | 如何使用 OwnPay |
+| :-- | :-- |
+| **SaaS 企业** | 通过统一 API 接受订阅和一次性付款，同时将客户数据保留在内部。 |
+| **市场平台** | 多租户支付编排——每个卖家都获得一个拥有隔离资金和报表的品牌。 |
+| **自由职业者和代理机构** | 几秒钟内创建支付链接，为客户提供白标结账，并在账本中跟踪收入。 |
+| **大型企业** | 部署在本地或私有云上，满足数据驻留要求，并通过 Admin API 进行集成。 |
+
+## 技术栈概要 {#technical-stack-summary}
+
+<Columns>
+  <Column>
+    **运行时**
+
+    - PHP 8.3\+（自研框架，非 Laravel）
+    - Twig 3 用于服务端模板
+    - 前端使用原生 JavaScript
+    - 所有金额计算均使用 `bcmath`
+    - AES-256-GCM 用于 PII 加密
+  </Column>
+  <Column>
+    **基础设施**
+
+    - MySQL 8\+（模式、交易、账本）
+    - Redis（缓存、会话、队列）
+    - Nginx 或 Apache，搭配 PHP-FPM
+    - 支持 Docker Compose
+  </Column>
+  <Column>
+    **集成**
+
+    - 3 层 REST API（Merchant / Mobile / Admin）
+    - HMAC-SHA256 Webhook 签名
+    - 用于短信验证的 Android 配套应用
+    - 带有钩子、过滤器和事件的插件 SDK
+  </Column>
+</Columns>
+
+## 相关页面 {#related-pages}
+
+- [快速开始](/zh/quickstart) - 5 分钟内运行起来
+- [功能特性](/zh/resources/features) - 完整功能列表和对比
+- [架构](/zh/resources/architecture) - 深入了解内部设计
+- [API 概览](/zh/api/overview) - Merchant、Mobile 和 Admin API 参考
+- [插件概览](/zh/developer/plugins/overview) - 构建您自己的扩展

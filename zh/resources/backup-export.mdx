@@ -1,0 +1,151 @@
+---
+title: "备份和导出"
+description: "了解如何备份和恢复您的 OwnPay 安装，包括数据库转储、文件备份、自动备份脚本和数据导出流程。"
+keywords: "备份, 恢复, mysqldump, 数据导出, 数据库备份, 文件备份, 自动备份, backup"
+sidebarTitle: "备份与导出"
+icon: "server"
+---
+
+可靠的备份策略对任何支付平台都至关重要。本指南介绍需要备份的内容、如何自动化备份、如何从备份中恢复，以及如何导出数据供外部使用。
+
+---
+
+## 需要备份的内容 {#what-to-back-up}
+
+您需要保护四类数据：
+
+| 类别 | 位置 | 内容 |
+| :-- | :-- | :-- |
+| 数据库 | MySQL | 所有 `op_` 表 - 交易、客户、账本、设置、会话 |
+| 存储文件 | `storage/` | 缓存、编译后的视图、日志、上传的文件（标志、争议证据） |
+| 环境配置 | `.env` | APP\_KEY、ENCRYPTION\_KEY、JWT\_SECRET、数据库凭据、Redis 配置 |
+| 自定义代码 | `modules/`、`config/` | 自定义插件、主题和配置覆盖 |
+
+<Warning>
+  `.env` 文件包含您的 `ENCRYPTION_KEY`。没有它，您将无法解密数据库中存储的客户 PII 或网关凭据。请务必将 `.env` 包含在备份中。
+</Warning>
+
+---
+
+## 数据库备份 {#database-backup}
+
+使用带有 `--single-transaction` 标志的 `mysqldump` 生成一致的快照，转储期间不会锁表。
+
+```bash
+mysqldump \
+  --single-transaction \
+  --routines \
+  --triggers \
+  --set-gtid-purged=OFF \
+  -u ownpay_user -p \
+  ownpay_db > /backups/ownpay-db-$(date +%Y-%m-%d_%H%M%S).sql
+```
+
+<Note>
+  `--single-transaction` 标志利用 InnoDB 的 MVCC 创建一致的快照。这对生产数据库是安全的，因为它不会阻塞读写操作。
+</Note>
+
+---
+
+## 文件备份 {#file-backup}
+
+归档应用程序文件，排除可以重新安装的依赖项和会自动重新生成的临时文件。
+
+```bash
+tar -czf /backups/ownpay-files-$(date +%Y-%m-%d_%H%M%S).tar.gz \
+  --exclude='vendor' \
+  --exclude='node_modules' \
+  --exclude='storage/cache/*' \
+  --exclude='storage/sessions/*' \
+  --exclude='storage/logs/*' \
+  -C /var/www ownpay/
+```
+
+然后以受限权限单独复制 `.env` 文件：
+
+```bash
+cp /var/www/ownpay/.env /backups/ownpay-env-$(date +%Y-%m-%d_%H%M%S).txt
+chmod 600 /backups/ownpay-env-*.txt
+```
+
+---
+
+## 自动备份脚本 {#automated-backup-script}
+
+创建一个 shell 脚本，用于生成带时间戳的数据库和文件备份，并轮换旧备份以防止磁盘耗尽。
+
+```bash
+#!/bin/bash
+# /opt/scripts/ownpay-backup.sh
+
+BACKUP_DIR="/backups/ownpay"
+RETENTION_DAYS=30
+DB_NAME="ownpay_db"
+DB_USER="ownpay_user"
+APP_DIR="/var/www/ownpay"
+
+mkdir -p "$BACKUP_DIR"
+
+# Database backup
+mysqldump --single-transaction -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+  | gzip > "$BACKUP_DIR/db-$(date +%Y-%m-%d_%H%M%S).sql.gz"
+
+# File backup (exclude vendor, cache, sessions)
+tar -czf "$BACKUP_DIR/files-$(date +%Y-%m-%d_%H%M%S).tar.gz" \
+  --exclude='vendor' --exclude='node_modules' \
+  --exclude='storage/cache' --exclude='storage/sessions' \
+  -C /var/www ownpay/
+
+# Rotate old backups
+find "$BACKUP_DIR" -name "*.sql.gz" -mtime +$RETENTION_DAYS -delete
+find "$BACKUP_DIR" -name "*.tar.gz" -mtime +$RETENTION_DAYS -delete
+
+echo "Backup completed: $(date)"
+```
+
+赋予其可执行权限并使用 cron 进行调度：
+
+```bash
+chmod +x /opt/scripts/ownpay-backup.sh
+
+# Run daily at 2:00 AM
+crontab -e
+0 2 * * * /opt/scripts/ownpay-backup.sh >> /var/log/ownpay-backup.log 2>&1
+```
+
+---
+
+## 恢复流程 {#restore-procedure}
+
+按照以下步骤从备份中恢复 OwnPay 安装。
+
+<Steps>
+</Steps>
+
+---
+
+## 更新前备份 {#pre-update-backups}
+
+OwnPay 内置的 `UpdateService` 会在应用任何更新之前自动创建数据库备份和文件快照。这些备份存储在 `storage/backups/pre-update-{version}/` 中。
+
+<Info>
+  自动更新前备份只是一道安全网，不能替代您自己的备份计划。如果更新过程本身发生灾难性失败（磁盘已满、权限错误），自动备份可能未能完成。请始终保留独立的备份。
+</Info>
+
+---
+
+## 数据导出 {#data-export}
+
+出于合规、会计或迁移目的，您可以在不进行完整数据库备份的情况下导出数据。
+
+- **交易** - 在交易页面按日期范围、状态或网关筛选，然后点击 **Export CSV**。导出内容包括金额、手续费、净额、货币、状态和网关参考号。
+- **报表** - 报表页面会生成汇总数据，可导出为 CSV 以导入会计软件。
+- **客户数据** - 导出单个客户记录，或批量导出某个品牌的所有客户。导出内容以解密形式包含所有 PII，用于满足 GDPR 数据可携带性请求。
+
+---
+
+## 相关页面 {#related-pages}
+
+- [安全与合规](/zh/resources/security-compliance) - 加密备份和处理 PII
+- [迁移指南](/zh/resources/migration-guide) - 在版本之间安全升级
+- [性能与扩展](/zh/resources/performance-scaling) - 在繁忙服务器上优化备份 I/O

@@ -1,0 +1,69 @@
+---
+title: "प्लगइन डायरेक्टरी संरचना"
+description: "OwnPay प्लगइन के लिए मानक डायरेक्टरी लेआउट, जिसमें हर फ़ाइल और फ़ोल्डर तथा प्रत्येक घटक की व्याख्या दी गई है।"
+keywords: "plugin structure, plugin files, plugin directory, Plugin.php, manifest.json, plugin migrations, plugin views"
+sidebarTitle: "डायरेक्टरी संरचना"
+icon: "folders"
+---
+
+हर OwnPay प्लगइन इस मानक डायरेक्टरी लेआउट का पालन करता है। `plugins/` डायरेक्टरी को स्कैन करते समय प्लगइन लोडर इसी संरचना की अपेक्षा करता है।
+
+<Tree />
+
+## मुख्य फ़ाइलें {#core-files}
+
+### `manifest.json` {#manifest-json}
+
+आवश्यक। इसमें प्लगइन का नाम, स्लग, संस्करण, प्रकार, कैपेबिलिटीज़ और अन्य मेटाडेटा होता है। प्लगइन लोडर सबसे पहले इसे पढ़ता है। पूर्ण [मैनिफ़ेस्ट संदर्भ](/hi/developer/plugins/manifest) देखें।
+
+### `Plugin.php` {#plugin-php}
+
+आवश्यक। यह एंट्री पॉइंट है। इसे इन मेथड्स के साथ `OwnPay\Plugin\PluginInterface` लागू करना होगा:
+
+- `register(EventManager $events, Container $container)` - हुक और फ़िल्टर रजिस्टर करें
+- `boot()` - सभी प्लगइन रजिस्टर होने के बाद कॉल किया जाता है
+
+क्लास का नाम PascalCase में डायरेक्टरी के नाम से मेल खाना चाहिए: `my-plugin` → `MyPlugin`।
+
+## वैकल्पिक डायरेक्टरी {#optional-directories}
+
+### `config/` {#config/}
+
+डिफ़ॉल्ट कॉन्फ़िगरेशन मान। प्लगइन मैनेजर इन्हें पढ़ता है और ओवरराइड को डेटाबेस में संग्रहीत करता है। `Plugin::config('my-plugin')` के माध्यम से एक्सेस करें।
+
+### `src/` {#src/}
+
+आपके प्लगइन की PHP क्लासें। प्लगइन लोडर इस डायरेक्टरी को ऑटोलोडर में जोड़ता है। ज़िम्मेदारी के अनुसार व्यवस्थित करें: सर्विसेज़, कंट्रोलर, मॉडल।
+
+### `resources/views/` {#resources/views/}
+
+आपके प्लगइन द्वारा उपयोग किए जाने वाले Twig टेम्पलेट। एडमिन सेटिंग्स पेज, कस्टम डैशबोर्ड और रिपोर्ट व्यू यहीं रहते हैं।
+
+### `resources/lang/` {#resources/lang/}
+
+प्लगइन UI स्ट्रिंग्स के लिए भाषा फ़ाइलें। प्रत्येक फ़ाइल भाषा कोड (`en.json`, `bn.json`) द्वारा की-बद्ध होती है। [अनुवाद](/hi/developer/translations) देखें।
+
+### `assets/` {#assets/}
+
+CSS और JavaScript फ़ाइलें। इन्हें `checkout.head` और `checkout.footer` एक्शन हुक के माध्यम से जोड़ें:
+
+```php
+$events->addAction('checkout.head', function (): void {
+    echo '<link rel="stylesheet" href="' . Plugin::asset('css/plugin.css') . '">';
+});
+```
+
+### `migrations/` {#migrations/}
+
+डेटाबेस माइग्रेशन फ़ाइलें। प्रत्येक फ़ाइल एक `up()` और `down()` मेथड परिभाषित करती है। माइग्रेशन सक्रियण पर स्वचालित रूप से चलते हैं और अनइंस्टॉल पर उलट जाते हैं। ये एक ट्रांज़ैक्शन के भीतर निष्पादित होते हैं।
+
+### `routes/` {#routes/}
+
+कस्टम API और वेब रूट परिभाषाएँ। इसके लिए `api_routes` कैपेबिलिटी आवश्यक है। टकराव से बचने के लिए रूट प्लगइन के स्लग तक सीमित होते हैं।
+
+## संबंधित पेज {#related-pages}
+
+- [मैनिफ़ेस्ट संदर्भ](/hi/developer/plugins/manifest)
+- [प्लगइन लाइफ़साइकल](/hi/developer/plugins/lifecycle)
+- [हुक संदर्भ](/hi/developer/plugins/hooks)
+- [कैपेबिलिटीज़ संदर्भ](/hi/developer/plugins/capabilities)

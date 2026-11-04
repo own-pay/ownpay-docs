@@ -1,0 +1,198 @@
+---
+title: 集成插件开发
+description: "使用支付钩子和出站 API 调用，为 QuickBooks、HubSpot、Slack 等第三方平台构建集成插件。"
+keywords: "集成插件, CRM 集成, ERP 集成, Slack 通知, QuickBooks 同步, HubSpot 集成, 第三方插件"
+sidebarTitle: 集成开发
+icon: plug
+---
+
+集成插件将 OwnPay 连接到外部平台：CRM、ERP、会计软件、分析仪表盘以及通知服务。它们不处理支付，而是响应支付事件并向外推送数据。
+
+## 常见用例 {#common-use-cases}
+
+| 用例 | 示例 | 触发事件 |
+| --- | --- | --- |
+| 会计同步 | QuickBooks、Xero | `payment.completed`、`refund.issued` |
+| CRM 推送 | HubSpot、Salesforce | `customer.created`、`payment.completed` |
+| 通知 | Slack、Discord、Telegram | `payment.completed`、`payment.failed` |
+| 数据分析 | Google Analytics、Mixpanel | `payment.completed` |
+| 欺诈告警 | PagerDuty、OpsGenie | `payment.failed` |
+
+## 目录结构 {#directory-structure}
+
+```text
+plugins/integration-slack/
+├── manifest.json
+├── Plugin.php
+├── src/
+│   └── SlackNotifier.php
+├── config/
+│   └── settings.php
+└── resources/
+    └── views/
+        └── settings.twig
+```
+
+## 清单 {#manifest}
+
+```json
+{
+  "name": "Slack Notifications",
+  "slug": "integration-slack",
+  "version": "1.0.0",
+  "type": "integration",
+  "description": "Send payment events to a Slack channel",
+  "author": "Your Name",
+  "capabilities": ["addon", "hooks", "http_outbound", "settings"],
+  "minimumOwnPayVersion": "0.2.0"
+}
+```
+
+## 完整示例：Slack 通知插件 {#complete-example-slack-notification-plugin}
+
+此插件会在支付完成或失败时向 Slack 发送消息。
+
+### Plugin.php {#plugin-php}
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace OwnPay\Plugins\IntegrationSlack;
+
+use OwnPay\Container;
+use OwnPay\Event\EventManager;
+use OwnPay\Plugin\Capability;
+use OwnPay\Plugin\PluginInterface;
+
+final class Plugin implements PluginInterface
+{
+    public static function metadata(): array
+    {
+        return [
+            'name'        => 'Slack Notifications',
+            'slug'        => 'integration-slack',
+            'version'     => '1.0.0',
+            'description' => 'Send payment events to Slack.',
+            'author'      => 'Your Name',
+            'type'        => 'integration',
+        ];
+    }
+
+    public function capabilities(): array
+    {
+        return [Capability::ADDON, Capability::HOOKS, Capability::HTTP_OUTBOUND];
+    }
+
+    public function register(EventManager $events, Container $container): void
+    {
+        $notifier = new SlackNotifier($container);
+
+        $events->addAction('payment.transaction.completed', function (array $txn) use ($notifier): void {
+            $notifier->send(":white_check_mark: Payment *{$txn['amount']} {$txn['currency']}*\n"
+                . "Transaction: `{$txn['trx_id']}`\n"
+                . "Gateway: {$txn['gateway']}"
+            );
+        });
+
+        $events->addAction('payment.transaction.failed', function (array $txn) use ($notifier): void {
+            $notifier->send(":x: Payment *failed*\n"
+                . "Amount: {$txn['amount']} {$txn['currency']}\n"
+                . "Transaction: `{$txn['trx_id']}`\n"
+                . "Gateway: {$txn['gateway']}"
+            );
+        });
+
+        $events->addAction('refund.issued', function (array $txn) use ($notifier): void {
+            $notifier->send(":arrows_counterclockwise: Refund issued\n"
+                . "Amount: {$txn['amount']} {$txn['currency']}"
+            );
+        });
+    }
+
+    public function boot(Container $container): void {}
+    public function deactivate(Container $container): void {}
+    public function uninstall(Container $container): void {}
+
+    public function fields(): array
+    {
+        return [
+            [
+                'name'     => 'webhook_url',
+                'label'    => 'Slack Webhook URL',
+                'type'     => 'text',
+                'required' => true,
+            ],
+        ];
+    }
+}
+```
+
+### SlackNotifier.php {#slacknotifier-php}
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace OwnPay\Plugins\IntegrationSlack;
+
+use OwnPay\Container;
+use OwnPay\Repository\SettingsRepository;
+
+class SlackNotifier
+{
+    private string $webhookUrl;
+
+    public function __construct(Container $container)
+    {
+        $settings = $container->get(SettingsRepository::class);
+        $this->webhookUrl = $settings->get('integration-slack', 'webhook_url') ?? '';
+    }
+
+    public function send(string $message): void
+    {
+        if ($this->webhookUrl === '') {
+            return;
+        }
+
+        $payload = json_encode(['text' => $message]);
+
+        $ch = curl_init($this->webhookUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 5,
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_POSTFIELDS     => $payload,
+        ]);
+        curl_exec($ch);
+        curl_close($ch);
+    }
+}
+```
+
+## 配置界面 {#configuration-ui}
+
+`fields()` 方法定义了在管理面板中显示的设置表单。这些值按品牌存储，并通过 `SettingsRepository` 访问。
+
+## 错误处理最佳实践 {#error-handling-best-practices}
+
+- 在发起出站调用之前，始终检查 webhook URL 是否已配置
+- 设置较短的 HTTP 超时时间（5 秒），以免钩子回调阻塞结账
+- 绝不要在钩子回调中抛出异常 - 错误隔离包装器虽然会捕获它，但记录日志是更好的做法
+- 记录失败的出站调用以便调试
+
+## 测试 {#testing}
+
+1. 安装并激活插件
+2. 在插件设置中配置 Slack webhook URL
+3. 使用测试卡创建一笔测试支付
+4. 确认 Slack 消息已送达
+
+## 相关页面 {#related-pages}
+
+- [网关插件开发](/zh/developer/plugin-types/gateway)
+- [Addon 插件开发](/zh/developer/plugin-types/addon)
+- [主题插件开发](/zh/developer/plugin-types/theme)
+- [钩子参考](/zh/developer/plugins/hooks)
+- [清单参考](/zh/developer/plugins/manifest)

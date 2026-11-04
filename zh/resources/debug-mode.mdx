@@ -1,0 +1,111 @@
+---
+title: 调试模式
+description: "了解如何启用和使用 OwnPay 的调试模式，以获取详细的错误输出、SQL 查询日志，并排查开发中的问题。"
+keywords: "调试模式, 故障排除, APP_DEBUG, 堆栈跟踪, SQL 日志, 开发"
+sidebarTitle: 调试模式
+icon: bug
+---
+
+调试模式为你提供详细的错误信息，这在开发和故障排除期间非常宝贵。它会显示每个请求的堆栈跟踪、SQL 查询以及完整的中间件管道。
+
+<Warning>
+  **切勿在生产环境中启用调试模式。** 它会在错误页面和日志中暴露敏感信息，包括数据库凭据、加密密钥和内部文件路径。
+</Warning>
+
+---
+
+## 启用调试模式 {#enabling-debug-mode}
+
+在 `.env` 文件中设置环境变量：
+
+```ini
+APP_DEBUG=true
+```
+
+无需重启服务器——更改会在下一个请求时生效。
+
+---
+
+## 调试模式显示的内容 {#what-debug-mode-reveals}
+
+当 `APP_DEBUG=true` 时，OwnPay 会在以下几个方面提供额外信息：
+
+| 方面 | 你会看到的内容 | 生产环境行为 |
+| :-- | :-- | :-- |
+| 错误页面 | 完整的堆栈跟踪、文件路径、行号和代码上下文 | 通用的“出错了”页面 |
+| SQL 查询 | 记录每条查询及其参数和执行时间 | 仅记录错误 |
+| 中间件 | 当前路由的完整中间件管道 | 不显示 |
+| Twig 错误 | 模板名称、行号和渲染上下文 | 通用错误 |
+| 异常详情 | 异常类、消息、前置异常 | 记录但不显示 |
+
+---
+
+## 调试日志 {#debug-logging}
+
+无论 `APP_DEBUG` 如何设置，OwnPay 都会将日志写入 `storage/logs/`。日志级别遵循 PSR-3：
+
+| 级别 | 使用场景 |
+| :-- | :-- |
+| `DEBUG` | 详细信息（仅在 `APP_DEBUG=true` 时写入） |
+| `INFO` | 一般运行信息（cron 运行、迁移） |
+| `WARNING` | 功能降级但仍可用（Webhook 重试、慢查询） |
+| `ERROR` | 需要关注的故障（付款失败、队列任务崩溃） |
+
+<Info>
+  `LogSanitizer` 会自动从所有日志输出中去除密码、API 密钥、加密密钥和卡号。即使在调试模式下，这些值也会显示为 `[REDACTED]`。
+</Info>
+
+---
+
+## 常见调试场景 {#common-debugging-scenarios}
+
+### 付款静默失败 {#payment-failing-silently}
+
+1. 启用调试模式并再次尝试付款
+2. 检查 `storage/logs/` 中的最新条目
+3. 查找特定于网关的错误（超时、身份验证失败、无效响应）
+4. 在 **网关 \> 支付网关** 中确认网关凭据正确
+
+### Webhook 未送达 {#webhook-not-arriving}
+
+1. 在 **开发者 \> Webhook 投递日志** 中检查投递状态和响应码
+2. 如果状态为 `failed`，查看错误消息
+3. 测试端点可达性：`curl -X POST -d '{}' https://your-endpoint.com/webhooks/ownpay`
+4. 如果使用 Cloudflare 或 WAF，请检查其是否拦截了该请求
+
+### 插件未加载 {#plugin-not-loading}
+
+1. 在管理面板的 **插件** 中检查插件状态
+2. 如果状态为 `scan_failed`，说明沙箱拒绝了该代码——检查错误信息中被禁止的函数
+3. 如果状态为 `inactive`，点击 **激活** 并检查是否有迁移错误
+4. 查看 `storage/logs/` 中的插件启动错误
+
+### 结账页面空白 {#blank-checkout-page}
+
+1. 启用调试模式——Twig 编译错误现在会显示模板名称和行号
+2. 检查该品牌是否至少有一个激活的网关
+3. 确认该品牌的主题 CSS 不包含语法错误
+4. 检查浏览器控制台中的 CSP 违规（表示有脚本或样式被拦截）
+
+---
+
+## 禁用调试模式 {#disabling-debug-mode}
+
+完成故障排除后，禁用调试模式：
+
+```ini
+APP_DEBUG=false
+```
+
+清除应用程序缓存，以确保编译后的模板中不会残留任何调试信息：
+
+1. 在管理面板中前往 **设置 \> 缓存**
+2. 点击 **清除所有缓存**
+
+---
+
+## 相关页面 {#related-pages}
+
+- [常见错误](/zh/resources/common-errors) - 具体错误症状及修复方法
+- [常见问题](/zh/resources/faq) - 常见问题解答
+- [性能与扩展](/zh/resources/performance-scaling) - 解决性能问题

@@ -1,0 +1,70 @@
+---
+title: Telegram 通知
+description: 使用 telegram-bot 插件，直接在 Telegram 聊天中接收付款事件的实时推送通知。
+keywords: "telegram, telegram 机器人, 推送通知, telegram 通知, bot token, chat ID"
+sidebarTitle: Telegram
+icon: send
+---
+
+每当发生关键付款事件时，**telegram-bot** 插件都会向 Telegram 聊天发送即时推送通知。这比电子邮件更快，非常适合希望在手机上接收实时提醒的运营人员。
+
+<Note>
+  在配置此插件之前，您需要一个 Telegram Bot API 令牌和一个目标聊天 ID。两者均可免费获取。
+</Note>
+
+## 前提条件 {#prerequisites}
+
+1. 打开 Telegram 并向 **@BotFather** 发送消息
+2. 发送 `/newbot` 并按照提示创建您的机器人
+3. 复制 BotFather 提供给您的 **Bot API Token**
+4. 将机器人添加到群组或频道，或与其开始私聊
+5. 在该聊天中发送一条消息，然后访问 `https://api.telegram.org/bot<TOKEN>/getUpdates` 查找您的**聊天 ID**
+
+## 安装和配置 {#install-and-configure}
+
+<Steps>
+  <Step>
+    安装 **telegram-bot** 插件。安装说明请参阅[插件](/zh/system/addons)。
+  </Step>
+  <Step>
+    前往 **System \> Addons**，找到 **Telegram Bot**，然后点击 **Settings**。
+  </Step>
+  <Step>
+    在相应字段中输入您的 **Bot API Token** 和 **Chat ID**。
+  </Step>
+  <Step>
+    打开 **Active** 开关，并选择哪些品牌应发送 Telegram 通知。
+  </Step>
+  <Step>
+    点击 **Save**。系统会发送一条测试消息以确认连接。
+  </Step>
+</Steps>
+
+## 支持的事件 {#supported-events}
+
+Telegram 机器人会针对以下事件发送通知：
+
+- `payment.completed` - 成功收到付款
+- `payment.failed` - 付款尝试失败
+- `refund.issued` - 退款已处理
+
+每条通知都包含交易金额、货币、网关名称、客户电子邮件（部分）以及指向管理面板中该交易的链接。
+
+<Warning>
+  交易金额和部分客户标识信息会显示在 Telegram 消息中。请仅将机器人添加到私聊或受信任的团队群组中，避免使用公开频道。
+</Warning>
+
+## 故障排除 {#troubleshooting}
+
+| 症状 | 可能原因 | 解决方法 |
+| --- | --- | --- |
+| 机器人收不到更新 | 隐私模式阻止了群组消息 | 向 @BotFather 发送 `/setprivacy`，并为您的机器人选择 **Disable** |
+| `401 Unauthorized` 错误 | 机器人令牌无效或已被撤销 | 通过 @BotFather 重新生成令牌并更新插件设置 |
+| 没有消息送达 | 聊天 ID 错误 | 使用 `getUpdates` 重新获取聊天 ID，并确认机器人是目标聊天的成员 |
+| 消息已送达但缺少详细信息 | 插件未对该品牌启用 | 前往插件设置，确保已为正确的品牌开启 |
+
+## 相关页面 {#related-pages}
+
+- [插件](/zh/system/addons) - 安装和管理插件，包括 telegram-bot
+- [电子邮件通知](/zh/notifications/email) - 通过 SMTP 的替代通知渠道
+- [配套应用](/zh/mobile/companion-app) - 用于基于短信的验证和通知的 Android 应用

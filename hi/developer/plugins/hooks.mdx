@@ -1,0 +1,145 @@
+---
+title: हुक संदर्भ
+description: "डोमेन के अनुसार व्यवस्थित WordPress-शैली के एक्शन और फ़िल्टर हुक की व्यापक सूची: पेमेंट, गेटवे, चेकआउट, सिस्टम, एडमिन और प्लगइन लाइफ़साइकल।"
+keywords: "hooks reference, action hooks, filter hooks, EventManager, payment hooks, gateway hooks, checkout hooks, system hooks"
+sidebarTitle: हुक
+icon: anchor
+---
+
+हुक सिस्टम वह प्राथमिक तरीका है जिससे प्लगइन OwnPay कोर के साथ इंटरैक्ट करते हैं। यह `OwnPay\Event\EventManager` द्वारा लागू किए गए WordPress-शैली के **एक्शन** (फ़ायर-एंड-फ़ॉरगेट) और **फ़िल्टर** (डेटा पाइपलाइन) का उपयोग करता है।
+
+## API सारांश {#api-summary}
+
+### एक्शन {#actions}
+
+```php
+// Register
+$events->addAction(string $hook, callable $callback, int $priority = 10, int $acceptedArgs = 1): void;
+
+// Fire (core only)
+$events->doAction(string $hook, mixed ...$args): void;
+```
+
+### फ़िल्टर {#filters}
+
+```php
+// Register
+$events->addFilter(string $hook, callable $callback, int $priority = 10, int $acceptedArgs = 2): void;
+
+// Apply (core only)
+$result = $events->applyFilter(string $hook, mixed $value, mixed ...$args): mixed;
+```
+
+कॉलबैक बढ़ते प्राथमिकता क्रम में निष्पादित होते हैं (कम संख्या = पहले चलता है)। डिफ़ॉल्ट प्राथमिकता 10 है।
+
+## एक्शन बनाम फ़िल्टर का उपयोग कब करें {#when-to-use-actions-vs-filters}
+
+| एक्शन का उपयोग करें जब आप... | फ़िल्टर का उपयोग करें जब आप... |
+| --- | --- |
+| किसी इवेंट पर प्रतिक्रिया देना चाहें (पेमेंट पूर्ण) | डेटा को सहेजे जाने से पहले बदलना चाहें |
+| नोटिफ़िकेशन भेजना चाहें | टेम्पलेट पाथ बदलना चाहें |
+| किसी बाहरी API पर लिखना चाहें | किसी सूची में आइटम जोड़ना या हटाना चाहें |
+| कुछ लॉग करना चाहें | पाइपलाइन में किसी मान को रूपांतरित करना चाहें |
+
+## हुक कैटलॉग {#hook-catalog}
+
+### पेमेंट हुक {#payment-hooks}
+
+| हुक | प्रकार | पैरामीटर | विवरण |
+| --- | --- | --- | --- |
+| `payment.intent.created` | एक्शन | `array $intent` | चेकआउट इंटेंट जनरेट हुआ |
+| `payment.intent.expired` | एक्शन | `array $intent` | बिना पेमेंट के इंटेंट का समय समाप्त हुआ |
+| `payment.transaction.created` | एक्शन | `array $transaction` | ट्रांज़ैक्शन `pending` के रूप में दर्ज हुआ |
+| `payment.transaction.completed` | एक्शन | `array $transaction` | ट्रांज़ैक्शन सफलतापूर्वक सेटल हुआ |
+| `payment.transaction.failed` | एक्शन | `array $transaction` | ट्रांज़ैक्शन अस्वीकृत या त्रुटिपूर्ण |
+| `payment.transaction.cancelled` | एक्शन | `array $transaction` | ग्राहक ने रद्द किया |
+| `payment.transaction.before_create` | फ़िल्टर | `array $data`, `int $merchantId` → `array` | DB में इन्सर्ट से पहले कॉलम बदलें |
+| `payment.amount.calculate` | फ़िल्टर | `string $amount`, `array $context` → `string` | राशि समायोजित करें (शुल्क, सरचार्ज) |
+| `payment.fee.calculate` | फ़िल्टर | `string $fee`, `array $context` → `string` | डायनामिक सेटलमेंट शुल्क ओवरराइड करें |
+
+### गेटवे हुक {#gateway-hooks}
+
+| हुक | प्रकार | पैरामीटर | विवरण |
+| --- | --- | --- | --- |
+| `gateway.capture.before` | फ़िल्टर | `array $params`, `string $slug`, `int $merchantId` → `array` | गेटवे एडैप्टर को भेजे गए पैरामीटर बदलें |
+| `gateway.capture.after` | एक्शन | `array $response`, `string $slug` | गेटवे द्वारा रिस्पॉन्स लौटाने के बाद |
+| `gateway.webhook.{slug}` | एक्शन | `array $payload`, `string $slug` | किसी विशिष्ट गेटवे स्लग के लिए आने वाला वेबहुक |
+
+<Note>
+  `gateway.webhook.{slug}` में `{slug}` को गेटवे प्लगइन के स्लग से बदल दिया जाता है (उदाहरण के लिए `gateway.webhook.gateway-stripe`)।
+</Note>
+
+### चेकआउट हुक {#checkout-hooks}
+
+| हुक | प्रकार | पैरामीटर | विवरण |
+| --- | --- | --- | --- |
+| `checkout.before` | एक्शन | `array $transaction` | चेकआउट लेआउट रेंडर होने से पहले |
+| `checkout.render` | फ़िल्टर | `array $data` → `array` | Twig व्यू कॉन्टेक्स्ट वेरिएबल फ़िल्टर करें |
+| `checkout.template` | फ़िल्टर | `string $templatePath` → `string` | लेआउट टेम्पलेट पाथ ओवरराइड करें |
+| `checkout.status.template` | फ़िल्टर | `string $templatePath` → `string` | परिणाम पेज टेम्पलेट ओवरराइड करें |
+| `checkout.head` | एक्शन | कोई नहीं | `<link>` और `<style>` टैग इंजेक्ट करें |
+| `checkout.footer` | एक्शन | कोई नहीं | `<script>` टैग इंजेक्ट करें |
+| `checkout.gateway.selected` | एक्शन | `array $transaction`, `string $gateway` | ग्राहक ने एक गेटवे चुना |
+| `checkout.manual_verify.submitted` | एक्शन | `array $transaction`, `array $proof` | मैन्युअल रसीद अपलोड की गई |
+| `checkout.csp.sources` | फ़िल्टर | `array $sources` → `array` | अनुमत Content-Security-Policy ऑरिजिन जोड़ें |
+
+### सिस्टम हुक {#system-hooks}
+
+| हुक | प्रकार | पैरामीटर | विवरण |
+| --- | --- | --- | --- |
+| `system.boot` | एक्शन | कोई नहीं | प्रारंभिक बूटस्ट्रैप |
+| `system.shutdown` | एक्शन | कोई नहीं | सुव्यवस्थित शटडाउन |
+| `system.request` | फ़िल्टर | `Request $request` → `Request` | आने वाली HTTP रिक्वेस्ट फ़िल्टर करें |
+| `system.response` | फ़िल्टर | `Response $response`, `Request $request` → `Response` | अंतिम रिस्पॉन्स पेलोड फ़िल्टर करें |
+| `system.middleware.pipeline` | फ़िल्टर | `array $middleware` → `array` | ग्लोबल मिडलवेयर जोड़ें या हटाएँ |
+
+### एडमिन हुक {#admin-hooks}
+
+| हुक | प्रकार | पैरामीटर | विवरण |
+| --- | --- | --- | --- |
+| `admin.middleware` | फ़िल्टर | `array $middleware` → `array` | एडमिन-विशिष्ट मिडलवेयर जोड़ें |
+| `admin.menu` | एक्शन | कोई नहीं | एडमिन साइडबार में आइटम जोड़ें |
+
+### प्लगइन लाइफ़साइकल हुक {#plugin-lifecycle-hooks}
+
+| हुक | प्रकार | पैरामीटर | विवरण |
+| --- | --- | --- | --- |
+| `plugin.installed` | एक्शन | `string $slug`, `array $manifest` | ZIP एक्सट्रैक्शन के बाद |
+| `plugin.activated` | एक्शन | `string $slug`, `int $migrationsCount`, `int $brandId` | सक्रियण पूर्ण |
+| `plugin.deactivated` | एक्शन | `string $slug`, `int $brandId` | प्लगइन निलंबित |
+| `plugin.uninstalled` | एक्शन | `string $slug` | फ़ाइलें हटाई गईं |
+
+## हुक रजिस्ट्रेशन पैटर्न {#hook-registration-pattern}
+
+सभी हुक अपने प्लगइन के `register()` मेथड के अंदर रजिस्टर करें। हुक स्वचालित रूप से आपके प्लगइन स्लग से जोड़े जाते हैं और निष्क्रिय करने पर साफ़ कर दिए जाते हैं:
+
+```php
+public function register(EventManager $events, Container $container): void
+{
+    $events->addAction('payment.transaction.completed', function (array $txn) use ($container): void {
+        $service = $container->get(NotificationService::class);
+        $service->notify($txn);
+    }, priority: 15);
+
+    $events->addFilter('payment.fee.calculate', function (string $fee, array $ctx): string {
+        return bcadd($fee, '0.50', 2); // flat $0.50 fee add-on
+    }, priority: 20);
+}
+```
+
+## आर्किटेक्चरल इनवेरिएंट {#architectural-invariants}
+
+इन बाधाओं को कोई भी प्लगइन बायपास नहीं कर सकता:
+
+1. **सुरक्षा मिडलवेयर हटाया नहीं जा सकता** - आप पाइपलाइन से ऑथेंटिकेशन, CSRF या TenantScope मिडलवेयर नहीं हटा सकते
+2. **TenantScope बायपास नहीं किया जा सकता** - हर रिक्वेस्ट एक ब्रांड तक सीमित होती है; कोई प्लगइन अन्य ब्रांड के डेटा तक नहीं पहुँच सकता
+3. **एरर आइसोलेशन** - हर कॉलबैक अपने स्वयं के try/catch में चलता है। विफल होने वाला प्लगइन कभी भी कोर को क्रैश नहीं करता
+4. **पैसे के लिए BCMath** - हुक में सभी मौद्रिक मानों को `bcadd`, `bcsub`, `bcmul`, `bcdiv`, `bccomp` का उपयोग करना होगा
+5. **हुक से लेजर में कोई राइट नहीं** - प्लगइन डबल-एंट्री लेजर में सीधे पोस्ट नहीं कर सकते
+
+## संबंधित पेज {#related-pages}
+
+- [इवेंट संदर्भ](/hi/developer/plugins/events)
+- [कैपेबिलिटीज़ संदर्भ](/hi/developer/plugins/capabilities)
+- [प्लगइन लाइफ़साइकल](/hi/developer/plugins/lifecycle)
+- [प्लगइन अवलोकन](/hi/developer/plugins/overview)

@@ -1,0 +1,94 @@
+---
+title: "插件系统 - 可扩展架构"
+description: "OwnPay 如何通过网关、附加组件、主题和集成插件扩展其核心，使用基于清单的发现机制、钩子、能力声明和插件沙箱。"
+keywords: "插件系统, 插件架构, 网关插件, 主题插件, 附加组件插件, 集成插件, 钩子, 过滤器, 能力"
+sidebarTitle: "插件"
+icon: "puzzle"
+---
+
+import LlmsDirective from "/zh/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+OwnPay 的核心负责路由、账本、品牌和结账框架。其余的一切——支付提供商、自定义主题、额外功能和第三方集成——都通过**插件**提供。这意味着您无需修改任何一行核心代码即可扩展 OwnPay。
+
+## 四种插件类型 {#four-plugin-types}
+
+<CardGroup cols={2}>
+  <Card title="网关" icon="wallet">
+    添加新的支付提供商。每个网关插件都实现支付适配器契约：处理付款、处理回调、管理退款并声明支持的货币。示例：Stripe、bKash、Razorpay。
+  </Card>
+
+  <Card title="附加组件" icon="circle-plus">
+    为管理面板或结账页面添加功能。附加组件可以注册管理页面、API 端点、计划任务和 UI 组件。示例：订阅管理、CRM 同步、高级报表。
+  </Card>
+
+  <Card title="主题" icon="palette">
+    自定义结账体验。主题插件提供 Twig 模板、CSS、JavaScript 和资源文件，可按品牌覆盖默认的结账外观。
+  </Card>
+
+  <Card title="集成" icon="plug">
+    将 OwnPay 连接到外部平台。集成插件负责处理 OAuth 流程、数据同步以及 WooCommerce、WHMCS、Laravel 和其他框架的 Webhook 转换。
+  </Card>
+</CardGroup>
+
+## 基于清单的发现机制 {#manifest-based-discovery}
+
+每个插件都位于 `modules/` 目录中，并通过 `manifest.json` 文件声明自身。OwnPay 的插件加载器会在启动时扫描该目录，读取每个清单、校验结构，并将插件注册到 PSR-4 自动加载器。
+
+```json
+{
+  "slug": "stripe",
+  "name": "Stripe Payment Gateway",
+  "version": "1.0.0",
+  "type": "gateway",
+  "entrypoint": "src/StripeGateway.php",
+  "namespace": "OwnPay\\Gateways\\Stripe"
+}
+```
+
+<Tree />
+
+## 钩子系统 {#hook-system}
+
+插件通过两种机制与 OwnPay 以及彼此进行交互：
+
+**过滤器**在操作执行前修改数据：
+
+```php
+// A plugin adjusts the payment amount
+$amount = Hook::apply('payment.amount', $amount, $payment);
+```
+
+**动作**在事件发生后作出响应：
+
+```php
+// A plugin sends a Slack notification after payment completes
+Hook::do('payment.completed', $payment);
+```
+
+OwnPay 提供 60 多个钩子，涵盖 `payment.*`、`customer.*`、`gateway.*`、`webhook.*` 和 `system.*` 等类别。
+
+## 能力系统 {#capabilities-system}
+
+插件通过其清单中的 **capabilities** 数组声明所需的能力。OwnPay 在加载插件之前会检查这些能力。这使系统能够在激活前提醒管理员缺少的依赖项。
+
+常见能力：`payment_processing`、`admin_ui`、`cron_jobs`、`webhook_handler`、`api_endpoints`。
+
+## 插件沙箱 {#plugin-sandbox}
+
+OwnPay 仅允许平台所有者（主管理员）上传插件。上传时会运行一个**危险操作扫描器**，阻止 `eval()` 和直接执行操作系统命令等危险函数。标准的 PHP 操作——反射、回调、文件 I/O——是允许的。
+
+<Note>
+  安全边界是**仅限所有者上传**，而不是进程内隔离。插件以完整的应用程序信任级别运行，类似于 WordPress 插件模型。请仅安装来自您信任来源的插件。
+</Note>
+
+## 相关页面 {#related-pages}
+
+- [插件概览（开发者）](/zh/developer/plugins/overview) - 构建并注册您的第一个插件
+- [钩子参考](/zh/developer/plugins/hooks) - 可用过滤器和动作的完整列表
+- [事件参考](/zh/developer/plugins/events) - 事件类别和监听器注册
+- [能力](/zh/developer/plugins/capabilities) - 声明和检查插件能力
+- [构建网关插件](/zh/developer/plugin-types/gateway) - 分步网关开发指南

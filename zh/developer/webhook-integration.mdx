@@ -1,0 +1,39 @@
+---
+title: "Webhook 集成教程"
+description: "端到端教程：构建一个监听 payment.completed 事件的 Webhook 接收端，附带完整的 PHP 和 Node.js 代码示例。"
+keywords: "Webhook 教程, Webhook 接收端, 支付完成, Webhook 集成, PHP Webhook, Node.js Webhook, Express Webhook"
+sidebarTitle: "Webhook 集成"
+icon: "link"
+---
+
+在本教程中，您将构建一个 Webhook 接收端，用于监听来自 OwnPay 的 `payment.completed` 事件并更新您的订单数据库。完成后，您将拥有一个可用于生产环境的 PHP 或 Node.js 端点。
+
+## 您将构建什么 {#what-you-will-build}
+
+一个单独的端点（`/webhooks/ownpay`），它会：
+
+1. 验证 HMAC-SHA256 签名
+2. 解析事件负载
+3. 更新数据库中的订单状态
+4. 返回正确的 HTTP 响应码
+
+## 前提条件 {#prerequisites}
+
+- 一个已在 **Developers → Webhooks** 中配置了 Webhook 端点的 OwnPay 实例
+- 一个 Webhook 签名密钥（在创建端点时显示）
+- PHP 8.1\+ 或 Node.js 18\+（搭配 Express）
+
+### 安全最佳实践 {#security-best-practices}
+
+- 对**每一个**请求都验证签名——切勿跳过
+- 拒绝时间戳超过 5 分钟的事件，以防止重放攻击
+- 只处理您已注册的事件——忽略未知的事件类型
+- 仅使用 HTTPS——OwnPay 从不向 HTTP 端点发送 Webhook
+- 将 Webhook 密钥保存在环境变量中，切勿写入代码
+
+## 相关页面 {#related-pages}
+
+- [Webhooks](/zh/api/webhooks)
+- [API 概览](/zh/api/overview)
+- [错误码](/zh/api/errors)
+- [测试支付](/zh/developer/testing)

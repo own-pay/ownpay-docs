@@ -1,0 +1,84 @@
+---
+title: इवेंट सिस्टम
+description: "OwnPay कोर द्वारा डिस्पैच किए जाने वाले बिल्ट-इन इवेंट, प्लगइन में उन्हें कैसे सुनें, और इवेंट व हुक के बीच का अंतर।"
+keywords: "event system, payment events, event listeners, event dispatcher, events vs hooks"
+sidebarTitle: इवेंट
+icon: radio
+---
+
+OwnPay `EventManager` के माध्यम से आंतरिक इवेंट डिस्पैच करता है जिन्हें प्लगइन सुन सकते हैं। इवेंट हुक से अलग हैं और एक भिन्न आर्किटेक्चरल उद्देश्य पूरा करते हैं।
+
+## इवेंट बनाम हुक {#events-vs-hooks}
+
+| पहलू | इवेंट | हुक |
+| --- | --- | --- |
+| दिशा | कोर फ़ायर करता है → प्लगइन सुनते हैं | कोर फ़ायर या रूपांतरित करता है → प्लगइन भाग लेते हैं |
+| रिटर्न मान | अनदेखा किया जाता है | फ़िल्टर को एक मान लौटाना होगा |
+| क्यूइंग | एसिंक हैंडलिंग के लिए क्यू किए जा सकते हैं | हमेशा सिंक्रोनस |
+| सामान्य उपयोग | डोमेन इवेंट, साइड इफ़ेक्ट | डेटा परिवर्तन, टेम्पलेट ओवरराइड |
+| API | `$events->addListener()` | `$events->addAction()` / `$events->addFilter()` |
+
+<Tip>
+  जब आपको एसिंक प्रोसेसिंग की आवश्यकता हो (उदाहरण के लिए पेमेंट के बाद ईमेल भेजना) तो इवेंट का उपयोग करें। जब आपको प्रवाह के दौरान डेटा बदलना हो तो हुक का उपयोग करें।
+</Tip>
+
+## प्लगइन में इवेंट सुनना {#listening-to-events-in-plugins}
+
+```php
+public function register(EventManager $events, Container $container): void
+{
+    $events->addListener(
+        \OwnPay\Events\PaymentCompleted::class,
+        function (PaymentCompleted $event) use ($container): void {
+            $container->get(AnalyticsService::class)->track($event->transaction);
+        }
+    );
+}
+```
+
+## बिल्ट-इन इवेंट {#built-in-events}
+
+| इवेंट क्लास | कब डिस्पैच होता है | मुख्य प्रॉपर्टीज़ |
+| --- | --- | --- |
+| `PaymentCompleted` | ट्रांज़ैक्शन सेटल हुआ | `transaction: array` |
+| `PaymentFailed` | ट्रांज़ैक्शन अस्वीकृत हुआ | `transaction: array`, `reason: string` |
+| `PaymentExpired` | इंटेंट का समय समाप्त हुआ | `intent: array` |
+| `RefundIssued` | रिफ़ंड शुरू हुआ | `refund: array`, `transaction: array` |
+| `RefundCompleted` | रिफ़ंड गेटवे पर सेटल हुआ | `refund: array` |
+| `RefundFailed` | गेटवे द्वारा रिफ़ंड अस्वीकृत | `refund: array`, `reason: string` |
+| `CustomerCreated` | नया ग्राहक रिकॉर्ड | `customer: array` |
+| `DisputeOpened` | चार्जबैक प्राप्त हुआ | `dispute: array` |
+| `DisputeResolved` | विवाद का परिणाम अंतिम हुआ | `dispute: array`, `outcome: string` |
+| `PluginInstalled` | प्लगइन ZIP एक्सट्रैक्ट हुआ | `slug: string`, `manifest: array` |
+| `PluginActivated` | किसी ब्रांड के लिए प्लगइन सक्रिय हुआ | `slug: string`, `brandId: int` |
+| `PluginDeactivated` | प्लगइन निष्क्रिय हुआ | `slug: string`, `brandId: int` |
+| `DomainMapped` | कस्टम डोमेन लिंक हुआ | `domain: string`, `merchantId: int` |
+| `DomainVerified` | DNS सत्यापन सफल हुआ | `domain: string`, `merchantId: int` |
+| `UpdateAvailable` | नया रिलीज़ पाया गया | `latestVersion: string` |
+
+## इवेंट लिसनर रजिस्ट्रेशन {#event-listener-registration}
+
+```php
+// Synchronous listener (default)
+$events->addListener(PaymentCompleted::class, function (PaymentCompleted $event): void {
+    // Runs immediately, blocks until done
+});
+
+// Queued listener (async via Redis)
+$events->addListener(PaymentCompleted::class, SendReceiptListener::class, queued: true);
+```
+
+<Info>
+  क्यू किए गए लिसनर के लिए Redis का कॉन्फ़िगर होना आवश्यक है। लिसनर क्लास को `__invoke(PaymentCompleted $event)` लागू करना होगा।
+</Info>
+
+## एरर हैंडलिंग {#error-handling}
+
+इवेंट लिसनर हुक की तरह ही उसी एरर-आइसोलेशन रैपर के अंदर चलते हैं। यदि कोई लिसनर एक्सेप्शन थ्रो करता है, तो एरर लॉग हो जाती है और इवेंट अगले लिसनर तक जारी रहता है।
+
+## संबंधित पेज {#related-pages}
+
+- [हुक संदर्भ](/hi/developer/plugins/hooks)
+- [कैपेबिलिटीज़ संदर्भ](/hi/developer/plugins/capabilities)
+- [प्लगइन लाइफ़साइकल](/hi/developer/plugins/lifecycle)
+- [प्लगइन अवलोकन](/hi/developer/plugins/overview)

@@ -1,0 +1,710 @@
+---
+title: "Node.js SDK - TypeScript-फ़र्स्ट पेमेंट इंटीग्रेशन"
+description: "स्वचालित पुनः प्रयास और वेबहुक सत्यापन वाले आधिकारिक zero-dependency TypeScript SDK के साथ OwnPay को Node.js 18+ ऐप्स में इंटीग्रेट करें।"
+keywords: "Node.js payment SDK, TypeScript payment integration, OwnPay Node.js, npm payment package, webhook verification Node.js"
+sidebarTitle: "Node.js"
+icon: "braces"
+---
+
+आधिकारिक OwnPay Node.js SDK आपके सर्वर-साइड में पेमेंट इंटीग्रेट करने के लिए एक zero-dependency, TypeScript-फ़र्स्ट पैकेज है। यह बिल्ट-इन पुनः प्रयास और वेबहुक सिग्नेचर सत्यापन के साथ नेटिव `fetch` और `crypto` मॉड्यूल का उपयोग करता है।
+
+<CardGroup cols={2}>
+  <Card title="npm" icon="box" href="https://www.npmjs.com/package/ownpay-nodejs">
+    npm, yarn, या pnpm के माध्यम से इंस्टॉल करें।
+  </Card>
+
+  <Card title="GitHub" icon="brand-github" href="https://github.com/own-pay/ownpay-nodejs">
+    सोर्स कोड देखें, बग रिपोर्ट करें, या योगदान दें।
+  </Card>
+</CardGroup>
+
+## पूर्वापेक्षाएँ {#prerequisites}
+
+- Node.js 18 या उससे ऊपर
+- Admin \> Developer Hub से एक OwnPay API कुंजी
+
+## इंस्टॉलेशन {#installation}
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install ownpay-nodejs
+    ```
+  </Tab>
+  <Tab title="yarn">
+    ```bash
+    yarn add ownpay-nodejs
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm add ownpay-nodejs
+    ```
+  </Tab>
+</Tabs>
+
+## क्लाइंट इनिशियलाइज़ करें {#initialize-the-client}
+
+<Tabs>
+  <Tab title="ESM">
+    ```typescript
+    import OwnPay from 'ownpay-nodejs';
+    
+    // Simple initialization
+    const client = new OwnPay('op_live_abc123.def456');
+    
+    // With configuration options
+    const client = new OwnPay({
+      apiKey: 'op_live_abc123.def456',
+      timeout: 30000,       // Request timeout in ms (default: 30000)
+      maxRetries: 2,        // Max retry attempts (default: 2)
+      baseUrl: 'https://api.ownpay.com',  // Custom API URL (optional)
+    });
+    ```
+  </Tab>
+  <Tab title="CommonJS">
+    ```javascript
+    const OwnPay = require('ownpay-nodejs');
+    
+    const client = new OwnPay('op_live_abc123.def456');
+    ```
+  </Tab>
+</Tabs>
+
+<Info>
+  अपनी API कुंजी को एनवायरनमेंट वेरिएबल में संग्रहीत करें। इसे कभी भी वर्ज़न कंट्रोल में कमिट न करें।
+</Info>
+
+```typescript
+const client = new OwnPay(process.env.OWNPAY_API_KEY!);
+```
+
+## पेमेंट बनाना {#creating-payments}
+
+```typescript
+const payment = await client.payments.create({
+  amount: '100.00',
+  currency: 'BDT',
+  customer_email: 'customer@example.com',
+  customer_name: 'John Doe',
+  callback_url: 'https://your-app.com/webhook',
+  redirect_url: 'https://your-app.com/success',
+  cancel_url: 'https://your-app.com/cancel',
+  reference: 'ORDER-12345',
+  metadata: {
+    order_id: '12345',
+    product: 'Widget',
+  },
+});
+
+console.log('Payment ID:', payment.payment_id);
+console.log('Checkout URL:', payment.checkout_url);
+// Redirect customer to payment.checkout_url
+```
+
+### पैरामीटर {#parameters}
+
+| पैरामीटर | प्रकार | आवश्यक | विवरण |
+| --- | --- | --- | --- |
+| `amount` | `string \| number` | हाँ | पेमेंट राशि (धनात्मक संख्या) |
+| `currency` | `string` | हाँ | 3-अक्षर का ISO करेंसी कोड (उदाहरण के लिए, `BDT`, `USD`) |
+| `callback_url` | `string` | नहीं | वेबहुक नोटिफ़िकेशन URL |
+| `redirect_url` | `string` | नहीं | सफलता पर रीडायरेक्ट URL |
+| `cancel_url` | `string` | नहीं | रद्द करने पर रीडायरेक्ट URL |
+| `customer_email` | `string` | नहीं | ग्राहक का ईमेल पता |
+| `customer_name` | `string` | नहीं | ग्राहक का नाम (अधिकतम 150 कैरेक्टर) |
+| `customer_phone` | `string` | नहीं | ग्राहक का फ़ोन (अधिकतम 30 कैरेक्टर) |
+| `reference` | `string` | नहीं | मर्चेंट रेफ़रेंस ID |
+| `gateway` | `string` | नहीं | पसंदीदा पेमेंट गेटवे |
+| `metadata` | `Record<string, unknown>` | नहीं | कस्टम key-value मेटाडेटा |
+
+### रिटर्न टाइप {#return-type}
+
+```typescript
+interface PaymentIntent {
+  payment_id: string;   // Unique payment UUID
+  token: string;        // Payment intent token
+  checkout_url: string; // URL for customer payment
+  status: string;       // Current status
+}
+```
+
+## पेमेंट स्टेटस जाँचना {#checking-payment-status}
+
+```typescript
+const payment = await client.payments.get('payment-uuid-here');
+
+console.log('Status:', payment.status);
+console.log('Amount:', payment.amount);
+console.log('Currency:', payment.currency);
+
+if (payment.status === 'completed') {
+  console.log('Payment completed!');
+}
+```
+
+## पेमेंट फ़्लो {#payment-flow}
+
+एक सामान्य चेकआउट फ़्लो इस तरह दिखता है:
+
+```text
+Customer clicks "Pay"
+       |
+       v
+client.payments.create() -> get checkout_url
+       |
+       v
+Redirect customer to OwnPay checkout
+       |
+       v
+Customer completes or cancels payment
+       |
+       v
+OwnPay sends webhook -> verifyWebhookSignature()
+       |
+       v
+Your handler updates order status
+```
+
+### पूरा उदाहरण {#complete-example}
+
+```typescript
+import OwnPay from 'ownpay-nodejs';
+
+const client = new OwnPay(process.env.OWNPAY_API_KEY!);
+
+async function createOrder(amount: string, customerEmail: string) {
+  // 1. Create customer (optional)
+  const customer = await client.customers.create({
+    name: 'Customer',
+    email: customerEmail,
+  });
+
+  // 2. Create payment
+  const payment = await client.payments.create({
+    amount,
+    currency: 'BDT',
+    customer_email: customerEmail,
+    customer_name: 'Customer',
+    callback_url: 'https://your-app.com/webhook',
+    redirect_url: 'https://your-app.com/success',
+    cancel_url: 'https://your-app.com/cancel',
+    reference: `ORDER-${Date.now()}`,
+    metadata: {
+      customer_id: customer.uuid,
+    },
+  });
+
+  // 3. Return checkout URL for customer redirect
+  return {
+    payment_id: payment.payment_id,
+    checkout_url: payment.checkout_url,
+  };
+}
+
+async function checkPaymentStatus(paymentId: string) {
+  const payment = await client.payments.get(paymentId);
+
+  switch (payment.status) {
+    case 'completed':
+      return { success: true, message: 'Payment completed' };
+    case 'pending':
+      return { success: false, message: 'Payment pending' };
+    case 'failed':
+      return { success: false, message: 'Payment failed' };
+    default:
+      return { success: false, message: `Status: ${payment.status}` };
+  }
+}
+```
+
+## वेबहुक हैंडलिंग {#webhook-handling}
+
+### वेबहुक सिग्नेचर सत्यापित करें {#verify-webhook-signatures}
+
+यह सुनिश्चित करने के लिए कि पेलोड OwnPay से ही आए हैं, हमेशा वेबहुक सिग्नेचर सत्यापित करें।
+
+```typescript
+import express from 'express';
+import OwnPay, { verifyWebhookSignature } from 'ownpay-nodejs';
+
+const app = express();
+const client = new OwnPay(process.env.OWNPAY_API_KEY!);
+
+// IMPORTANT: Use raw body for webhook verification
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  try {
+    const signature = req.headers['x-ownpay-signature'] as string;
+    const timestamp = req.headers['x-ownpay-timestamp'] as string;
+
+    // Verify signature
+    verifyWebhookSignature({
+      payload: req.body,
+      signature,
+      secret: process.env.OWNPAY_WEBHOOK_SECRET!,
+      timestamp,
+    });
+
+    // Parse and handle event
+    const event = JSON.parse(req.body.toString());
+
+    switch (event.event) {
+      case 'payment.completed':
+        console.log(`Payment completed: ${event.transaction_id}`);
+        // Update order status, send confirmation, etc.
+        break;
+      case 'payment.failed':
+        console.log(`Payment failed: ${event.transaction_id}`);
+        // Notify customer, retry logic, etc.
+        break;
+      case 'refund.completed':
+        console.log(`Refund for ${event.transaction_id} completed`);
+        // Update records, notify customer
+        break;
+    }
+
+    res.status(200).json({ received: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(400).json({ error: 'Invalid webhook' });
+  }
+});
+
+app.listen(3000);
+```
+
+<Warning>
+  वेबहुक सिग्नेचर सत्यापन के लिए आपको रॉ अनुरोध बॉडी (पार्स किया हुआ JSON नहीं) का उपयोग करना होगा। Express में, `express.raw({ type: 'application/json' })` middleware का उपयोग करें।
+</Warning>
+
+### वेबहुक इवेंट संरचना {#webhook-event-structure}
+
+```typescript
+interface WebhookPayload {
+  event: string;              // for example, 'payment.completed'
+  transaction_id: string;     // OwnPay transaction reference
+  gateway_trx_id: string;     // Gateway transaction ID
+  amount: string;             // Transaction amount
+  currency: string;           // Currency code
+  fee: string;                // Processing fee
+  gateway: string;            // Gateway slug
+  gateway_type: string;       // Gateway type
+  status: string;             // Transaction status
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  metadata: Record<string, unknown>;
+  timestamp: string;          // ISO timestamp
+}
+```
+
+## ट्रांज़ैक्शन {#transactions}
+
+```typescript
+// List with filters and pagination
+const result = await client.transactions.list({
+  page: 1,
+  per_page: 50,
+  status: 'completed',
+  gateway: 'bkash',
+  from: '2024-01-01',
+  to: '2024-01-31',
+});
+
+console.log('Transactions:', result.items);
+console.log('Total:', result.meta.total);
+console.log('Pages:', result.meta.total_pages);
+
+// Get a specific transaction
+const transaction = await client.transactions.get('OP-ABC123');
+```
+
+### ट्रांज़ैक्शन रिपोर्टिंग {#transaction-reporting}
+
+```typescript
+async function getTransactionReport(startDate: string, endDate: string) {
+  const result = await client.transactions.list({
+    from: startDate,
+    to: endDate,
+    per_page: 100,
+  });
+
+  const totalAmount = result.items.reduce(
+    (sum, txn) => sum + parseFloat(txn.amount), 0
+  );
+  const totalFees = result.items.reduce(
+    (sum, txn) => sum + parseFloat(txn.fee), 0
+  );
+
+  return {
+    transactions: result.items,
+    total: result.meta.total,
+    totalAmount,
+    totalFees,
+    netAmount: totalAmount - totalFees,
+  };
+}
+```
+
+## रिफ़ंड {#refunds}
+
+```typescript
+// Full refund
+const refund = await client.refunds.create({
+  transaction_id: 'OP-ABC123',
+  reason: 'Customer request',
+});
+
+// Partial refund
+const refund = await client.refunds.create({
+  transaction_id: 'OP-ABC123',
+  amount: '50.00',
+  reason: 'Partial return',
+});
+
+// List refunds
+const refunds = await client.refunds.list({ page: 1 });
+
+// Get refund by transaction reference
+const refund = await client.refunds.get('OP-ABC123');
+```
+
+## ग्राहक {#customers}
+
+```typescript
+// Create customer
+const customer = await client.customers.create({
+  name: 'Jane Smith',
+  email: 'jane@example.com',
+  phone: '+8801712345678',
+});
+
+console.log('Customer ID:', customer.id);
+console.log('Customer UUID:', customer.uuid);
+
+// List customers with pagination
+const customers = await client.customers.list({ page: 1 });
+
+// Get customer by email or phone
+const customer = await client.customers.get('jane@example.com');
+const customer = await client.customers.get('+8801712345678');
+```
+
+## API कुंजी प्रबंधन {#api-key-management}
+
+<Warning>
+  API कुंजी ऑपरेशन के लिए `write` और `admin` दोनों स्कोप वाली API कुंजी आवश्यक है, और उनमें `X-Super-Admin-Email` हेडर शामिल होना चाहिए।
+</Warning>
+
+```typescript
+// List all API keys
+const keys = await client.apiKeys.list({
+  headers: { 'X-Super-Admin-Email': 'admin@example.com' },
+});
+
+// Generate new key
+const result = await client.apiKeys.generate(
+  {
+    name: 'Production Key',
+    scopes: ['read', 'write'],
+  },
+  {
+    headers: { 'X-Super-Admin-Email': 'admin@example.com' },
+  }
+);
+
+// IMPORTANT: Store this key securely! It cannot be retrieved again.
+console.log('New API Key:', result.key);
+
+// Revoke key
+await client.apiKeys.revoke(keyId, {
+  headers: { 'X-Super-Admin-Email': 'admin@example.com' },
+});
+```
+
+## वेबहुक यूटिलिटी {#webhook-utilities}
+
+```typescript
+// Send test webhook to configured endpoint
+const result = await client.webhooks.test();
+console.log('Status Code:', result.status_code);
+console.log('Response Time:', result.response_time_ms, 'ms');
+
+// List recent webhook deliveries
+const deliveries = await client.webhooks.deliveries();
+```
+
+## हेल्थ चेक {#health-check}
+
+```typescript
+const health = await client.health.check();
+
+console.log('Status:', health.status);       // 'healthy' or 'degraded'
+console.log('Version:', health.version);
+console.log('Database:', health.db);         // 'connected' or 'error'
+console.log('Gateways:', health.gateways);
+console.log('Customers:', health.customers);
+```
+
+## त्रुटि हैंडलिंग {#error-handling}
+
+सटीक त्रुटि हैंडलिंग के लिए SDK एक व्यापक त्रुटि पदानुक्रम प्रदान करता है।
+
+```typescript
+import OwnPay, {
+  AuthenticationError,
+  PermissionError,
+  NotFoundError,
+  ValidationError,
+  RateLimitError,
+  IdempotencyError,
+  ApiError,
+  NetworkError,
+  AbortError,
+} from 'ownpay-nodejs';
+
+try {
+  const payment = await client.payments.create({
+    amount: '100.00',
+    currency: 'BDT',
+  });
+} catch (error) {
+  if (error instanceof AuthenticationError) {
+    console.error('Authentication failed:', error.message);
+  } else if (error instanceof ValidationError) {
+    console.error('Validation failed:', error.message);
+    console.error('Field errors:', error.getFieldErrors());
+  } else if (error instanceof NotFoundError) {
+    console.error('Not found:', error.message);
+  } else if (error instanceof RateLimitError) {
+    console.error(`Rate limited. Retry after ${error.retryAfter} seconds`);
+  } else if (error instanceof IdempotencyError) {
+    console.error('Idempotency conflict:', error.message);
+  } else if (error instanceof ApiError) {
+    console.error('API error:', error.message, 'Status:', error.status);
+  } else if (error instanceof NetworkError) {
+    console.error('Network error:', error.message);
+  } else if (error instanceof AbortError) {
+    console.error('Request timed out');
+  }
+}
+```
+
+<Accordion title="त्रुटि संदर्भ">
+  | त्रुटि | स्टेटस | कब थ्रो होती है |
+  | --- | --- | --- |
+  | `AuthenticationError` | 401 | अमान्य या रद्द की गई API कुंजी |
+  | `PermissionError` | 403 | अपर्याप्त स्कोप |
+  | `NotFoundError` | 404 | रिसोर्स मौजूद नहीं है |
+  | `ValidationError` | 422 | अमान्य पैरामीटर |
+  | `RateLimitError` | 429 | बहुत अधिक अनुरोध |
+  | `IdempotencyError` | 409 | अलग बॉडी के साथ डुप्लिकेट अनुरोध |
+  | `ApiError` | 5xx | सर्वर त्रुटि |
+  | `NetworkError` | - | कनेक्शन विफलता |
+  | `AbortError` | - | अनुरोध टाइमआउट या रद्दीकरण |
+</Accordion>
+
+### वैलिडेशन त्रुटि विवरण {#validation-error-details}
+
+```typescript
+catch (error) {
+  if (error instanceof ValidationError) {
+    // Get all errors grouped by field
+    const fieldErrors = error.getFieldErrors();
+    // { amount: ['Must be positive'], currency: ['Required'] }
+
+    // Get first error for a specific field
+    const amountError = error.getFirstFieldError('amount');
+  }
+}
+```
+
+### सामान्य त्रुटि प्रॉपर्टी {#common-error-properties}
+
+सभी त्रुटियाँ ये प्रॉपर्टी प्रदान करती हैं:
+
+| प्रॉपर्टी | प्रकार | विवरण |
+| --- | --- | --- |
+| `message` | `string` | मानव-पठनीय त्रुटि संदेश |
+| `type` | `string` | त्रुटि प्रकार पहचानकर्ता |
+| `status` | `number` | HTTP स्टेटस कोड (यदि लागू हो) |
+| `requestId` | `string` | डीबगिंग के लिए अनुरोध ID |
+| `rawResponse` | `unknown` | रॉ API रिस्पॉन्स |
+
+## अनुरोध विकल्प {#request-options}
+
+सभी रिसोर्स मेथड एक वैकल्पिक `RequestOptions` पैरामीटर स्वीकार करते हैं:
+
+```typescript
+const payment = await client.payments.create(
+  { amount: '100.00', currency: 'BDT' },
+  {
+    // Idempotency key for safe retries
+    idempotencyKey: 'unique-key-123',
+
+    // Custom headers for this request
+    headers: { 'X-Custom-Header': 'value' },
+
+    // Request timeout override (ms)
+    timeout: 60000,
+
+    // AbortSignal for cancellation
+    signal: AbortSignal.timeout(10000),
+  }
+);
+```
+
+### Idempotency {#idempotency}
+
+डुप्लिकेट बनाए बिना सुरक्षित रूप से पुनः प्रयास करने के लिए POST अनुरोधों में idempotency कुंजियों का उपयोग करें:
+
+```typescript
+import { randomUUID } from 'node:crypto';
+
+const idempotencyKey = randomUUID();
+
+const payment = await client.payments.create(
+  { amount: '100.00', currency: 'BDT' },
+  { idempotencyKey }
+);
+
+// Safe to retry with the same key if network error occurs
+```
+
+### अनुरोध रद्द करना {#request-cancellation}
+
+लंबे समय तक चलने वाले अनुरोधों को रद्द करने के लिए `AbortSignal` का उपयोग करें:
+
+```typescript
+const controller = new AbortController();
+
+// Cancel after 5 seconds
+setTimeout(() => controller.abort(), 5000);
+
+try {
+  const payment = await client.payments.create(
+    { amount: '100.00', currency: 'BDT' },
+    { signal: controller.signal }
+  );
+} catch (error) {
+  if (error instanceof AbortError) {
+    console.log('Request was cancelled');
+  }
+}
+```
+
+## पुनः प्रयास व्यवहार {#retry-behavior}
+
+SDK अस्थायी त्रुटियों के लिए विफल अनुरोधों का स्वचालित रूप से पुनः प्रयास करता है:
+
+| स्टेटस कोड | पुनः प्रयास योग्य | व्यवहार |
+| --- | --- | --- |
+| 429 | हाँ | `Retry-After` हेडर का पालन करता है |
+| 500 | हाँ | एक्सपोनेंशियल बैकऑफ़ |
+| 502 | हाँ | एक्सपोनेंशियल बैकऑफ़ |
+| 503 | हाँ | एक्सपोनेंशियल बैकऑफ़ |
+| 504 | हाँ | एक्सपोनेंशियल बैकऑफ़ |
+| 401 | नहीं | तुरंत विफलता |
+| 403 | नहीं | तुरंत विफलता |
+| 404 | नहीं | तुरंत विफलता |
+| 422 | नहीं | तुरंत विफलता |
+
+### पुनः प्रयास कॉन्फ़िगर करें {#configure-retries}
+
+```typescript
+const client = new OwnPay({
+  apiKey: 'op_live_abc123.def456',
+  maxRetries: 3,  // Default: 2
+  timeout: 60000, // Default: 30000ms
+});
+```
+
+## Tree-shaking {#tree-shaking}
+
+छोटे बंडल साइज़ के लिए केवल वही import करें जिसकी आपको ज़रूरत है:
+
+```typescript
+// Import only the client
+import OwnPay from 'ownpay-nodejs';
+
+// Import only webhook utilities
+import { verifyWebhookSignature } from 'ownpay-nodejs/webhooks';
+
+// Import specific types
+import type { Payment, Transaction } from 'ownpay-nodejs';
+
+// Import specific errors
+import { ValidationError, AuthenticationError } from 'ownpay-nodejs';
+```
+
+## कस्टम कॉन्फ़िगरेशन {#custom-configuration}
+
+सेल्फ़-होस्टेड या white-label डिप्लॉयमेंट के लिए:
+
+```typescript
+const client = new OwnPay({
+  apiKey: 'op_live_abc123.def456',
+  baseUrl: 'https://your-domain.com',
+  headers: {
+    'X-App-Version': '1.0.0',
+    'X-Client-Id': 'your-app',
+  },
+});
+```
+
+## समस्या-निवारण {#troubleshooting}
+
+<AccordionGroup>
+  <Accordion title="अमान्य API कुंजी फ़ॉर्मेट">
+    सुनिश्चित करें कि आपकी API कुंजी `op_` से शुरू होती है और कम से कम 12 कैरेक्टर लंबी है।
+
+    ```typescript
+    // Wrong
+    const client = new OwnPay('sk_live_...');
+    
+    // Correct
+    const client = new OwnPay('op_live_abc123.def456');
+    ```
+  </Accordion>
+
+  <Accordion title="प्रमाणीकरण विफल">
+    - जाँचें कि आपकी API कुंजी सक्रिय है और रद्द नहीं की गई है
+    - सुनिश्चित करें कि आप अपने एनवायरनमेंट (test/live) के लिए सही कुंजी का उपयोग कर रहे हैं
+  </Accordion>
+
+  <Accordion title="अपर्याप्त स्कोप">
+    आपकी API कुंजी में आवश्यक अनुमतियाँ नहीं हैं:
+
+    - `read` स्कोप: GET अनुरोध
+    - `write` स्कोप: POST/PUT/PATCH/DELETE अनुरोध
+    - `admin` स्कोप: API कुंजी प्रबंधन ऑपरेशन
+  </Accordion>
+
+  <Accordion title="वेबहुक सत्यापन विफल">
+    - सुनिश्चित करें कि आप रॉ अनुरोध बॉडी (पार्स किया हुआ JSON नहीं) का उपयोग कर रहे हैं
+    - जाँचें कि वेबहुक सीक्रेट आपके कॉन्फ़िगरेशन से मेल खाता है
+    - सत्यापित करें कि टाइमस्टैम्प सहनशीलता अवधि के भीतर है
+  </Accordion>
+</AccordionGroup>
+
+## API संदर्भ सारांश {#api-reference-summary}
+
+| रिसोर्स | मेथड |
+| --- | --- |
+| `client.payments` | `create()`, `get()` |
+| `client.transactions` | `list()`, `get()` |
+| `client.refunds` | `create()`, `list()`, `get()` |
+| `client.customers` | `create()`, `list()`, `get()` |
+| `client.apiKeys` | `list()`, `generate()`, `revoke()` |
+| `client.webhooks` | `test()`, `deliveries()` |
+| `client.health` | `check()` |
+
+## संबंधित पेज {#related-pages}
+
+- [PHP SDK](/hi/developer/integration/php)
+- [API अवलोकन](/hi/api/overview)
+- [वेबहुक](/hi/api/webhooks)
+- [प्रमाणीकरण](/hi/api/authentication)
+- [पेमेंट टेस्ट करना](/hi/developer/testing)

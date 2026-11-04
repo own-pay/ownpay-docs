@@ -1,0 +1,155 @@
+---
+title: WooCommerce प्लगइन - WordPress पर पेमेंट स्वीकार करें
+description: WordPress स्टोरफ़्रंट और चेकआउट पर कार्ड और मोबाइल वॉलेट पेमेंट स्वीकार करने के लिए OwnPay WooCommerce प्लगइन इंस्टॉल और कॉन्फ़िगर करें।
+keywords: "WooCommerce payment plugin, WordPress payments, WooCommerce gateway, card payments, mobile wallet WooCommerce"
+sidebarTitle: WooCommerce
+icon: shopping-cart
+---
+
+यह गाइड बताती है कि WooCommerce के लिए OwnPay Gateway Plugin का उपयोग करके **WordPress WooCommerce** स्टोर में OwnPay को पेमेंट गेटवे के रूप में कैसे इंटीग्रेट करें।
+
+## पूर्वापेक्षाएँ {#prerequisites}
+
+- WordPress 6.0\+
+- WooCommerce 8.0\+
+- PHP 8.2\+
+- एक मान्य API कुंजी वाला OwnPay इंस्टेंस
+- WooCommerce के लिए OwnPay Gateway Plugin - [GitHub Releases](https://github.com/own-pay/OwnPay-WordPress/releases/) से डाउनलोड करें
+
+## यह कैसे काम करता है {#how-it-works}
+
+```text
+Customer Checkout
+       |
+       v
+ WooCommerce Order Created
+       |
+       v
+ OwnPay Plugin -> POST /api/v1/payment-intents
+       |
+       v
+ Customer Redirected -> OwnPay Checkout Page
+       |
+       v
+ Payment Completed / Failed
+       |
+       v
+ OwnPay Webhook -> WooCommerce Order Status Updated
+```
+
+## इंस्टॉलेशन {#installation}
+
+### चरण 1: प्लगइन इंस्टॉल करें {#step-1-install-the-plugin}
+
+**विकल्प A: ZIP मैन्युअल रूप से अपलोड करें**
+
+1. [GitHub Releases](https://github.com/own-pay/OwnPay-WordPress/releases/) से नवीनतम प्लगइन ZIP डाउनलोड करें
+2. **WordPress Admin \> Plugins \> Add New \> Upload Plugin** पर जाएँ
+3. ZIP अपलोड करें और **Install Now** पर क्लिक करें
+4. **Activate Plugin** पर क्लिक करें
+
+**विकल्प B: WP-CLI के माध्यम से इंस्टॉल करें**
+
+```bash
+wp plugin install ownpay-woocommerce --activate
+```
+
+### चरण 2: गेटवे कॉन्फ़िगर करें {#step-2-configure-the-gateway}
+
+1. **WooCommerce \> Settings \> Payments** पर जाएँ
+2. **OwnPay** खोजें और **Manage** पर क्लिक करें
+3. ये भरें:
+
+| फ़ील्ड | विवरण |
+| --- | --- |
+| **Enable/Disable** | चेकआउट पर OwnPay सक्षम करने के लिए टॉगल करें |
+| **Title** | ग्राहकों को दिखाया जाने वाला पेमेंट मेथड लेबल |
+| **Description** | चेकआउट पेज पर दिखाया जाने वाला संक्षिप्त विवरण |
+| **API Base URL** | आपके OwnPay इंस्टेंस का URL |
+| **API Key** | Admin \> Developer Hub से आपकी OwnPay API कुंजी |
+| **Brand ID** | आपका OwnPay ब्रांड/स्टोर ID |
+| **Webhook Secret** | आने वाले वेबहुक सत्यापित करने के लिए सीक्रेट कुंजी |
+| **Test Mode** | सैंडबॉक्स एनवायरनमेंट का उपयोग करने के लिए सक्षम करें |
+
+4. **Save Changes** पर क्लिक करें
+
+### चरण 3: OwnPay में वेबहुक कॉन्फ़िगर करें {#step-3-configure-webhooks-in-ownpay}
+
+1. अपने OwnPay Admin पैनल में लॉग इन करें
+2. **Developer Hub \> Webhooks** पर जाएँ
+3. एक नया वेबहुक एंडपॉइंट जोड़ें:
+
+```text
+https://yourstore.com/?wc-api=ownpay_gateway
+```
+
+4. इवेंट चुनें: `payment.transaction.completed`, `payment.transaction.failed`, `payment.transaction.cancelled`
+5. **Webhook Secret** कॉपी करें और उसे WooCommerce प्लगइन सेटिंग्स में पेस्ट करें
+
+## ऑर्डर स्टेटस मैपिंग {#order-status-mapping}
+
+| OwnPay इवेंट | WooCommerce स्टेटस |
+| --- | --- |
+| `payment.transaction.completed` | `processing` (या वर्चुअल उत्पादों के लिए `completed`) |
+| `payment.transaction.failed` | `failed` |
+| `payment.transaction.cancelled` | `cancelled` |
+| `payment.intent.expired` | `cancelled` |
+
+## कस्टमाइज़ेशन {#customization}
+
+### रीडायरेक्ट व्यवहार बदलें {#change-redirect-behavior}
+
+```php
+add_filter('ownpay_redirect_url', function (string $url, \WC_Order $order): string {
+    return add_query_arg('ref', $order->get_order_key(), $url);
+}, 10, 2);
+```
+
+### पेमेंट इंटेंट पेलोड कस्टमाइज़ करें {#customize-payment-intent-payload}
+
+```php
+add_filter('ownpay_payment_intent_payload', function (array $payload, \WC_Order $order): array {
+    $payload['metadata']['wc_order_id'] = $order->get_id();
+    $payload['metadata']['customer_note'] = $order->get_customer_note();
+    return $payload;
+}, 10, 2);
+```
+
+### पूर्ण होने पर ऑर्डर स्टेटस कस्टमाइज़ करें {#customize-order-status-on-completion}
+
+```php
+add_filter('ownpay_completed_order_status', function (string $status, \WC_Order $order): string {
+    if ($order->has_downloadable_item()) {
+        return 'completed';
+    }
+    return $status;
+}, 10, 2);
+```
+
+## समस्या निवारण {#troubleshooting}
+
+### वेबहुक प्राप्त नहीं हो रहे {#webhooks-not-received}
+
+- सुनिश्चित करें कि आपका OwnPay इंस्टेंस `https://yourstore.com/?wc-api=ownpay_gateway` तक पहुँच सकता है
+- **WooCommerce \> Status \> Logs** जाँचें और `ownpay` से फ़िल्टर करें
+- सत्यापित करें कि Webhook Secret दोनों सिस्टम में मेल खाता है
+
+### ऑर्डर "Pending Payment" में अटके हुए हैं {#orders-stuck-in-“pending-payment”}
+
+इसका आमतौर पर मतलब है कि वेबहुक डिलीवर नहीं हुआ। आप मैन्युअल रूप से सिंक कर सकते हैं:
+
+1. WooCommerce Admin में ऑर्डर खोलें
+2. **OwnPay \> Sync Payment Status** पर क्लिक करें
+
+या WP-CLI के माध्यम से:
+
+```bash
+wp ownpay sync-order --order-id=1234
+```
+
+## संबंधित पेज {#related-pages}
+
+- [PHP SDK](/hi/developer/integration/php)
+- [Node.js SDK](/hi/developer/integration/nodejs)
+- [वेबहुक](/hi/api/webhooks)
+- [पेमेंट टेस्ट करना](/hi/developer/testing)

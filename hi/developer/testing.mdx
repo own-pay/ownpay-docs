@@ -1,0 +1,137 @@
+---
+title: "पेमेंट टेस्ट करना"
+description: "टेस्ट कार्ड नंबर, सैंडबॉक्स गेटवे और सिम्युलेटेड वेबहुक का उपयोग करके वास्तविक पैसे के बिना पेमेंट कैसे टेस्ट करें।"
+keywords: "test payments, test cards, sandbox mode, Stripe test cards, bKash test, Nagad test, webhook simulation, debug mode"
+sidebarTitle: "टेस्टिंग"
+icon: "flask"
+---
+
+आप वास्तविक ट्रांज़ैक्शन प्रोसेस किए बिना अपने पूरे पेमेंट फ़्लो को टेस्ट कर सकते हैं। OwnPay टेस्ट कार्ड नंबर, सैंडबॉक्स गेटवे और वेबहुक सिमुलेशन का समर्थन करता है।
+
+## टेस्ट कार्ड नंबर {#test-card-numbers}
+
+टेस्ट मोड में कॉन्फ़िगर किए गए किसी भी Stripe-आधारित गेटवे के साथ इन कार्डों का उपयोग करें:
+
+| कार्ड नंबर | ब्रांड | परिणाम |
+| --- | --- | --- |
+| `4242 4242 4242 4242` | Visa | सफल |
+| `4000 0025 0000 3155` | Visa | 3D Secure आवश्यक |
+| `4000 0000 0000 0002` | Visa | अस्वीकृत |
+| `4000 0000 0000 9995` | Visa | अपर्याप्त धनराशि |
+| `5555 5555 5555 4444` | Mastercard | सफल |
+| `2223 0000 0000 0009` | Mastercard | सफल (2-सीरीज़) |
+| `3782 822463 10005` | Amex | सफल |
+
+<Info>
+  इन टेस्ट कार्डों के साथ कोई भी भविष्य की समाप्ति तिथि, कोई भी CVC और कोई भी पोस्टल कोड उपयोग करें।
+</Info>
+
+## Bkash सैंडबॉक्स क्रेडेंशियल {#bkash-sandbox-credentials}
+
+bkash के लिए इन सैंडबॉक्स क्रेडेंशियल का उपयोग करें:
+
+| फ़ील्ड | मान |
+| --- | --- |
+| Username | `sandboxTokenizedUser02` |
+| Password | `sandboxTokenizedUser02@12345` |
+| App Key | `4f6o0cjiki2rfm34kfdadl1eqq` |
+| App Secret | `2is7hdktrekvrbljjh44ll3d9l1dtjo4pasmjvs5vl5qr3fug4b` |
+
+<Info>
+  नोट: ये केवल सार्वजनिक सैंडबॉक्स क्रेडेंशियल हैं। इन्हें कभी भी लाइव/प्रोडक्शन एनवायरनमेंट में उपयोग न करें। लाइव क्रेडेंशियल के लिए, आपको आधिकारिक bKash Merchant Portal के माध्यम से आवेदन करना होगा
+</Info>
+
+## bKash सैंडबॉक्स टेस्ट वॉलेट नंबर {#bkash-sandbox-test-wallet-numbers}
+
+bKash विशिष्ट टेस्ट वॉलेट नंबर प्रदान करता है जिनका उपयोग आप सैंडबॉक्स एनवायरनमेंट के अंदर पेमेंट सिम्युलेट करने के लिए कर सकते हैं।
+
+| वॉलेट नंबर | OTP | PIN | विफलता का कारण |
+| --- | --- | --- | --- |
+| `01770618575` | `123456` | `12121` |  |
+| `01929918378` | `123456` | `12121` |  |
+| `01770618576` | `123456` | `12121` |  |
+| `01877722345` | `123456` | `12121` |  |
+| `01619777282` | `123456` | `12121` |  |
+| `01619777283` | `123456` | `12121` |  |
+| `01823074817` | `123456` | `12121` | अपर्याप्त बैलेंस |
+| `01823074818` | `123456` | `12121` | डेबिट ब्लॉक |
+
+## गेटवे सैंडबॉक्स कॉन्फ़िगरेशन {#gateway-sandbox-configuration}
+
+प्रत्येक गेटवे में एक सैंडबॉक्स या टेस्ट मोड होता है जिसे आप एडमिन पैनल से सक्रिय करते हैं। नीचे दी गई तालिका दिखाती है कि टेस्ट क्रेडेंशियल कहाँ मिलेंगे:
+
+| गेटवे | सैंडबॉक्स सक्रियण | टेस्ट क्रेडेंशियल कहाँ से प्राप्त करें |
+| --- | --- | --- |
+| Stripe | गेटवे सेटिंग्स में **Test Mode** टॉगल करें | [Stripe Dashboard → Developers → Test mode](https://dashboard.stripe.com/test/apikeys) |
+| PayPal | सैंडबॉक्स एंडपॉइंट URL का उपयोग करें | [PayPal Developer → Sandbox → Apps](https://developer.paypal.com/developer/applications/sandbox) |
+| bKash | सैंडबॉक्स URL और टोकन का उपयोग करें | [https://tokenized.sandbox.bka.sh/v1.2.0-beta](https://tokenized.sandbox.bka.sh/v1.2.0-beta) |
+| Nagad | सैंडबॉक्स URL और मर्चेंट ID का उपयोग करें | सैंडबॉक्स क्रेडेंशियल के लिए Nagad से संपर्क करें |
+| SSLCommerz | गेटवे सेटिंग्स में **Sandbox** टॉगल करें | [SSLCommerz Sandbox](https://sandbox.sslcommerz.com/) |
+
+## API के माध्यम से टेस्ट पेमेंट बनाना {#creating-a-test-payment-via-api}
+
+```bash
+curl -X POST https://your-domain.com/api/v1/payments \
+  -H "Authorization: Bearer $OWNPAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "10.00",
+    "currency": "USD",
+    "customer_email": "test@example.com",
+    "description": "Test payment",
+    "metadata": { "test": true }
+  }'
+```
+
+टेस्ट कार्ड के साथ चेकआउट फ़्लो पूरा करने के लिए लौटाए गए `checkout_url` का उपयोग करें।
+
+## वेबहुक सिम्युलेट करना {#simulating-webhooks}
+
+### Developer Hub से {#from-the-developer-hub}
+
+1. **Developers → Webhooks** पर जाएँ
+2. अपने एंडपॉइंट के आगे **Send Test Event** पर क्लिक करें
+3. एक इवेंट प्रकार चुनें (उदाहरण के लिए `payment.completed`)
+4. OwnPay एक मान्य सिग्नेचर के साथ एक यथार्थवादी पेलोड भेजता है
+
+### cURL के माध्यम से {#via-curl}
+
+आप मैन्युअल रूप से भी एक टेस्ट इवेंट ट्रिगर कर सकते हैं:
+
+```bash
+curl -X POST https://your-domain.com/api/v1/webhooks/test \
+  -H "Authorization: Bearer $OWNPAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "endpoint_id": "we_abc123",
+    "event": "payment.completed"
+  }'
+```
+
+## रिफ़ंड टेस्ट करना {#testing-refunds}
+
+पहले एक पूर्ण टेस्ट पेमेंट बनाएँ, फिर रिफ़ंड जारी करें:
+
+```bash
+curl -X POST https://your-domain.com/api/v1/payments/pay_abc123/refunds \
+  -H "Authorization: Bearer $OWNPAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "10.00",
+    "reason": "Customer request"
+  }'
+```
+
+<Note>
+  टेस्ट मोड में रिफ़ंड तुरंत होते हैं और वास्तविक पैसा स्थानांतरित नहीं करते।
+</Note>
+
+लॉग निरीक्षण और रिक्वेस्ट ट्रेसिंग सहित गहन डीबगिंग के लिए, [डीबग मोड](/hi/resources/debug-mode) देखें।
+
+## संबंधित पेज {#related-pages}
+
+- [API अवलोकन](/hi/api/overview)
+- [वेबहुक](/hi/api/webhooks)
+- [वेबहुक इंटीग्रेशन ट्यूटोरियल](/hi/developer/webhook-integration)
+- [डीबग मोड](/hi/resources/debug-mode)
+- [सामान्य एरर](/hi/resources/common-errors)

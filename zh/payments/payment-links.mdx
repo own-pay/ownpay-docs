@@ -1,0 +1,59 @@
+---
+title: 创建付款链接
+description: "如何创建、配置和分享付款链接，让客户通过结账 URL 直接向您付款。"
+keywords: "付款链接, 可分享 URL, 结账链接, 可变金额, 付款链接选项, payment links"
+sidebarTitle: 付款链接
+icon: link
+---
+
+付款链接是您在管理后台创建的可分享结账 URL。客户打开链接，选择付款方式并完成付款，无需发票或 API 集成。
+
+## 创建付款链接 {#create-a-payment-link}
+
+1. 前往 **Payments** → **Payment Links**。
+2. 点击 **\+ Create Link**。
+3. 填写详细信息（见下方选项）。
+4. 点击 **Create Link**。
+5. 从链接列表中复制可分享的 URL 并发送给您的客户。
+
+## 链接选项 {#link-options}
+
+| 选项 | 类型 | 必填 | 描述 |
+| --- | --- | --- | --- |
+| **Title** | 文本 | 是 | 结账时向客户显示的名称（例如"咨询费"） |
+| **Description** | 文本区域 | 否 | 在结账页面上显示的附加说明或详细信息 |
+| **Amount** | 数字 | 否 | 固定价格。留空则由客户自行输入金额 |
+| **Currency** | 选择 | 是 | 结算货币（必须与支持该货币的网关匹配） |
+| **Custom fields** | JSON schema | 否 | 客户必须填写的额外输入字段（例如"订单 ID"） |
+| **Max uses** | 数字 | 否 | 链接可被支付的最大次数。`0` 表示无限制 |
+| **Expires at** | 日期/时间 | 否 | 链接在此日期后自动停用 |
+| **Redirect URL** | URL | 否 | 付款成功后将客户跳转到的地址 |
+| **Webhook URL** | URL | 否 | 仅用于此链接的自定义 webhook 端点 |
+
+## 固定金额与可变金额 {#fixed-vs-variable-amount}
+
+- **固定金额** - 在 Amount 字段中输入数值。客户看到的价格是锁定的，无法更改。
+- **可变金额** - 将 Amount 字段留空。结账页面会显示一个输入框，供客户输入自己的金额。适用于捐款、小费或灵活的服务费。
+
+## 有效期和使用次数限制 {#expiry-and-usage-limits}
+
+将 **Max uses** 设置为 `1` 可创建一次性链接（例如针对某笔特定发票的付款）。设置 **Expires at** 日期可防止过时的链接在数周后仍被使用。当链接过期或达到使用次数上限时，客户会看到"Link expired"消息。
+
+## 跳转 URL {#redirect-urls}
+
+客户完成付款后，会被跳转到您配置的 **Redirect URL**。OwnPay 会附加 `trx_id` 和 `status` 作为查询参数，以便您在自己的系统中确认结果。
+
+## 嵌入付款链接 {#embedding-payment-links}
+
+您可以在自己的网站上通过 `<iframe>` 嵌入付款链接。将结账 URL 用作 `src` 属性。请确保您网站的内容安全策略（Content Security Policy）标头允许 OwnPay 域名。
+
+<Warning>
+  在分享链接之前，必须至少有一个支持该链接货币的支付网关处于启用状态。否则，客户会在结账时看到错误，且没有可用的付款方式。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [开发者快速入门](/zh/developer/quickstart) - 通过 API 创建付款链接
+- [交易](/zh/payments/transactions) - 查看通过付款链接完成的付款
+- [网关](/zh/gateways/configuration) - 配置结账时可用的付款方式
+- [结账体验](/zh/checkout/customer-experience) - 客户打开链接时看到的内容

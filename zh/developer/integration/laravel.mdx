@@ -1,0 +1,549 @@
+---
+title: "Laravel SDK - 面向 PHP 应用的流畅支付集成"
+description: "使用官方 SDK 将 OwnPay 集成到 Laravel 11+ 应用中，支持 facade、webhook 验证和类型安全的值对象。"
+keywords: "Laravel 支付 SDK, PHP 支付集成, Laravel webhook, OwnPay Laravel, Laravel 支付网关, Composer 支付包"
+sidebarTitle: "Laravel"
+icon: "layout-grid"
+tag: "NEW"
+---
+
+官方 OwnPay Laravel SDK 提供了简洁、流畅的接口，用于在 Laravel 应用中集成支付功能。它开箱即用地处理身份验证、重试、webhook 验证和错误处理。
+
+<CardGroup cols={2}>
+  <Card title="Packagist" icon="box" href="https://packagist.org/packages/ownpay/ownpay-laravel">
+    通过 Composer 从 Packagist 安装。
+  </Card>
+
+  <Card title="GitHub" icon="brand-github" href="https://github.com/own-pay/ownpay-laravel">
+    查看源代码、报告错误或参与贡献。
+  </Card>
+</CardGroup>
+
+## 前提条件 {#prerequisites}
+
+- PHP 8.3 或更高版本
+- Laravel 11.x、12.x 或 13.x
+- 从 Admin \> Developer Hub 获取的 OwnPay API 密钥
+
+## 安装 {#installation}
+
+<Steps>
+  <Step>
+    **安装软件包**
+
+    ```bash
+    composer require ownpay/ownpay-laravel
+    ```
+
+    该软件包会自动注册其服务提供者和 facade。
+  </Step>
+  <Step>
+    **发布配置文件**
+
+    ```bash
+    php artisan vendor:publish --tag=ownpay-config
+    ```
+
+    这会在你的应用中创建 `config/ownpay.php`。
+  </Step>
+  <Step>
+    **发布迁移文件（可选）**
+
+    如果你想将 webhook 记录到数据库表中：
+
+    ```bash
+    php artisan vendor:publish --tag=ownpay-migrations
+    php artisan migrate
+    ```
+  </Step>
+  <Step>
+    **添加环境变量**
+
+    将以下内容添加到 `.env` 文件中：
+
+    ```env
+    OWNPAY_API_KEY=op_live_abc123.def456
+    OWNPAY_WEBHOOK_SECRET=your_webhook_secret_here
+    OWNPAY_BASE_URL=https://pay.ownpay.org
+    OWNPAY_TIMEOUT=30
+    OWNPAY_RETRY_ATTEMPTS=3
+    OWNPAY_RETRY_DELAY=100
+    OWNPAY_VERIFY_SSL=true
+    ```
+  </Step>
+</Steps>
+
+## 配置 {#configuration}
+
+`config/ownpay.php` 中的所有选项：
+
+| 选项 | 默认值 | 描述 |
+| --- | --- | --- |
+| `api_key` | `null` | 你的 OwnPay API 密钥（以 `op_` 开头） |
+| `webhook_secret` | `null` | 用于验证的 webhook 签名密钥 |
+| `base_url` | `https://pay.ownpay.org` | 你的 OwnPay 实例 URL |
+| `timeout` | `30` | 请求超时时间（秒） |
+| `retry_attempts` | `3` | 失败请求的重试次数 |
+| `retry_delay` | `100` | 重试之间的基础延迟（毫秒） |
+| `verify_ssl` | `true` | 是否验证 SSL 证书 |
+| `log_channel` | `null` | SDK 日志使用的日志通道 |
+| `cache_ttl` | `0` | 缓存 TTL（秒，0 表示禁用） |
+
+## 创建支付 {#creating-payments}
+
+使用 `OwnPay` facade，或直接注入 `OwnPayClient`。
+
+<Tabs>
+  <Tab title="Facade">
+    ```php
+    use OwnPay\Laravel\Facades\OwnPay;
+    
+    $payment = OwnPay::createPayment([
+        'amount'         => '1250.00',
+        'currency'       => 'BDT',
+        'description'    => 'Premium Subscription',
+        'redirect_url'   => 'https://example.com/success',
+        'cancel_url'     => 'https://example.com/cancel',
+        'callback_url'   => 'https://example.com/webhook',
+        'customer_name'  => 'John Doe',
+        'customer_mail'  => 'john@example.com',
+    ]);
+    
+    // Redirect the customer to checkout
+    return redirect($payment->checkoutUrl);
+    ```
+  </Tab>
+  <Tab title="依赖注入">
+    ```php
+    use OwnPay\Laravel\Client\OwnPayClient;
+    
+    class PaymentController extends Controller
+    {
+        public function __construct(
+            private readonly OwnPayClient $ownpay,
+        ) {}
+    
+        public function store(Request $request)
+        {
+            $payment = $this->ownpay->createPayment([
+                'amount'       => $request->input('amount'),
+                'currency'     => $request->input('currency'),
+                'callback_url' => route('webhook.ownpay'),
+            ]);
+    
+            return response()->json([
+                'checkout_url' => $payment->checkoutUrl,
+                'payment_id'   => $payment->paymentId,
+            ]);
+        }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## 支付流程 {#payment-flow}
+
+典型的结账流程如下：
+
+```text
+Customer clicks "Pay"
+       |
+       v
+createPayment() -> get checkoutUrl
+       |
+       v
+Redirect customer to OwnPay checkout
+       |
+       v
+Customer completes or cancels payment
+       |
+       v
+OwnPay sends webhook -> VerifyWebhookSignature middleware
+       |
+       v
+Your listener updates order status
+```
+
+### 完整示例 {#full-example}
+
+```php
+use OwnPay\Laravel\Facades\OwnPay;
+use OwnPay\Laravel\Exception\OwnPayExceptionInterface;
+
+class CheckoutController extends Controller
+{
+    public function initiate(Request $request)
+    {
+        try {
+            $payment = OwnPay::createPayment([
+                'amount'        => $request->input('amount'),
+                'currency'      => $request->input('currency'),
+                'description'   => $request->input('description'),
+                'redirect_url'  => route('payment.success'),
+                'cancel_url'    => route('payment.cancel'),
+                'callback_url'  => route('webhook.ownpay'),
+                'customer_name' => $request->input('customer_name'),
+                'customer_mail' => $request->input('customer_email'),
+                'metadata'      => [
+                    'order_id' => $request->input('order_id'),
+                ],
+            ]);
+
+            // Store payment_id in your database
+            // Redirect to checkout
+            return redirect($payment->checkoutUrl);
+
+        } catch (OwnPayExceptionInterface $e) {
+            return back()->withErrors([
+                'payment' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function success(Request $request)
+    {
+        $paymentId = $request->query('payment_id');
+        $payment = OwnPay::getPayment($paymentId);
+
+        if ($payment->isSuccess()) {
+            return view('payment.success', ['payment' => $payment]);
+        }
+
+        return view('payment.pending', ['payment' => $payment]);
+    }
+}
+```
+
+## 获取支付状态 {#retrieving-payment-status}
+
+```php
+$payment = OwnPay::getPayment($paymentId);
+
+echo $payment->status->label(); // "Pending", "Completed", "Failed"
+echo $payment->isSuccess();     // true or false
+```
+
+## Webhook 处理 {#webhook-handling}
+
+### 路由设置 {#route-setup}
+
+该软件包会自动在 `/webhooks/ownpay` 注册一个 webhook 路由。你可以对其进行自定义：
+
+```php
+use OwnPay\Laravel\Laravel\Middleware\VerifyWebhookSignature;
+
+Route::post('/webhooks/ownpay', [WebhookController::class, 'handle'])
+    ->middleware(VerifyWebhookSignature::class);
+```
+
+<Info>
+  `VerifyWebhookSignature` 中间件会验证每个传入 webhook 的 HMAC-SHA256 签名，无需手动验证。
+</Info>
+
+### 监听事件 {#listening-for-events}
+
+在 `EventServiceProvider` 中注册事件监听器：
+
+```php
+protected $listen = [
+    \OwnPay\Laravel\Laravel\Events\WebhookReceived::class => [
+        \App\Listeners\HandleOwnPayWebhook::class,
+    ],
+];
+```
+
+### 监听器示例 {#example-listener}
+
+```php
+namespace App\Listeners;
+
+use OwnPay\Laravel\Laravel\Events\WebhookReceived;
+
+class HandleOwnPayWebhook
+{
+    public function handle(WebhookReceived $event): void
+    {
+        match ($event->event) {
+            'payment.completed' => $this->handlePaymentCompleted($event),
+            'payment.failed'    => $this->handlePaymentFailed($event),
+            'refund.completed'  => $this->handleRefundCompleted($event),
+            default             => null,
+        };
+    }
+
+    private function handlePaymentCompleted(WebhookReceived $event): void
+    {
+        $transactionId = $event->getTransactionId();
+        $amount = $event->getAmount();
+        $currency = $event->getCurrency();
+
+        // Update your database, send confirmation email, etc.
+    }
+
+    private function handlePaymentFailed(WebhookReceived $event): void
+    {
+        // Handle failed payment
+    }
+
+    private function handleRefundCompleted(WebhookReceived $event): void
+    {
+        // Handle completed refund
+    }
+}
+```
+
+## 交易管理 {#transaction-management}
+
+```php
+use OwnPay\Laravel\Facades\OwnPay;
+
+// List all transactions
+$transactions = OwnPay::listTransactions();
+
+// List with filters
+$transactions = OwnPay::listTransactions([
+    'status'   => 'completed',
+    'gateway'  => 'bkash',
+    'from'     => '2024-01-01',
+    'to'       => '2024-12-31',
+    'page'     => 1,
+    'per_page' => 50,
+]);
+
+// Get a specific transaction
+$transaction = OwnPay::getTransaction('OP-XXXXX');
+
+// Check if refundable
+if ($transaction->isRefundable()) {
+    // Can create refund
+}
+```
+
+## 退款 {#refunds}
+
+```php
+$refund = OwnPay::createRefund([
+    'trx_id' => 'OP-XXXXX',
+    'amount' => '500.00',
+    'reason' => 'Customer request',
+]);
+
+// List refunds
+$refunds = OwnPay::listRefunds(['page' => 1]);
+
+// Get refund by ID
+$refund = OwnPay::getRefund('OP-XXXXX');
+```
+
+## 客户管理 {#customer-management}
+
+```php
+use OwnPay\Laravel\Facades\OwnPay;
+
+// Create customer
+$customer = OwnPay::createCustomer([
+    'name'  => 'John Doe',
+    'email' => 'john@example.com',
+    'phone' => '+8801700000000',
+]);
+
+// List customers
+$customers = OwnPay::listCustomers(['page' => 1]);
+
+// Get customer by email or phone
+$customer = OwnPay::getCustomer('john@example.com');
+```
+
+## API 密钥管理 {#api-key-management}
+
+```php
+use OwnPay\Laravel\Facades\OwnPay;
+
+// List API keys
+$keys = OwnPay::listApiKeys();
+
+// Generate new key
+$result = OwnPay::generateApiKey([
+    'name'   => 'Production Key',
+    'scopes' => ['read', 'write'],
+]);
+
+echo $result['key']; // Show this to the user ONCE
+
+// Revoke key
+OwnPay::revokeApiKey($keyId);
+```
+
+## 值对象 {#value-objects}
+
+SDK 使用类型安全的值对象，而不是原始数组。
+
+### Money {#money}
+
+```php
+use OwnPay\Laravel\ValueObjects\Money;
+
+$price = new Money('100.00', 'USD');
+$price->toFloat();  // 100.0
+$price->toCents();  // 10000
+$price->format();   // "USD 100.00"
+
+// Arithmetic
+$a = new Money('100.00', 'USD');
+$b = new Money('50.00', 'USD');
+$sum = $a->add($b);       // Money('150.00', 'USD')
+$diff = $a->subtract($b); // Money('50.00', 'USD')
+
+// Comparison
+$a->isGreaterThan($b); // true
+$a->equals(new Money('100.00', 'USD')); // true
+```
+
+### 状态枚举 {#status-enums}
+
+```php
+use OwnPay\Laravel\ValueObjects\PaymentStatus;
+use OwnPay\Laravel\ValueObjects\TransactionStatus;
+
+$status = PaymentStatus::from('completed');
+$status->isSuccess();  // true
+$status->isTerminal(); // true
+$status->isActive();   // false
+$status->label();      // "Completed"
+
+$trxStatus = TransactionStatus::from('completed');
+$trxStatus->isRefundable(); // true
+```
+
+## 错误处理 {#error-handling}
+
+SDK 提供结构化的异常层级：
+
+```php
+use OwnPay\Laravel\Exception\OwnPayExceptionInterface;
+use OwnPay\Laravel\Exception\AuthenticationException;
+use OwnPay\Laravel\Exception\InvalidRequestException;
+use OwnPay\Laravel\Exception\NotFoundException;
+use OwnPay\Laravel\Exception\RateLimitException;
+use OwnPay\Laravel\Exception\ConnectionException;
+
+try {
+    $payment = OwnPay::createPayment([...]);
+} catch (AuthenticationException $e) {
+    Log::error('OwnPay auth error: ' . $e->getMessage());
+} catch (InvalidRequestException $e) {
+    $errors = $e->getErrorDetails(); // Array of {code, message, field}
+} catch (NotFoundException $e) {
+    // Resource not found
+} catch (RateLimitException $e) {
+    $retryAfter = $e->getRetryAfter();
+} catch (ConnectionException $e) {
+    // Network error
+} catch (OwnPayExceptionInterface $e) {
+    // Catch all OwnPay exceptions
+}
+```
+
+<Accordion title="异常参考">
+  | 异常 | HTTP 状态码 | 抛出时机 |
+  | --- | --- | --- |
+  | `AuthenticationException` | 401 | API 密钥无效或缺失 |
+  | `InvalidRequestException` | 422 | 请求体存在校验错误 |
+  | `NotFoundException` | 404 | 资源不存在 |
+  | `RateLimitException` | 429 | 请求过多 |
+  | `ConnectionException` | - | 网络或超时错误 |
+</Accordion>
+
+## Artisan 命令 {#artisan-commands}
+
+SDK 附带用于测试和调试的 CLI 命令：
+
+```bash
+# Test connection to your OwnPay instance
+php artisan ownpay:test
+php artisan ownpay:test --json
+
+# Verify a webhook payload signature
+php artisan ownpay:verify-webhook \
+    --payload='{"event":"payment.completed"}' \
+    --signature='abc123...' \
+    --timestamp=1234567890
+```
+
+## 测试 {#testing}
+
+### 模拟 HTTP 调用 {#mocking-http-calls}
+
+```php
+use Illuminate\Support\Facades\Http;
+
+Http::fake([
+    'test.ownpay.org/api/v1/payments' => Http::response([
+        'success' => true,
+        'data' => [
+            'payment_id'   => 'pay_123',
+            'token'        => 'tok_123',
+            'checkout_url' => 'https://checkout.ownpay.org/pay_123',
+            'status'       => 'pending',
+        ],
+    ], 201),
+]);
+
+$payment = OwnPay::createPayment([...]);
+$this->assertSame('pay_123', $payment->paymentId);
+```
+
+### 在测试中验证 webhook {#verifying-webhooks-in-tests}
+
+```php
+use OwnPay\Laravel\Webhook\WebhookVerifier;
+
+$verifier = new WebhookVerifier('test-secret');
+$payload = '{"event":"payment.completed","transaction_id":"OP-12345"}';
+$signature = $verifier->sign($payload);
+
+$result = $verifier->verify($payload, $signature);
+$this->assertSame('payment.completed', $result['event']);
+```
+
+## 安全最佳实践 {#security-best-practices}
+
+<Warning>
+  切勿将 API 密钥提交到版本控制系统。请始终使用环境变量。
+</Warning>
+
+1. 将 API 密钥存储在 `.env` 中，而不是直接写在 `config/ownpay.php` 中
+2. 所有 API 通信均使用 HTTPS
+3. SDK 通过 `VerifyWebhookSignature` 中间件自动验证 webhook 签名
+4. API 密钥使用 `#[\SensitiveParameter]` 特性存储——它们永远不会被记录到日志或在错误消息中暴露
+5. 为关键支付操作实现幂等性
+6. 记录所有支付事件以形成审计追踪
+
+## API 参考 {#api-reference}
+
+| 类别 | 方法 | 描述 |
+| --- | --- | --- |
+| 支付 | `createPayment(array $data)` | 创建新的 payment intent |
+| 支付 | `getPayment(string $id)` | 按 ID 获取支付 |
+| 交易 | `listTransactions(array $params)` | 按筛选条件列出交易 |
+| 交易 | `getTransaction(string $id)` | 按 ID 获取交易 |
+| 退款 | `createRefund(array $data)` | 创建退款 |
+| 退款 | `listRefunds(array $params)` | 按筛选条件列出退款 |
+| 退款 | `getRefund(string $id)` | 按交易 ID 获取退款 |
+| 客户 | `createCustomer(array $data)` | 创建客户 |
+| 客户 | `listCustomers(array $params)` | 列出客户 |
+| 客户 | `getCustomer(string $id)` | 按邮箱或电话获取客户 |
+| Webhooks | `testWebhook()` | 测试 webhook 端点 |
+| Webhooks | `listWebhookDeliveries()` | 列出 webhook 投递记录 |
+| API 密钥 | `listApiKeys()` | 列出 API 密钥 |
+| API 密钥 | `generateApiKey(array $params)` | 生成新的 API 密钥 |
+| API 密钥 | `revokeApiKey(int $id)` | 撤销 API 密钥 |
+| 健康检查 | `health()` | 检查 API 健康状态 |
+
+## 相关页面 {#related-pages}
+
+- [PHP SDK](/zh/developer/integration/php)
+- [API 概览](/zh/api/overview)
+- [Webhooks](/zh/api/webhooks)
+- [身份验证](/zh/api/authentication)
+- [测试支付](/zh/developer/testing)

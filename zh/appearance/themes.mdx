@@ -1,0 +1,66 @@
+---
+title: 结账主题
+description: "如何在 OwnPay 中选择、自定义和管理结账页面主题，包括内置主题、主题插件和 CSS 覆盖。"
+keywords: "主题, 结账主题, 自定义主题, CSS 自定义, 主题插件"
+sidebarTitle: 主题
+icon: palette
+---
+
+主题决定了客户所见结账页面的布局和视觉风格。每个品牌都可以使用不同的主题，因此你可以为每个店铺量身定制结账体验。
+
+## 选择主题 {#select-a-theme}
+
+1. 前往 **Appearance** → **Themes**。
+2. 浏览已安装主题的列表。
+3. 找到你想要的主题并点击 **Activate**。
+4. 更改会立即对所有新的结账会话生效。
+
+## 内置主题 {#built-in-themes}
+
+OwnPay 自带一个适用于大多数场景的默认主题。它采用响应式设计，支持浅色和深色模式，并能在所有现代浏览器中正确渲染。
+
+<Note>
+  请始终保留默认主题作为备用。如果自定义主题出现错误，你可以立即切换回默认主题。
+</Note>
+
+## 通过插件使用自定义主题 {#custom-themes-via-plugins}
+
+你可以通过插件系统安装更多主题。自定义主题以 `.zip` 文件形式打包，其中包含 `manifest.json` 和模板文件。
+
+1. 点击 **\+ Install Theme**。
+2. 上传主题 `.zip` 文件。
+3. 主题会出现在你的列表中。
+4. 点击 **Activate** 即可使用。
+
+关于构建自己的主题的详细信息，请参阅 [主题开发](/zh/developer/plugin-types/theme)。
+
+## 按品牌分配主题 {#per-brand-theme-assignment}
+
+主题在品牌级别进行分配：
+
+1. 前往 **People** → **Brands** 并编辑一个品牌。
+2. 在 **Theme** 部分，选择该品牌使用的主题。
+3. 点击 **Save**。
+
+这样你就可以为一个品牌使用专业风格的主题，而为另一个品牌使用休闲风格的主题。
+
+## CSS 自定义 {#css-customization}
+
+如果你只需要进行小幅视觉调整而不想创建完整的主题插件，可以添加自定义 CSS：
+
+1. 前往 **People** → **Brands** 并编辑该品牌。
+2. 在 **Custom CSS** 文本区域中输入你的 CSS 规则。
+3. 这些规则会在主题样式表加载后注入到结账页面中。
+
+此方式适用于小幅调整，例如更改字号、按钮圆角或间距。对于较大的布局更改，请改为创建正式的主题插件。
+
+<Warning>
+  请勿上传来自不可信来源的主题 `.zip` 文件。主题文件可能包含在你的服务器或客户浏览器中运行的 PHP 或 JavaScript 代码。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [品牌](/zh/appearance/branding) - 徽标、颜色和网站图标
+- [着陆页](/zh/appearance/landing-page) - 公开页面配置
+- [主题开发](/zh/developer/plugin-types/theme) - 构建自定义主题插件
+- [插件概览](/zh/developer/plugins/overview) - 插件系统的工作原理

@@ -1,0 +1,69 @@
+---
+title: 设置
+description: "在常规设置页面中配置应用名称、URL、时区、维护模式、邮件设置和高级选项。"
+keywords: "设置, 应用配置, 维护模式, 时区, 系统设置, 邮件设置, settings"
+sidebarTitle: 设置
+icon: settings
+---
+
+设置页面是您的 OwnPay 实例的中央配置中心。它按标签页分为应用、邮件、安全和高级设置等部分。
+
+## 如何进入 {#getting-here}
+
+在左侧边栏的 **System** 部分下点击 **Settings**。
+
+## 应用设置 {#application-settings}
+
+| 设置 | 描述 |
+| --- | --- |
+| **Application Name** | 显示在浏览器标签页标题和电子邮件主题中 |
+| **Application URL** | 您的 OwnPay 实例的规范 URL。用于在电子邮件和 Webhook 中生成链接 |
+| **Timezone** | 设置管理面板和报表中所有时间戳的默认时区 |
+| **Maintenance Mode** | 启用后，向访问者显示维护页面。员工仍可登录 |
+
+<Note>
+  在初始设置后更改 Application URL，需要更新 Webhook 端点以及任何存储了您实例 URL 的外部集成。
+</Note>
+
+## 邮件设置 {#mail-settings}
+
+Mail 标签页提供 [mail-gateway 附加组件](/zh/notifications/email)所使用的 SMTP 配置。请填写主机、端口、凭据、加密方式和默认发件地址。有关详细的 SMTP 设置说明，请参阅[电子邮件通知](/zh/notifications/email)页面。
+
+## 安全设置 {#security-settings}
+
+Security 标签页提供相关配置的链接：
+
+- **会话有效期** - 空闲会话保持活动的时长
+- **密码策略** - 最小长度、复杂度要求
+- **登录速率限制** - 锁定前允许的最大失败尝试次数
+- **强制 2FA** - 要求特定角色使用双因素认证
+
+<Info>
+  有关所有安全功能的全面概述，请参阅[安全与合规](/zh/resources/security-compliance)。
+</Info>
+
+## 高级设置 {#advanced-settings}
+
+Advanced 标签页包含大多数用户无需更改的选项：
+
+- **审计日志保留期** - 自动清理的周期（天）（`0` = 永久保留）
+- **缓存 TTL** - 仪表板和报表数据的 Redis 缓存时长
+- **调试模式** - 启用详细的错误日志。切勿在生产环境中启用
+
+## 环境信息 {#environment-info}
+
+在设置页面底部，**Environment Info** 面板会显示：
+
+- OwnPay 版本（`{{version}}`）
+- PHP 版本（必须为 8.3\+）
+- MySQL 版本
+- Redis 连接状态
+- 可用磁盘空间
+
+更新后，可使用此面板快速确认您的服务器是否满足要求。
+
+## 相关页面 {#related-pages}
+
+- [电子邮件通知](/zh/notifications/email) - 完整的 SMTP 和模板配置
+- [安全与合规](/zh/resources/security-compliance) - 安全最佳实践和功能概述
+- [系统更新](/zh/system/system-update) - 让您的实例保持最新

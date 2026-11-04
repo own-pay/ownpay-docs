@@ -1,0 +1,120 @@
+---
+title: "प्लगइन कैपेबिलिटीज़ - सुविधाएँ और अनुमतियाँ घोषित करें"
+description: "कैपेबिलिटी सिस्टम जो घोषित करता है कि एक प्लगइन क्या करता है, कौन-से हुक उपयोग करता है, और अनुमतियों व खोज के लिए किन प्लेटफ़ॉर्म सुविधाओं को छूता है।"
+keywords: "plugin capabilities, permissions, feature declarations, plugin discovery, capability system"
+sidebarTitle: "कैपेबिलिटीज़"
+icon: "list-check"
+---
+
+OwnPay एक कैपेबिलिटी सिस्टम का उपयोग यह घोषित करने के लिए करता है कि एक प्लगइन क्या करता है और किन प्लेटफ़ॉर्म सुविधाओं के साथ इंटरैक्ट करता है। कैपेबिलिटीज़ `manifest.json` में स्ट्रिंग मानों के रूप में व्यक्त की जाती हैं और `OwnPay\Plugin\Capability` बैक्ड PHP enum से मैप की जाती हैं।
+
+<Note>
+  **पूर्ण-विश्वास मॉडल**: इंस्टॉल किए गए प्लगइन मालिक द्वारा अपलोड किए जाते हैं और पूर्ण एप्लिकेशन विश्वास के साथ चलते हैं। कैपेबिलिटीज़ घोषणात्मक मेटाडेटा और एक इरादा अनुबंध हैं। ये दस्तावेज़ करती हैं कि एक प्लगइन क्या करता है और UI प्रस्तुति को संचालित करती हैं; ये रनटाइम प्रवर्तन सैंडबॉक्स नहीं हैं।
+</Note>
+
+## कैपेबिलिटीज़ घोषित करना {#declaring-capabilities}
+
+कैपेबिलिटीज़ `manifest.json` के अंदर `capabilities` ऐरे में घोषित की जाती हैं:
+
+```json
+{
+  "slug": "my-plugin",
+  "capabilities": ["addon", "hooks", "cron"]
+}
+```
+
+एंट्रीपॉइंट क्लास पर `PluginInterface::capabilities()` मेथड को मेल खाने वाले `Capability` enum केस लौटाने चाहिए:
+
+```php
+use OwnPay\Plugin\Capability;
+
+public function capabilities(): array
+{
+    return [Capability::ADDON, Capability::HOOKS, Capability::CRON];
+}
+```
+
+## पूर्ण कैपेबिलिटी संदर्भ {#full-capability-reference}
+
+| Enum केस | JSON मान | आवश्यक अनुमति कुंजियाँ | दायरा और उद्देश्य |
+| --- | --- | --- | --- |
+| `Capability::GATEWAY` | `"gateway"` | `gateway.process`, `gateway.config` | पेमेंट गेटवे एडैप्टर |
+| `Capability::THEME` | `"theme"` | `theme.render` | चेकआउट थीम |
+| `Capability::ADDON` | `"addon"` | कोई नहीं | सामान्य-उद्देश्य वाला एक्सटेंशन |
+| `Capability::COMMUNICATION` | `"communication"` | `comm.send` | SMS, ईमेल या चैट डिलीवरी |
+| `Capability::ANALYTICS` | `"analytics"` | `analytics.read` | रिपोर्टिंग और BI |
+| `Capability::WEBHOOK` | `"webhook"` | कोई नहीं | कस्टम इनबाउंड वेबहुक हैंडलर |
+| `Capability::NOTIFICATION` | `"notification"` | कोई नहीं | पुश और सिस्टम नोटिफ़िकेशन |
+| `Capability::EXPORT` | `"export"` | कोई नहीं | डेटा एक्सपोर्ट प्रदाता |
+| `Capability::AUTHENTICATION` | `"authentication"` | कोई नहीं | SSO और OAuth |
+| `Capability::STORAGE` | `"storage"` | `storage.read`, `storage.write` | बाहरी फ़ाइल स्टोरेज |
+| `Capability::CRON` | `"cron"` | कोई नहीं | शेड्यूल्ड बैकग्राउंड जॉब |
+| `Capability::DASHBOARD` | `"dashboard"` | कोई नहीं | एडमिन डैशबोर्ड विजेट |
+| `Capability::DB_READ` | `"db_read"` | कोई नहीं | डेटाबेस रीड एक्सेस |
+| `Capability::DB_WRITE` | `"db_write"` | कोई नहीं | डेटाबेस राइट एक्सेस |
+| `Capability::FILE_READ` | `"file_read"` | कोई नहीं | फ़ाइलसिस्टम रीड |
+| `Capability::FILE_WRITE` | `"file_write"` | कोई नहीं | फ़ाइलसिस्टम राइट |
+| `Capability::HTTP_OUTBOUND` | `"http_outbound"` | कोई नहीं | आउटबाउंड HTTP |
+| `Capability::HOOKS` | `"hooks"` | कोई नहीं | इवेंट हुक सब्सक्रिप्शन |
+| `Capability::CHECKOUT_UI` | `"checkout_ui"` | कोई नहीं | चेकआउट UI इंजेक्शन |
+
+## सामान्य कैपेबिलिटी संयोजन {#common-capability-combinations}
+
+### पेमेंट गेटवे {#payment-gateway}
+
+```json
+"capabilities": ["gateway"]
+```
+
+### कम्युनिकेशन ऐडऑन (SMS/Email/Telegram) {#communication-addon-sms/email/telegram}
+
+```json
+"capabilities": ["addon", "communication", "hooks", "http_outbound"]
+```
+
+### एनालिटिक्स डैशबोर्ड विजेट {#analytics-dashboard-widget}
+
+```json
+"capabilities": ["addon", "analytics", "hooks", "dashboard"]
+```
+
+### चेकआउट थीम {#checkout-theme}
+
+```json
+"capabilities": ["theme", "checkout_ui"]
+```
+
+## सुरक्षा-संबंधी टिप्पणियाँ {#security-relevant-notes}
+
+### `db_read` / `db_write` - SQL आइसोलेशन {#db_read-/-db_write-sql-isolation}
+
+किसी भी `op_*` टेबल पर क्वेरी, जिसका नाम `op_plugin_` से शुरू नहीं होता, `PluginSandbox::validateSql()` द्वारा ब्लॉक कर दी जाती है।
+
+### `file_read` / `file_write` - पाथ कंटेनमेंट {#file_read-/-file_write-path-containment}
+
+`PluginSandbox::validateFilePath()` लक्ष्य पाथ को रिज़ॉल्व करने के लिए `realpath()` का उपयोग करता है और जाँचता है कि वह प्लगइन डायरेक्टरी पाथ से शुरू होता है।
+
+### ब्लॉक किए गए PHP फ़ंक्शन {#blocked-php-functions}
+
+कैपेबिलिटीज़ चाहे जो हों, निम्नलिखित फ़ंक्शन तुरंत लोड विफलता का कारण बनते हैं:
+
+| ब्लॉक किया गया फ़ंक्शन | कारण |
+| --- | --- |
+| `exec()` | सीधा OS कमांड निष्पादन |
+| `shell_exec()` | बैकटिक-समतुल्य के माध्यम से शेल कमांड |
+| `system()` | सीधे आउटपुट के साथ OS कमांड |
+| `passthru()` | कच्चा OS कमांड निष्पादन |
+| `popen()` | प्रोसेस पाइप ओपनर |
+| `proc_open()` | पूर्ण प्रोसेस नियंत्रण |
+| `pcntl_exec()` | प्रोसेस इमेज प्रतिस्थापन |
+| `dl()` | डायनामिक एक्सटेंशन लोडिंग |
+| `assert()` | असर्शन के माध्यम से कोड मूल्यांकन |
+| `create_function()` | रनटाइम लैम्ब्डा कोड जनरेशन |
+| `eval` | डायनामिक कोड मूल्यांकन |
+
+## संबंधित पेज {#related-pages}
+
+- [मैनिफ़ेस्ट संदर्भ](/hi/developer/plugins/manifest)
+- [हुक संदर्भ](/hi/developer/plugins/hooks)
+- [प्लगइन लाइफ़साइकल](/hi/developer/plugins/lifecycle)
+- [प्लगइन अवलोकन](/hi/developer/plugins/overview)

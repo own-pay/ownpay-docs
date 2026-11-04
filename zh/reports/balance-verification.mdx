@@ -1,0 +1,66 @@
+---
+title: 余额核对
+description: 通过将系统记录的余额与重新计算的总额进行比较来核对您的复式记账账本，以发现任何差异。
+keywords: "余额核对, 账本对账, 复式记账, 余额不匹配, 财务审计, balance verification"
+sidebarTitle: 余额核对
+icon: scale
+---
+
+余额核对让您可以将 OwnPay 复式记账账本中存储的余额与独立重新计算的总额进行比较。这对于保障财务完整性和发现任何数据不一致至关重要。
+
+<Info>
+  有关复式记账账本工作原理的背景信息，请参阅[账本](/zh/fundamentals/ledger)。
+</Info>
+
+## 运行核对 {#run-a-verification}
+
+<Steps>
+  <Step>
+    在左侧边栏中导航至 **Reports \> Balance Verification**。
+  </Step>
+  <Step>
+    从下拉菜单中选择一个**品牌**。如果您只运营一个品牌，它会被预先选中。
+  </Step>
+  <Step>
+    选择一个**日期范围**。核对会重新计算此时间窗口内的每一笔交易。
+  </Step>
+  <Step>
+    点击 **Verify**。OwnPay 会从原始交易数据中汇总所有借方和贷方分录，并将结果与存储的累计余额进行比较。
+  </Step>
+</Steps>
+
+## 理解结果 {#understanding-the-results}
+
+核对报告显示：
+
+| 字段 | 描述 |
+| --- | --- |
+| **System Balance** | 账本账户中存储的累计余额 |
+| **Calculated Balance** | 根据各笔交易分录重新计算的总和 |
+| **Difference** | System Balance 减去 Calculated Balance（应为零） |
+| **Status** | Matched（匹配）或 Mismatched（不匹配） |
+
+**Matched** 状态表示您的账本是一致的。所有借方和贷方的合计都正确。
+
+## 余额不匹配时该怎么办 {#what-to-do-if-balances-don’t-match}
+
+如果核对显示不匹配：
+
+1. **检查手动账本调整** - 查看[审计日志](/zh/reports/audit-log)中所选期间内的所有 `ledger.adjustment` 操作
+2. **确认没有交易被删除** - OwnPay 会阻止删除交易，但直接修改数据库可能导致不一致
+3. **检查部分退款** - 确保部分退款以 `bcmath` 精度记录了正确的金额
+4. **再次运行核对** - 排除最近一天，以确定差异开始出现的时间
+
+<Warning>
+  切勿手动编辑数据库表来修复余额不匹配。如果您无法确定根本原因，请联系 {{supportEmail}}。错误的手动修复可能会使差异进一步扩大。
+</Warning>
+
+<Tip>
+  将每周一次的余额核对纳入您的日常运营流程。时间窗口越窄，越容易调查小的差异。
+</Tip>
+
+## 相关页面 {#related-pages}
+
+- [账本](/zh/fundamentals/ledger) - 复式记账系统的工作原理
+- [审计日志](/zh/reports/audit-log) - 查看可能影响余额的操作
+- [仪表盘](/zh/reports/dashboard) - 高层级财务指标

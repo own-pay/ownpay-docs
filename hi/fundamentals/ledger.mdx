@@ -1,0 +1,108 @@
+---
+title: "लेजर - पेमेंट के लिए डबल-एंट्री बहीखाता"
+description: "OwnPay हर पेमेंट, शुल्क और ट्रांसफ़र को bcmath सटीकता और ब्रांड आइसोलेशन के साथ डबल-एंट्री बहीखाते का उपयोग करके संतुलित डेबिट-क्रेडिट जोड़ों के रूप में दर्ज करता है।"
+keywords: "double-entry ledger, payment accounting, bookkeeping, journal entries, financial reconciliation, bcmath, T-account, डबल-एंट्री लेजर"
+sidebarTitle: "लेजर"
+icon: "book"
+---
+
+import LlmsDirective from "/hi/snippets/llms-directive.mdx";
+
+<Visibility for="agents">
+  <LlmsDirective />
+</Visibility>
+
+जब भी OwnPay में पैसा आता-जाता है - कोई ग्राहक पेमेंट करता है, कोई गेटवे शुल्क काटता है, कोई रिफ़ंड जारी होता है - सिस्टम उसे संतुलित जर्नल प्रविष्टियों के एक जोड़े के रूप में दर्ज करता है। यह **डबल-एंट्री बहीखाता** है, वही तरीका जो लेखांकन सॉफ़्टवेयर और बैंक उपयोग करते हैं। इसका मतलब है कि आप हमेशा पता लगा सकते हैं कि पैसा कहाँ से आया और कहाँ गया, और कुल डेबिट हमेशा कुल क्रेडिट के बराबर होते हैं।
+
+## OwnPay में डबल-एंट्री कैसे काम करती है {#how-double-entry-works-in-ownpay}
+
+जब Stripe के माध्यम से \$100 का पेमेंट पूरा होता है (\$2.90 गेटवे शुल्क के साथ), तो OwnPay तीन खातों में चार लेजर प्रविष्टियाँ बनाता है:
+
+<Mermaid chart={`
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#0F97ED','primaryTextColor':'#ffffff','primaryBorderColor':'#102963','lineColor':'#102963','secondaryColor':'#E8F4FD','tertiaryColor':'#F0F7FF','noteBkgColor':'#E8F4FD','noteTextColor':'#102963','noteBorderColor':'#0F97ED'}}}%%
+graph LR
+subgraph "कैश खाता (एसेट)"
+C1[डेबिट $97.10]
+end
+subgraph "गेटवे शुल्क व्यय"
+G1[डेबिट $2.90]
+end
+subgraph "ग्राहक प्राप्य (एसेट)"
+R1[क्रेडिट $100.00]
+end
+R1 -->|"पेमेंट पूर्ण"| C1
+R1 -->|"पेमेंट पूर्ण"| G1
+style C1 fill:#e8f5e9,stroke:#2e7d32
+style G1 fill:#fce4ec,stroke:#c62828
+style R1 fill:#e3f2fd,stroke:#1565c0
+`}>
+</Mermaid>
+
+शुद्ध प्रभाव: **\$100.00 क्रेडिट = \$97.10 डेबिट \+ \$2.90 डेबिट**। बही-खाते शून्य पर संतुलित होते हैं।
+
+## खाता प्रकार {#account-types}
+
+OwnPay मानक GAAP खाता श्रेणियों का उपयोग करता है:
+
+| खाता प्रकार | उदाहरण | डेबिट प्रभाव | क्रेडिट प्रभाव |
+| :-- | :-- | :-- | :-- |
+| **एसेट** | Cash, Customer Receivable | बैलेंस बढ़ाता है | बैलेंस घटाता है |
+| **व्यय** | Gateway Fee Revenue, Platform Fee | बैलेंस बढ़ाता है | बैलेंस घटाता है |
+| **देयता** | Refund Payable | बैलेंस घटाता है | बैलेंस बढ़ाता है |
+| **इक्विटी** | Retained Earnings | बैलेंस घटाता है | बैलेंस बढ़ाता है |
+
+## बैलेंस गणना {#balance-calculation}
+
+सभी मौद्रिक गणनाएँ PHP के `bcmath` एक्सटेंशन का उपयोग करती हैं - कभी भी फ़्लोटिंग-पॉइंट अंकगणित नहीं। बैलेंस को `bccomp()` का उपयोग करके **4-दशमलव सटीकता** पर सत्यापित किया जाता है।
+
+```php
+// Internal balance validation (simplified)
+$debits  = bcadd($entry1->debit, $entry2->debit, 4);  // "100.0000"
+$credits = bcadd($entry1->credit, $entry2->credit, 4); // "100.0000"
+
+if (bccomp($debits, $credits, 4) !== 0) {
+    throw new InvalidArgumentException('Journal entries must balance');
+}
+```
+
+<Warning>
+  `op_ledger_accounts.balance` कॉलम को कभी भी मैन्युअल रूप से अपडेट न करें। हमेशा `LedgerService` का उपयोग करें - सीधे SQL संपादन से रिकंसिलिएशन में बेमेल होगा।
+</Warning>
+
+## डबल-पोस्ट रोकथाम {#double-post-prevention}
+
+OwnPay एक ही पेमेंट को दो बार दर्ज होने से बचाता है। लेजर प्रविष्टियाँ डालने से पहले, सिस्टम एक रो लॉक प्राप्त करता है:
+
+```sql
+SELECT * FROM op_ledger_transactions
+WHERE merchant_id = ? AND reference_type = ? AND reference_id = ?
+FOR UPDATE
+```
+
+अगर कोई मेल खाती रो मौजूद है, तो ऑपरेशन छोड़ दिया जाता है। यह एक डेटाबेस ट्रांज़ैक्शन के अंदर चलता है, इसलिए समवर्ती अनुरोध सुरक्षित रूप से क्रमबद्ध होते हैं।
+
+## ब्रांड आइसोलेशन {#brand-isolation}
+
+लेजर खाते एक `merchant_id` (ब्रांड) तक सीमित होते हैं। ब्रांड A का कैश बैलेंस ब्रांड B से पूरी तरह स्वतंत्र है। रिपॉज़िटरी इसे क्वेरी स्तर पर लागू करती है:
+
+```php
+$account = $ledgerRepo->findOrCreateAccount($name, $type, $currency, $merchantId);
+```
+
+## रिकंसिलिएशन {#reconciliation}
+
+आप किसी भी समय अपने लेजर बैलेंस को गेटवे सेटलमेंट के साथ सत्यापित कर सकते हैं। OwnPay में एक CLI रिकंसिलिएशन कमांड शामिल है:
+
+```bash
+php public/index.php admin/reconcile --merchant=YOUR_MERCHANT_ID
+```
+
+यह OwnPay के दर्ज लेनदेन की तुलना गेटवे द्वारा रिपोर्ट किए गए योग से करता है और किसी भी विसंगति को फ़्लैग करता है। GUI-आधारित संस्करण के लिए, एडमिन डैशबोर्ड में [Balance Verification](/hi/reports/balance-verification) पेज देखें।
+
+## संबंधित पेज {#related-pages}
+
+- [पेमेंट - लेजर](/hi/payments/ledger) - UI में लेजर प्रविष्टियाँ और जर्नल विवरण देखें
+- [बैलेंस सत्यापन](/hi/reports/balance-verification) - डैशबोर्ड से रिकंसिलिएशन ऑडिट चलाएँ
+- [ब्रांड](/hi/fundamentals/brands) - ब्रांड-स्तरीय लेजर आइसोलेशन को समझें
+- [लेनदेन स्थितियाँ](/hi/fundamentals/payment-flow) - कौन-सी स्थितियाँ लेजर प्रविष्टियाँ ट्रिगर करती हैं
+- [सामान्य त्रुटियाँ](/hi/resources/common-errors) - रिकंसिलिएशन बेमेल का समस्या निवारण

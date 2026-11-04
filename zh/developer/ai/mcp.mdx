@@ -1,0 +1,210 @@
+---
+title: "OwnPay MCP 服务器 - 将 AI 工具连接到实时文档"
+description: "通过 Model Context Protocol 服务器将 Claude、Cursor 和 Windsurf 等 AI 工具连接到 OwnPay 文档，实时获取内容。"
+keywords: ["MCP 服务器", "Model Context Protocol", "AI 工具", "Claude", "Cursor", "ChatGPT", "OwnPay 文档", "Windsurf"]
+sidebarTitle: "MCP 服务器"
+icon: "brain"
+---
+
+OwnPay 文档托管了一个公开的 **Model Context Protocol（MCP）服务器**，让 AI 助手和编码智能体可以直接从实时文档中搜索和获取内容。你的 AI 工具不再依赖静态训练数据或通用网络搜索，而是从真实文档中获取准确、实时的规范。
+
+<Info>
+  MCP 服务器地址为 `{{docs-url}}`。它是只读的，公开可访问，且无需身份验证。
+</Info>
+
+## 1. 什么是 MCP？ {#1-what-is-mcp}
+
+**Model Context Protocol** 是一项开放标准，旨在将 AI 应用程序连接到外部数据源。当你将本地 AI 开发工具连接到 OwnPay MCP 服务器后，它将获得三个特定工具：
+
+1. **Search**：在所有 OwnPay 文档页面中搜索，返回相关的片段和链接。
+2. **Query docs filesystem**：使用 shell 风格的命令读取和浏览页面，支持批量读取。
+3. **Submit feedback**：将过时或错误的信息直接反馈给 OwnPay 文档团队。
+
+---
+
+## 2. 连接你的 AI 工具 {#2-connect-your-ai-tool}
+
+按照以下步骤将 OwnPay MCP 服务器添加到你常用的环境中：
+
+<Tabs>
+  <Tab title="Cursor">
+    将 OwnPay MCP 服务器连接到 Cursor：
+
+    <Steps>
+      <Step title="打开 MCP 设置">
+        1. 打开 Cursor 的设置。
+        2. 前往 **Features** \> **MCP**。
+        3. 点击 **\+ Add New MCP Server**。
+      </Step>
+      <Step title="配置服务器">
+        在对话框中输入以下信息：
+
+        - **Name:** `ownpay-docs`
+        - **Type:** `sse`
+        - **URL:** `{{mcp-url}}`
+      </Step>
+      <Step title="验证连接">
+        在 Cursor 的聊天面板中提问：_"What tools do you have available?"_ 它应当列出 `ownpay-docs`，并显示 search 和 query 工具已激活。
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Claude Desktop">
+    将服务器添加到 Claude Desktop 应用程序：
+
+    <Steps>
+      <Step title="打开配置文件">
+        打开 Claude Desktop 配置文件：
+
+        - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+        - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+      </Step>
+      <Step title="添加服务器配置">
+        在 `mcpServers` 对象中插入以下代码片段：
+
+        ```json
+        {
+          "mcpServers": {
+            "ownpay-docs": {
+              "command": "npx",
+              "args": [
+                "-y",
+                "@modelcontextprotocol/server-sse",
+                "{{mcp-url}}"
+              ]
+            }
+          }
+        }
+        ```
+      </Step>
+      <Step title="重启 Claude">
+        重新启动 Claude Desktop。你会看到一个小插头图标，表示 `ownpay-docs` 已成功连接。
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Windsurf">
+    将服务器连接到 Windsurf 的 Cascade 助手：
+
+    <Steps>
+      <Step title="打开配置文件">
+        打开位于 `~/.codeium/windsurf/mcp_config.json` 的 Windsurf 全局 MCP 配置文件。
+      </Step>
+      <Step title="添加服务器配置">
+        插入以下配置块：
+
+        ```json
+        {
+          "mcpServers": {
+            "ownpay-docs": {
+              "serverUrl": "{{mcp-url}}"
+            }
+          }
+        }
+        ```
+      </Step>
+      <Step title="重启 Windsurf">
+        重启编辑器，以在 Cascade 中启用搜索索引。
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="VS Code (Cline/Roo Code)">
+    如果你在 VS Code 中使用 Cline 或 Roo Code 等扩展：
+
+    <Steps>
+      <Step title="打开设置">
+        前往扩展的 MCP 配置设置。
+      </Step>
+      <Step title="添加 HTTP/SSE 条目">
+        添加一个新的 HTTP 服务器条目：
+
+        - **Name:** `ownpay-docs`
+        - **Type:** `sse`
+        - **URL:** `{{mcp-url}}`
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Claude Code">
+    通过 Claude Code 命令行界面添加服务器：
+
+    ```bash
+    claude mcp add --transport http ownpay-docs {{mcpUrl}}
+    ```
+
+    使用以下命令验证是否已添加：
+
+    ```bash
+    claude mcp list
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## 3. AI 助手的系统提示词 {#3-system-prompt-for-ai-assistants}
+
+将以下系统提示词复制并粘贴到你的自定义 GPT 指令、Claude Project 或 Cursor 系统设置中，以指导 AI 如何与 OwnPay 交互：
+
+```text
+You are an expert developer assistant specialized in the OwnPay payment orchestration platform. You have access to the OwnPay documentation MCP server at "{{mcp-url}}".
+
+When answering questions or generating code:
+1. Architecture Overview:
+   - OwnPay is a self-hosted, open-source payment gateway platform.
+   - It supports multi-brand (multi-tenant) scoping, where each brand has isolated database parameters, gateways, ledger logs, and custom checkout domains.
+   - Core database tables include: `op_brands`, `op_gateways`, `op_transactions`, `op_ledger_entries`, `op_plugins`, and `op_domains`.
+   - Pluggable extension directories: `modules/gateways/` (payment adapters), `modules/addons/` (filters and actions), and `modules/themes/` (custom Twig-based checkouts).
+
+2. API Specifications:
+   - Root-level endpoints:
+     - POST `/api/v1/payments` (Create payment session redirect)
+     - GET `/api/v1/payments/{trx_id}` (Verify payment status)
+     - POST `/api/v1/refunds` (Refund transaction amount)
+   - Uses Bearer Token authentication: Authorization: Bearer op_abc123.def456
+
+3. Best Practices & Conventions:
+   - Use PSR-12 coding style for all PHP code.
+   - Always perform server-to-server validation for webhook events; never trust client-side parameters.
+   - Implement timing-attack-safe checks using `hash_equals()` for HMAC comparisons.
+   - Enforce a 5-minute replay-window timeout on webhook header timestamps.
+
+If a question requires precise file paths, settings schemas, or hooks details, proactively call the ownpay-docs MCP server tools to search the live documentation.
+```
+
+---
+
+## 4. 发现机制与规范 {#4-discovery-and-specifications}
+
+MCP 服务器支持自动发现。实现了自动客户端连接的系统可以在以下地址查询配置元数据：
+
+```text
+{{mcp-url}}/.well-known/mcp
+```
+
+### 服务器速率限制 {#server-rate-limits}
+
+为保持服务稳定，公开端点实施以下每小时请求速率限制：
+
+| 范围 | 限制 |
+| --- | --- |
+| 每个用户 IP | 5,000 次请求/小时 |
+| 每个站点的 Search | 10,000 次请求/小时 |
+| 每个站点的 Query Docs Filesystem | 10,000 次请求/小时 |
+
+---
+
+## 5. 示例查询 {#5-example-queries}
+
+配置完成后，可以使用以下查询来测试 AI 的集成效果：
+
+- _"如何注册自定义 webhook 事件过滤器？"_
+- _"演示如何为自定义结账主题构建 Twig 模板"_
+- _"`payment.transaction.completed` 的有效负载结构是什么？"_
+- _"不可变的复式记账账本如何跟踪商户结算？"_
+- _"创建一个用于发起白标结账会话的 cURL 请求"_
+
+---
+
+## 相关页面 {#related-pages}
+
+- [AI Skills](/zh/developer/ai/skills)
+- [开发者快速入门](/zh/developer/quickstart)
+- [插件系统概览](/zh/developer/plugins/overview)

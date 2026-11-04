@@ -1,0 +1,254 @@
+---
+title: "थीम प्लगइन डेवलपमेंट - चेकआउट का रूप-रंग कस्टमाइज़ करें"
+description: "ऐसे थीम प्लगइन बनाएँ जो Blade टेम्पलेट, स्टैटिक एसेट, लेआउट ओवरराइड और ब्रांड-स्कोप्ड स्टाइलिंग के साथ OwnPay चेकआउट को कस्टमाइज़ करते हैं।"
+keywords: "theme plugin, checkout customization, Blade templates, brand styling, checkout theme"
+sidebarTitle: "थीम डेवलपमेंट"
+icon: "brush"
+---
+
+थीम OwnPay के ग्राहक-सामने वाले चेकआउट अनुभव के विज़ुअल रूप-रंग को नियंत्रित करती हैं। एक थीम प्लगइन किसी भी कोर फ़ाइल को बदले बिना, चेकआउट टेम्पलेट पाथ को ओवरराइड करता है और इवेंट हुक के माध्यम से CSS/JS एसेट इंजेक्ट करता है।
+
+## थीम प्लगइन कैसे काम करते हैं {#how-theme-plugins-work}
+
+थीम `"theme"` प्रकार के सामान्य प्लगइन हैं। इन्हें `PluginLoader` द्वारा `modules/themes/{slug}/` से उसी दो-चरण वाले लाइफ़साइकल के माध्यम से लोड किया जाता है जैसे ऐडऑन को।
+
+चेकआउट कंट्रोलर तीन फ़िल्टर हुक लागू करके तय करता है कि कौन-सा टेम्पलेट रेंडर करना है:
+
+| हुक | उद्देश्य |
+| --- | --- |
+| `checkout.template` | मुख्य पेमेंट गेटवे चयन और चेकआउट पेज |
+| `checkout.status.template` | सफलता / विफलता / लंबित परिणाम पेज |
+| `checkout.payment_link.template` | पेमेंट लिंक राशि-प्रविष्टि पेज |
+
+## डायरेक्टरी संरचना {#directory-structure}
+
+```text
+modules/themes/my-theme/
++-- manifest.json           # Required. Plugin metadata.
++-- Theme.php               # Required. Entrypoint class.
++-- templates/              # Required. Twig templates.
+|   +-- checkout.twig       # Main checkout page
+|   +-- checkout-status.twig # Payment result page
+|   +-- payment-link-amount.twig # Payment link page
++-- assets/                 # Optional. CSS/JS files.
+    +-- checkout.css
+    +-- checkout.js
+```
+
+## manifest.json फ़ाइल {#the-manifest-json-file}
+
+```json
+{
+  "name": "OwnPay Theme",
+  "slug": "own-pay",
+  "version": "2.0.0",
+  "description": "Default OwnPay checkout theme - premium, responsive, multi-gateway.",
+  "author": "OwnPay",
+  "type": "theme",
+  "entrypoint": "Theme.php",
+  "namespace": "OwnPay\\Modules\\Themes\\OwnPay",
+  "requires": {
+    "ownpay": ">=0.1.0"
+  },
+  "settings": {
+    "footer_text": "Secured by OwnPay",
+    "show_dark_toggle": "enabled",
+    "timeout_enabled": "enabled",
+    "timeout_minutes": 10,
+    "custom_css": "",
+    "custom_js": ""
+  }
+}
+```
+
+## एंट्रीपॉइंट क्लास {#the-entrypoint-class}
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace OwnPay\Modules\Themes\MyTheme;
+
+use OwnPay\Container;
+use OwnPay\Event\EventManager;
+use OwnPay\Plugin\Capability;
+use OwnPay\Plugin\PluginInterface;
+
+final class Theme implements PluginInterface
+{
+    public static function metadata(): array
+    {
+        return [
+            'name'        => 'My Theme',
+            'slug'        => 'my-theme',
+            'version'     => '1.0.0',
+            'description' => 'A custom checkout theme for OwnPay.',
+            'author'      => 'Your Name',
+            'type'        => 'theme',
+        ];
+    }
+
+    public function capabilities(): array
+    {
+        return [Capability::THEME];
+    }
+
+    public function register(EventManager $events, Container $container): void
+    {
+        $events->addFilter('checkout.template', function (string $template): string {
+            return 'checkout/checkout.twig';
+        });
+
+        $events->addFilter('checkout.status.template', function (string $template): string {
+            return 'checkout/checkout-status.twig';
+        });
+
+        $events->addFilter('checkout.payment_link.template', function (string $template): string {
+            return 'checkout/payment-link-amount.twig';
+        });
+
+        $events->addAction('checkout.head', function (): void {
+            echo '<link rel="stylesheet" href="/assets/css/my-theme-checkout.css">';
+        });
+
+        $events->addAction('checkout.footer', function () use ($container): void {
+            $nonceVal  = $container->has('csp_nonce') ? $container->get('csp_nonce') : '';
+            $nonceAttr = is_string($nonceVal) && $nonceVal !== ''
+                ? ' nonce="' . htmlspecialchars($nonceVal, ENT_QUOTES, 'UTF-8') . '"'
+                : '';
+            echo '<script' . $nonceAttr . ' src="/assets/js/my-theme-checkout.js"></script>';
+        });
+    }
+
+    public function boot(Container $container): void {}
+    public function deactivate(Container $container): void {}
+    public function uninstall(Container $container): void {}
+
+    public function fields(): array
+    {
+        return [
+            [
+                'name'    => 'primary_color',
+                'label'   => 'Primary Color',
+                'type'    => 'color',
+                'default' => '#0D9488',
+            ],
+            [
+                'name'    => 'show_powered_by',
+                'label'   => 'Show "Powered by OwnPay"',
+                'type'    => 'toggle',
+                'default' => '1',
+            ],
+        ];
+    }
+}
+```
+
+## ब्रांड थीम डेटा {#brand-theme-data}
+
+चेकआउट कंट्रोलर `BrandThemeService::getBrandTheme(int $merchantId)` को कॉल करता है और परिणाम को `brand` Twig वेरिएबल के रूप में पास करता है:
+
+```php
+[
+    'name'           => 'MyBrand',
+    'logo'           => '/storage/logo.png',
+    'color'          => '#0D9488',
+    'accent_color'   => '#0F766E',
+    'support_email'  => 'support@mybrand.com',
+    'custom_css'     => '/* brand CSS */',
+    'footer_text'    => 'Secured by MyBrand',
+    'show_powered_by'=> true,
+]
+```
+
+## Twig टेम्पलेट डेवलपमेंट {#twig-template-development}
+
+```twig
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ brand.name|e }} - Checkout</title>
+    {{ hook('checkout.head')|raw }}
+    {% if brand.custom_css %}
+        <style>{{ brand.custom_css }}</style>
+    {% endif %}
+</head>
+<body>
+    <main class="checkout-container">
+        {% if brand.logo %}
+            <img src="{{ brand.logo|e }}" alt="{{ brand.name|e }}" />
+        {% endif %}
+
+        <div class="checkout-amount">
+            {{ transaction.currency|e }} {{ transaction.amount|e }}
+        </div>
+
+        {% block checkout_content %}{% endblock %}
+
+        <footer>
+            {% if brand.show_powered_by %}
+                <span>{{ brand.footer_text|e }}</span>
+            {% endif %}
+        </footer>
+    </main>
+
+    {{ hook('checkout.footer')|raw }}
+    {% if brand.custom_js %}
+        <script>{{ brand.custom_js }}</script>
+    {% endif %}
+</body>
+</html>
+```
+
+## CSP nonce इंटीग्रेशन {#csp-nonce-integration}
+
+```php
+$events->addAction('checkout.footer', function () use ($container): void {
+    $nonce     = $container->has('csp_nonce') ? $container->get('csp_nonce') : '';
+    $nonceAttr = is_string($nonce) && $nonce !== ''
+        ? ' nonce="' . htmlspecialchars($nonce, ENT_QUOTES, 'UTF-8') . '"'
+        : '';
+    echo '<script' . $nonceAttr . ' src="/assets/js/my-theme-checkout.js"></script>';
+});
+```
+
+## थीम के लिए पूर्ण हुक संदर्भ {#full-hook-reference-for-themes}
+
+| हुक | प्रकार | उद्देश्य |
+| --- | --- | --- |
+| `checkout.template` | फ़िल्टर | मुख्य चेकआउट टेम्पलेट पाथ ओवरराइड करें |
+| `checkout.status.template` | फ़िल्टर | परिणाम पेज टेम्पलेट पाथ ओवरराइड करें |
+| `checkout.payment_link.template` | फ़िल्टर | पेमेंट लिंक पेज टेम्पलेट ओवरराइड करें |
+| `checkout.render` | फ़िल्टर | चेकआउट Twig कॉन्टेक्स्ट में वेरिएबल इंजेक्ट करें |
+| `checkout.head` | एक्शन | `<head>` में CSS/फ़ॉन्ट इंजेक्ट करें |
+| `checkout.footer` | एक्शन | `<footer>` में JS इंजेक्ट करें |
+| `checkout.before` | एक्शन | चेकआउट टेम्पलेट पार्स होने से पहले प्रतिक्रिया दें |
+| `checkout.csp.sources` | फ़िल्टर | CSP में बाहरी डोमेन जोड़ें |
+
+## सुरक्षा आवश्यकताएँ {#security-requirements}
+
+- Twig में हमेशा `{{ variable }}` (एस्केप्ड) का उपयोग करें, उपयोगकर्ता डेटा के लिए कभी भी `{{ variable|raw }}` का नहीं
+- हर `<script>` टैग में कंटेनर से मिला nonce होना चाहिए
+- कोई `eval()` या OS कमांड नहीं
+- कलर फ़ील्ड को hex regex से सत्यापित करें
+- बाहरी डोमेन के लिए `checkout.csp.sources` फ़िल्टर का उपयोग करें
+
+## इंस्टॉलेशन और सक्रियण {#installation-and-activation}
+
+1. प्लगइन डायरेक्टरी को ZIP के रूप में पैकेज करें
+2. Admin \> Appearance \> Themes \> "Install Theme" के माध्यम से अपलोड करें
+3. Themes सूची के माध्यम से सक्रिय करें
+4. Admin \> Appearance \> Themes \> "Set Active" के माध्यम से सक्रिय थीम के रूप में सेट करें
+
+<Note>
+  `active_theme` मान आपके मैनिफ़ेस्ट `slug` से बिल्कुल मेल खाना चाहिए। मेल न खाने पर सिस्टम बिल्ट-इन `own-pay` थीम पर वापस चला जाता है।
+</Note>
+
+## संबंधित पेज {#related-pages}
+
+- [गेटवे प्लगइन डेवलपमेंट](/hi/developer/plugin-types/gateway)
+- [ऐडऑन प्लगइन डेवलपमेंट](/hi/developer/plugin-types/addon)
+- [इंटीग्रेशन प्लगइन डेवलपमेंट](/hi/developer/plugin-types/integration)
+- [हुक संदर्भ](/hi/developer/plugins/hooks)
+- [मैनिफ़ेस्ट संदर्भ](/hi/developer/plugins/manifest)

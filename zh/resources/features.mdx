@@ -1,0 +1,495 @@
+---
+title: 功能与能力
+description: "OwnPay 所有能力的完整参考，包括品牌、网关、账本、短信验证、自定义域名、插件、RBAC 和报表。"
+keywords: "OwnPay 功能, 支付能力, 多品牌, 网关, 账本, 短信验证, 插件"
+sidebarTitle: 功能
+icon: star
+---
+
+OwnPay 内置所有能力的完整参考。如需深入了解架构，请参阅 [ARCHITECTURE.md](/zh/resources/architecture)。REST API 结构请参阅 [docs.ownpay.org](https://docs.ownpay.org)。指南和教程请参阅 [learn.ownpay.org](https://learn.ownpay.org)。
+
+---
+
+## 🏆 旗舰特性 - 自主白标架构 {#🏆-flagship-sovereign-white-label-architecture}
+
+> **OwnPay 是首个在单次安装中实现完整白标、多品牌、自定义域名结账架构的自托管支付平台。**
+>
+> 没有其他自托管支付网关能做到这一点。
+
+具体含义如下：
+
+- **一台服务器，一次安装** - 归一位超级管理员所有。
+- **多个品牌** - 创建无限数量的商店（品牌）。每个品牌都是完全隔离的实体，拥有自己的自定义域名、徽标、名称、配色方案、网关、客户、账本和员工。
+- **每个品牌的自定义域名** - 将 `pay.yourbrand.com` 映射到某个品牌。OwnPay 通过 DNS TXT 记录（`_ownpay-verification.{domain}`）验证所有权，并通过 A 记录检查确认路由，然后激活该域名。
+- **隐形的基础设施** - 当客户进入结账页面时，他们访问的是 `pay.yourbrand.com`。他们看到的是该品牌的徽标、名称和颜色。页面上不会提及 OwnPay，没有共享域名，也没有“powered by”标识，除非品牌主动添加。
+- **管理面板保持私密** - 管理仪表板只能在主安装域名上访问。自定义品牌域名对所有 `/admin/*` 路径都返回 404。
+- **完全的数据隔离** - 每条客户记录、交易、账本条目、网关凭据和 Webhook 密钥都通过数据库中的 `merchant_id` 按品牌划分作用域。品牌之间零数据泄漏。
+- **品牌感知的 URL** - 所有结账 URL、网关回调 URL 和 Webhook 端点都会通过 `DomainUrlService` 自动使用品牌的自定义域名构建。安装域名永远不会泄露到面向客户的流程中。
+
+**最终效果：** 一台服务器，多个品牌。每个品牌都是一个完整、独立、完全自定义品牌的支付网关——彼此不可见，也看不到 OwnPay 的存在。
+
+---
+
+## 1. 多品牌管理 {#1-multi-brand-management}
+
+| 功能 | 描述 |
+|:---|:---|
+| 无限品牌 | 创建任意数量的品牌，每个品牌都有名称、slug、电子邮件、徽标、时区和货币 |
+| 品牌切换 | 超级管理员可从单一仪表板切换品牌上下文 |
+| 品牌隔离 | 所有数据通过 `merchant_id` 严格按品牌划分作用域；不可能跨品牌访问 |
+| 品牌级设置 | 品牌专属配置覆盖系统默认值（JSON 键值） |
+| 品牌停用 | 暂停品牌而不丢失数据 |
+
+---
+
+## 2. 自定义域名与白标管道 {#2-custom-domain-&-white-label-pipeline}
+
+| 功能 | 描述 |
+|:---|:---|
+| 自定义域名映射 | 在 `op_domains` 中为品牌注册任意域名 |
+| DNS TXT 验证 | `_ownpay-verification.{domain}` TXT 记录证明域名所有权 |
+| A 记录检查 | 在激活前确认域名路由到 OwnPay 服务器 |
+| 自动 DNS 复查 | `DnsVerificationJob` cron 按计划复查待处理/异常的域名 |
+| 域名中间件 | 每个请求都会将 `HTTP_HOST` 与已激活域名进行匹配，并注入品牌上下文 |
+| 管理路径拦截 | 在所有自定义品牌域名上，`/admin/*` 路径均返回 404 |
+| 品牌 URL 构建器 | `DomainUrlService` 使用品牌域名构建所有结账、回调和重定向 URL |
+| 域名缓存 | 内存缓存避免在单个请求周期内重复查询数据库 |
+
+---
+
+## 3. 品牌主题与自定义 {#3-brand-theming-&-customization}
+
+| 功能 | 描述 |
+|:---|:---|
+| 徽标与网站图标 | 品牌级徽标和网站图标（通过管理后台上传） |
+| 主色与强调色 | 应用于结账界面的品牌级十六进制颜色值 |
+| 自定义 CSS | 按品牌向结账页面注入任意 CSS |
+| 自定义 JavaScript | 按品牌向结账页面注入任意 JS |
+| 支持邮箱 | 结账页面上面向客户的品牌级支持邮箱地址 |
+| 页脚文本 | 所有面向公众的品牌页面上的自定义页脚文本 |
+| 主题插件 | 安装视觉主题插件，按品牌替换默认结账皮肤 |
+| 分层回退 | 品牌值 → 商户值 → 系统默认值 |
+
+---
+
+## 4. 支付网关系统 {#4-payment-gateway-system}
+
+| 功能 | 描述 |
+|:---|:---|
+| 123 个内置网关 | 涵盖全球银行卡（Stripe、Adyen、Braintree、Authorize.net、Square、Worldpay、Cybersource、Checkout.com、Shift4、NMI、Moneris）、钱包（Apple Pay、Google Pay、Alipay、PayPal）、移动金融服务（bKash、Nagad、M-Pesa、MTN MoMo、GCash、Dana、GrabPay、PhonePe）、先买后付（Klarna）、加密货币（Coinbase Commerce、BTCPay、Bitpay）、区域平台（Razorpay、Cashfree、CCAvenue、PayU、Flutterwave、Paystack、MyFatoorah、Midtrans、Xendit、Rapyd、dLocal、Mercado Pago、Tap、Toss、Trustly、Przelewy24、Neteller、Skrill、Wise、GoCardless、2checkout、Amazon Pay 等） |
+| 基于插件的架构 | 每个网关都位于 `modules/gateways/{slug}/`；无需修改核心即可添加服务商 |
+| 手动网关 | 带可配置字段的自定义线下方式（银行转账、现金、移动货币） |
+| 品牌级激活 | 为不同品牌启用不同的网关，并使用独立的凭据集 |
+| 加密凭据 | 网关 API 密钥以 AES-256-GCM 加密方式静态存储 |
+| `GatewayAdapterInterface` | 标准契约：`initiate`、`verify`、`verifyWebhook`、`refund`、`supports`、`supportedCurrencies` |
+| `GatewayDefaults` trait | 提供空操作默认实现，适配器只需实现其支持的功能 |
+| 快速结账 | 预填信息的快捷付款提交 |
+
+---
+
+## 5. 付款处理 {#5-payment-processing}
+
+| 功能 | 描述 |
+|:---|:---|
+| 支付意图 | 带有唯一令牌、金额、货币、过期时间和元数据的原子付款请求 |
+| 意图生命周期 | `pending → processing → completed / failed / cancelled / expired` |
+| 基于令牌的结账 | 结账 URL 仅包含安全令牌；金额和网关详情永远不会在 URL 中暴露 |
+| 意图过期 | cron 自动将过期的意图标记为 expired 并触发钩子 |
+| 多币种结账 | 客户可以使用任何已启用的货币付款 |
+| 自动货币转换 | 如果网关仅支持特定货币，意图金额会自动转换 |
+| 转换审计记录 | 原始金额、转换后金额和汇率记录在交易记录中 |
+| 状态轮询 | `GET /checkout/{token}/status` AJAX 端点，用于实时状态更新 |
+| 手动验证 | 短信或线下网关交易由管理员手动验证 |
+
+---
+
+## 6. 交易管理 {#6-transaction-management}
+
+| 功能 | 描述 |
+|:---|:---|
+| 不可变的交易记录 | 每笔付款都会创建一条永久记录，包含 OwnPay trx_id、网关 trx_id、金额、费用和状态 |
+| 13 种状态 | `pending`、`created`、`processing`、`callback_processing`、`completed`、`failed`、`cancelled`、`expired`、`refunded`、`disputed`、`awaiting_verification`、`pending_review` |
+| 管理员状态覆盖 | 超级管理员可以手动调整交易状态，并保留完整的审计记录 |
+| 交易筛选 | 按状态、网关、日期范围、金额、客户筛选 |
+| CSV 导出 | 导出筛选后的交易集用于会计核算 |
+| 费用跟踪 | 每笔交易分别存储 `amount`、`fee` 和 `net_amount` |
+
+---
+
+## 7. 退款 {#7-refunds}
+
+| 功能 | 描述 |
+|:---|:---|
+| 部分退款 | 退还不超过原始交易金额的任意金额 |
+| 全额退款 | 一键全额退款，路由至原始网关 |
+| 退款生命周期 | `pending → completed / failed` |
+| 网关路由 | 退款发送至处理原始付款的同一网关 |
+| 退款对账 | `RefundReconciliationJob` cron 从网关 API 同步退款状态 |
+| 审计记录 | 每笔退款都存储原因、操作人和时间戳 |
+| 账本过账 | 退款自动以平衡的借/贷分录过账到复式记账账本 |
+
+---
+
+## 8. 发票 {#8-invoicing}
+
+| 功能 | 描述 |
+|:---|:---|
+| 编号发票 | 包含明细项（描述、数量、单价）的发票，自动计算小计、税费、折扣和总计 |
+| 关联客户 | 每张发票可选择关联客户 |
+| 发票结账 | 客户通过 `/invoice/{token}` 公共 URL 付款 |
+| 状态跟踪 | `draft → sent → paid / overdue / cancelled` |
+| 到期日与备注 | 可配置的到期日、内部备注，以及每个商户唯一的发票编号 |
+
+---
+
+## 9. 支付链接 {#9-payment-links}
+
+| 功能 | 描述 |
+|:---|:---|
+| 可重复使用的分享链接 | 为定期付款或商品付款创建 URL |
+| 自定义 slug | 易记的 URL 路径（例如 `/pay/annual-subscription`） |
+| 固定或可变金额 | 设置确切金额，或让客户在最小/最大范围内自行选择 |
+| 自定义字段 | 在付款前收集姓名、电子邮件、账户 ID 或任何数据 |
+| 使用次数限制 | 限制可接受的付款总数（链接在使用 N 次后自动失效） |
+| 过期日期 | 可选日期，过期后链接不再接受付款 |
+| 链接级重定向 | 每个链接都可设置自定义的成功和取消重定向 URL |
+
+---
+
+## 10. 客户管理 {#10-customer-management}
+
+| 功能 | 描述 |
+|:---|:---|
+| 客户记录 | UUID、加密的姓名、电子邮件、电话、元数据 |
+| 个人身份信息加密 | 客户字段以 AES-256-GCM 加密方式静态存储；电子邮件和电话以哈希形式存储用于查找 |
+| 品牌隔离 | 每个客户只属于一个品牌；不可跨品牌访问 |
+| 客户历史 | 查看客户的所有交易、发票和支付链接 |
+| REST API 访问 | 通过商户 API 创建、获取和列出客户 |
+| 去重 | 电子邮件/电话哈希可防止创建重复的客户记录 |
+
+---
+
+## 11. 复式记账账本与会计 {#11-double-entry-ledger-&-accounting}
+
+| 功能 | 描述 |
+|:---|:---|
+| GAAP 复式记账 | 每个财务事件都会过账平衡的借/贷分录对 |
+| 标准记账方向 | 资产和费用借方增加（+）；负债、权益和收入贷方增加（+） |
+| 账户类型 | 资产、负债、权益、收入、费用 |
+| 多币种账户 | 每个品牌每种货币都有独立的账本账户 |
+| 自动过账 | 付款、退款和费用在完成时自动过账 |
+| 试算平衡 | 随时验证借方总额等于贷方总额 |
+| 账本历史 | 按日期范围筛选查询每个账户的所有分录 |
+| 余额核验 | `BalanceVerificationJob` cron 交叉核对账本与网关余额 |
+| bcmath 精度 | 所有货币运算都使用 bcmath 字符串——绝不使用浮点数 |
+
+---
+
+## 12. 费用规则 {#12-fee-rules}
+
+| 功能 | 描述 |
+|:---|:---|
+| 固定费用 | 每笔交易固定金额 |
+| 百分比费用 | 交易金额的百分比 |
+| 阶梯费用 | 不同金额区间采用不同费率 |
+| 最低/最高上限 | 设置最低或最高费用金额 |
+| 作用范围 | 按品牌、按网关，或系统级回退 |
+| 自动应用 | `FeeService` 在付款过程中、账本过账前应用规则 |
+
+---
+
+## 13. 货币与汇率 {#13-currency-&-exchange-rates}
+
+| 功能 | 描述 |
+|:---|:---|
+| 180+ 种货币 | 按品牌启用/禁用世界各国货币 |
+| 汇率表 | `op_exchange_rates`：base、target、rate、source、updated_at |
+| 手动输入汇率 | 管理员手动设置汇率 |
+| 自动同步 | `CurrencyUpdateJob` 按计划获取实时汇率 |
+
+---
+
+## 14. Webhook {#14-webhooks}
+
+| 功能 | 描述 |
+|:---|:---|
+| 商户 Webhook 端点 | 注册 URL 以接收实时付款事件 |
+| 事件订阅 | 为每个 Webhook 端点订阅特定的事件类型 |
+| HMAC-SHA256 签名 | 每次投递都使用商户的密钥签名；接收方进行验证 |
+| 投递跟踪 | 每次投递尝试的状态、响应码、耗时和错误 |
+| 退避重试 | 失败的 Webhook 由 `WebhookRetryJob` 以指数退避方式重试 |
+| 死信队列 | 永久失败的 Webhook 进入队列等待手动重放 |
+| 手动重放 | 管理员可以重放任何失败的 Webhook 投递 |
+| 入站去重 | 网关回调按载荷哈希去重（幂等处理） |
+| 统一入站处理器 | 单一的 `POST /webhook/{gateway}` 端点处理全部 123 个网关的回调 |
+
+---
+
+## 15. 争议与拒付 {#15-disputes-&-chargebacks}
+
+| 功能 | 描述 |
+|:---|:---|
+| 争议生命周期 | `open → under_review → won / lost → closed` |
+| 证据上传 | 附加文档和截图作为争议证据 |
+| 处理结果跟踪 | 由谁处理、何时处理以及处理结果 |
+| 关联交易 | 每个争议都与原始交易关联 |
+| 账本调整 | 在争议解决时过账财务影响 |
+
+---
+
+## 16. 审计与合规 {#16-audit-&-compliance}
+
+| 功能 | 描述 |
+|:---|:---|
+| 不可变的审计日志 | 每个操作都会记录操作人、实体、新旧值、IP 和时间戳 |
+| 加密签名 | 每条日志条目都经过签名，以检测创建后的篡改 |
+| 完整性扫描器 | 管理员可以运行扫描以检测任何被修改的日志条目 |
+| 活动跟踪 | 登录/登出历史、权限变更、配置更新 |
+| 个人身份信息脱敏 | 在所有日志输出中对电子邮件和电话号码进行脱敏 |
+
+---
+
+## 17. 身份验证与访问控制 {#17-authentication-&-access-control}
+
+| 功能 | 描述 |
+|:---|:---|
+| 电子邮件/密码登录 | 标准的基于凭据的管理员登录 |
+| 可配置的登录 slug | 可配置管理员登录 URL slug 以增加隐蔽性 |
+| 双因素身份验证 | 通过身份验证器应用实现 TOTP（RFC 6238）；可按员工启用/禁用 |
+| 密码重置 | 针对忘记密码的基于令牌的电子邮件链接 |
+| 登录尝试跟踪 | 按 IP 记录失败的登录，用于速率限制和审计 |
+| 会话管理 | 会话存储在 `op_sessions` 中，包含 IP、用户 ID、最后活动时间 |
+| Bearer API 密钥 | 带作用域的密钥（read / write / admin），支持最后使用时间跟踪和撤销 |
+| JWT（移动端） | 设备配对后签发的 JSON Web Token，支持刷新 |
+| RBAC | 每个品牌的自定义角色，支持细粒度的权限分配 |
+| 员工管理 | 按品牌创建员工并分配角色；暂停/激活账户 |
+| IP 允许列表 | 可选的基于 IP 的管理路由访问限制 |
+
+---
+
+## 18. 移动配套应用 API {#18-mobile-companion-app-api}
+
+| 功能 | 描述 |
+|:---|:---|
+| OTP 设备配对 | 管理员生成 OTP；设备用其换取 JWT + AES 会话密钥 |
+| 多设备 | 员工可以同时配对手机和平板 |
+| 设备管理 | 在管理后台查看、撤销或批量撤销已配对设备 |
+| 心跳 | 设备定期发送心跳；服务器跟踪在线/离线状态 |
+| 移动仪表板 | 今日收入、待处理交易、近期付款摘要 |
+| 推送通知 | 服务器向设备推送 `transaction.completed`、`refund.issued`、`dispute.filed` 事件 |
+| 通知确认 | 设备将通知标记为已读；服务器跟踪未读数量 |
+| 令牌刷新 | JWT 刷新端点可延长会话而无需重新配对 |
+| 短信隐私过滤器 | 配置规则告诉应用应忽略哪些短信发送者/关键词 |
+
+---
+
+## 19. 基于短信的付款验证 {#19-sms-based-payment-verification}
+
+| 功能 | 描述 |
+|:---|:---|
+| 移动端短信转发 | 已配对的移动设备将收到的短信转发到 `POST /api/mobile/v1/sms` |
+| 正则解析器 | 每个网关的正则模板从短信正文中提取金额、发送者和交易 ID |
+| 启发式解析器 | 正则不匹配时使用的 AI 模式回退解析器 |
+| 智能分析器 | 结合正则和启发式方法并进行置信度评分 |
+| 交易匹配 | 解析后的短信按金额和时间戳自动关联到待处理交易 |
+| 付款确认 | 匹配的短信会将待处理的手动网关付款标记为完成 |
+| 短信日志 | `op_sms_data` 存储所有已解析的短信及其匹配状态 |
+| 短信模板编辑器 | 用于创建、测试和管理每个网关正则模板的管理界面 |
+| 正则测试器 | 使用示例短信正文测试正则模式，无需处理真实付款 |
+
+---
+
+## 20. 插件系统 {#20-plugin-system}
+
+| 功能 | 描述 |
+|:---|:---|
+| 插件类型 | 网关、主题、附加组件 |
+| 基于清单的发现 | 每个插件在 `manifest.json` 中声明元数据、功能和钩子 |
+| 静态代码审计 | 在加载前扫描源代码中的危险调用（`exec`、`shell_exec`、`eval`、`passthru`、原生 PDO） |
+| 沙箱执行 | 插件运行时相互隔离；异常会被捕获并记录，不会导致系统崩溃 |
+| 手动安装 | 管理员上传 ZIP；系统解压、验证并安装 |
+| 品牌级激活 | 全局启用插件或仅为特定品牌启用 |
+| 插件迁移 | 插件可以包含在安装时运行的数据库迁移 |
+| 设置界面 | 每个插件在 `/admin/plugins/{slug}/settings` 下注册自己的设置页面 |
+| 钩子集成 | 插件通过清单注册 `doAction` / `applyFilter` 回调 |
+| 卸载并清理 | 卸载时删除插件文件、数据和迁移 |
+
+---
+
+## 21. 事件钩子系统 {#21-event-hook-system}
+
+| 功能 | 描述 |
+|:---|:---|
+| 动作（`doAction`） | 触发事件；插件和附加组件监听并作出响应 |
+| 过滤器（`applyFilter`） | 在处理过程中转换值（例如修改付款金额、更改结账输出） |
+| 内置事件 | `system.boot`、`system.shutdown`、`payment.intent.created`、`payment.intent.expired`、`payment.completed`、`payment.failed`、`refund.created`、`dispute.created`、`customer.created`、`domain.mapped`、`domain.verified`、`domain.removed` |
+| 插件注册 | 钩子在插件清单中声明或以编程方式注册 |
+
+完整的钩子参考：[learn.ownpay.org/hooks-reference](https://learn.ownpay.org/hooks-reference)
+
+---
+
+## 22. 计划任务（Cron） {#22-scheduled-jobs-cron}
+
+| 任务 | 用途 |
+|:---|:---|
+| `WebhookRetryJob` | 以指数退避方式重试失败的出站 Webhook 投递 |
+| `QueueWorkerJob` | 处理后台任务队列（电子邮件、导出、批量操作） |
+| `BalanceVerificationJob` | 交叉核对账本余额与网关报告的余额 |
+| `CurrencyUpdateJob` | 获取并更新实时汇率 |
+| `SmsVerificationJob` | 处理手动网关的待处理短信验证 |
+| `RefundReconciliationJob` | 从网关 API 同步退款状态 |
+| `DnsVerificationJob` | 复查待处理自定义域名的 DNS 记录 |
+| `UpdateCheckJob` | 轮询 OwnPay 新版本 |
+| `SystemUpdateJob` | 如已配置则自动应用更新 |
+
+由 `GET /cron/{secret}` 触发。也可以在管理设置面板中手动运行单个任务。
+
+---
+
+## 23. 后台任务队列 {#23-background-job-queue}
+
+| 功能 | 描述 |
+|:---|:---|
+| 异步处理 | 将长时间运行的任务推送到队列（电子邮件、导出、Webhook 发送） |
+| 存储后端 | 基于文件（默认）或 Redis |
+| 退避重试 | 可配置最大尝试次数，重试之间采用指数延迟 |
+| 计划任务 | 设置 `available_at` 以延迟任务执行 |
+| 错误日志 | 每次尝试的异常都会被记录，任务不会被丢弃 |
+
+---
+
+## 24. 国际化（i18n） {#24-internationalization-i18n}
+
+| 功能 | 描述 |
+|:---|:---|
+| 管理面板完整国际化 | 每个管理界面字符串都可翻译 |
+| 结账页面完整国际化 | 面向客户的结账页面完全可翻译 |
+| 点表示法键 | 扁平 JSON 格式（`menu.dashboard`、`common.actions.save`） |
+| 占位符支持 | 通过 `:name`、`:amount` 语法插入动态值 |
+| 员工级语言 | 员工可设置自己的语言偏好 |
+| 系统默认语言 | 管理员为所有会话设置回退语言 |
+| 翻译导入 | 上传扁平或嵌套的 JSON 文件；系统自动展平嵌套键 |
+| 翻译编辑器 | 内联管理界面，逐键编辑字符串 |
+| 文件系统缓存 | 编译到 `storage/languages/{code}.json` 以实现快速加载 |
+| 英语回退 | 缺失的键回退到 `config/languages/en.json` |
+
+---
+
+## 25. 安全 {#25-security}
+
+| 功能 | 描述 |
+|:---|:---|
+| AES-256-GCM 加密 | 客户个人身份信息和网关凭据静态加密 |
+| Argon2id 密码 | 员工和管理员密码使用 Argon2id 哈希 |
+| bcrypt 回退 | 为升级兼容性保留对旧版 bcrypt 的支持 |
+| CSRF 防护 | 每个会话的 CSRF 令牌；所有 POST/PUT/DELETE 请求都需要有效令牌 |
+| 内容安全策略 | 每个请求的 nonce；严格的策略阻止未经授权的内联脚本 |
+| HSTS | 强制启用 HTTP 严格传输安全标头 |
+| X-Frame-Options | `DENY` - 防止点击劫持 |
+| X-Content-Type-Options | `nosniff` - 防止 MIME 嗅探 |
+| Referrer-Policy | 限制 referrer 信息泄露 |
+| SSRF 防护 | `UrlValidator` 解析 Webhook URL 并将其固定到经过验证的公共 IP；禁止跟随重定向 |
+| 速率限制 | 按路由、按 IP 的滑动窗口；返回带 `Retry-After` 标头的 429 |
+| 登录限流 | 针对登录、密码重置和 OTP 端点的严格限流桶 |
+| 基于哈希的个人身份信息搜索 | 电子邮件/电话以哈希形式存储；查找无需解密 |
+| 日志清理 | `LogSanitizer` 从所有日志输出中去除密码、令牌和卡数据 |
+| SQL 注入防护 | 全面使用带参数绑定的预处理语句 |
+| XSS 防护 | Twig 自动转义始终开启；`|raw` 仅用于可信内容 |
+
+---
+
+## 26. 自更新引擎 {#26-self-update-engine}
+
+| 功能 | 描述 |
+|:---|:---|
+| 版本跟踪 | 当前版本记录在配置中；`op_update_history` 记录所有已应用的更新 |
+| 更新清单 | 轮询更新服务器以获取可用的版本元数据 |
+| 更新前备份 | 在应用任何更新之前自动备份数据库和文件 |
+| SHA-256 + RSA 验证 | 在解压前通过校验和与 RSA 签名验证下载内容 |
+| Zip-slip 防护 | 解压时阻止发布包中的路径遍历攻击 |
+| 数据库结构迁移 | 自动应用版本中的数据库变更 |
+| 回滚 | 验证失败时从备份恢复 |
+| 维护模式 | 更新期间系统进入维护模式；成功后自动退出 |
+| 手动 + 自动模式 | 管理员手动触发，或通过 cron 启用自动更新 |
+
+---
+
+## 27. 系统设置 {#27-system-settings}
+
+| 类别 | 设置项 |
+|:---|:---|
+| 常规 | 应用名称、时区、基础货币、维护模式 |
+| 品牌 | 徽标、网站图标、公司名称、页脚文本、支持邮箱 |
+| 主题 | 主色、强调色、自定义 CSS、自定义 JS |
+| 邮件 | SMTP 驱动、主机、端口、发件人地址、回复地址、模板 |
+| 短信 | 短信服务商、发送者 ID |
+| 付款 | 默认网关、付款超时、费用默认值 |
+| 开发者 | API 速率限制、Webhook 限制、测试密钥生成 |
+| 语言 | 默认语言、翻译管理 |
+| 缓存 | 清除所有缓存 |
+| 数据库 | 优化表 |
+| 日志 | 归档和清理旧日志 |
+
+---
+
+## 28. 开发者工具 {#28-developer-tools}
+
+| 功能 | 描述 |
+|:---|:---|
+| 开发者中心 | 位于 `/admin/developer` 的管理界面，提供 API 和 Webhook 工具 |
+| Webhook 测试器 | 从管理后台向商户 Webhook 端点发送测试载荷 |
+| API 密钥管理 | 生成、列出和撤销 API 密钥 |
+| 速率限制显示 | 查看当前的 API 速率限制配置 |
+| Webhook 投递日志 | 检查投递尝试、响应码和错误 |
+| 健康检查端点 | `GET /api/v1/health` - 确认数据库、缓存和队列状态 |
+| CSP 违规报告 | 收集并记录内容安全策略违规 |
+| 自定义登录 slug | 将管理员登录 URL 设置为任意自定义 slug |
+
+---
+
+## 29. 安装 {#29-installation}
+
+| 功能 | 描述 |
+|:---|:---|
+| 基于 Web 的安装程序 | 多步骤 `/install` 向导——无需 CLI 或 SSH |
+| 数据库连接测试 | 在导入数据库结构前测试连接 |
+| 数据库结构导入 | 自动创建全部 48 张表 |
+| 创建管理员账户 | 在安装期间创建超级管理员 |
+| 密钥生成 | 生成 `APP_KEY`、`ENCRYPTION_KEY` 和 `JWT_SECRET` |
+| 安装锁 | 写入 `storage/.installed` 以防止重新运行向导 |
+| 共享主机支持 | 无需 SSH 或 Composer——发布包中已捆绑 `vendor/` |
+
+---
+
+## 30. REST API 接口 {#30-rest-api-surface}
+
+三个独立的 API 层，各自采用不同的身份验证方式：
+
+| 层 | 前缀 | 身份验证 |
+|:---|:---|:---|
+| 商户 API | `/api/v1/*` | Bearer API 密钥（read / write 作用域） |
+| 移动配套应用 API | `/api/mobile/v1/*` | JWT（设备配对后） |
+| 管理 API | `/api/admin/v1/*` | Bearer API 密钥（admin 作用域） |
+
+完整的 API 结构及请求/响应示例：**[docs.ownpay.org](https://docs.ownpay.org)**
+
+---
+
+## 平台概览 {#platform-at-a-glance}
+
+| 指标 | 数值 |
+|:---|:---|
+| 内置支付网关 | 123 |
+| 数据库表 | 48 |
+| REST API 端点 | 37+ |
+| Web 路由 | 120+ |
+| 计划任务 | 9 |
+| 中间件组件 | 16 |
+| 支持的货币 | 180+ |
+| 所需 PHP 版本 | 8.3+ |
+| 许可证 | AGPL-3.0 |
+
+---
+
+*贡献指南请参阅 [CONTRIBUTING.md](/zh/resources/contributing)。安全问题报告请参阅 [SECURITY.md](https://github.com/own-pay/OwnPay/blob/main/SECURITY.md)。架构详情请参阅 [ARCHITECTURE.md](/zh/resources/architecture)。*

@@ -1,0 +1,61 @@
+---
+title: 我的账户
+description: "管理您的个人管理员资料 - 修改姓名、电子邮件、密码、首选语言、2FA 设置和活跃会话。"
+keywords: "我的账户, 个人资料设置, 修改密码, 管理员语言, 活跃会话, 2FA 管理, my account"
+sidebarTitle: 我的账户
+icon: user
+---
+
+"我的账户"页面可让您管理个人管理员资料和安全设置。点击仪表板右上角的**头像**，然后选择 **My Account**。
+
+## 个人资料信息 {#profile-information}
+
+| 字段 | 描述 |
+| --- | --- |
+| **Name** | 您在管理面板和审计日志中的显示名称 |
+| **Email** | 您的登录电子邮件，也是用于密码重置的地址 |
+| **Profile Picture** | 显示在右上角的可选头像 |
+
+对姓名或电子邮件的更改会记录在[审计日志](/zh/reports/audit-log)中。
+
+## 修改密码 {#change-password}
+
+您可以随时修改密码，而无需使用重置流程：
+
+1. 滚动到 **Security** 部分
+2. 输入您的**当前密码**
+3. 输入并确认您的**新密码**
+4. 点击 **Update Password**
+
+新密码必须符合[密码要求](/zh/security/password-reset#password-requirements)。
+
+## 首选语言 {#preferred-language}
+
+在 **Language** 下拉菜单中设置您个人的管理面板语言。此设置仅针对您的账户覆盖系统默认语言。有关完整的语言管理指南，请参阅[语言](/zh/system/languages)。
+
+## 双因素认证 {#two-factor-authentication}
+
+Security 部分会显示您当前的 2FA 状态：
+
+- **未启用** - 显示一个开始设置的按钮（请参阅[双因素认证](/zh/security/two-factor)）
+- **已启用** - 显示 2FA 的启用时间，并提供管理备用码的按钮
+
+## 活跃会话 {#active-sessions}
+
+查看当前登录您账户的所有设备。每个会话显示：
+
+- **设备 / 浏览器** - 用户代理信息
+- **IP 地址** - 来源 IP
+- **最后活跃时间** - 最近一次请求的时间戳
+
+在任意会话上点击 **Terminate**，即可立即注销该设备。如果您在共享或公共计算机上忘记退出登录，此功能非常有用。
+
+<Warning>
+  终止当前会话会立即将您注销。终止前请确保已保存所有工作。
+</Warning>
+
+## 相关页面 {#related-pages}
+
+- [双因素认证](/zh/security/two-factor) - 设置和管理 2FA
+- [密码重置](/zh/security/password-reset) - 账户被锁定时的恢复流程
+- [语言](/zh/system/languages) - 管理系统级语言包

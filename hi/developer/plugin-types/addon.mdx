@@ -1,0 +1,220 @@
+---
+title: "OwnPay के लिए सामान्य-उद्देश्य वाले ऐडऑन प्लगइन बनाएँ"
+description: "OwnPay के plugin.yaml मैनिफ़ेस्ट, इवेंट हुक, फ़िल्टर और कैपेबिलिटीज़ का उपयोग करके सामान्य-उद्देश्य वाले ऐडऑन प्लगइन का ढाँचा बनाएँ, रजिस्टर करें और रिलीज़ करें।"
+keywords: "addon plugin, plugin development, plugin.yaml, event hooks, plugin scaffolding"
+sidebarTitle: "ऐडऑन डेवलपमेंट"
+icon: "package"
+---
+
+ऐडऑन OwnPay में सामान्य-उद्देश्य वाला एक्सटेंशन प्रकार हैं। गेटवे (जो `GatewayAdapterInterface` लागू करते हैं) या थीम (जो चेकआउट टेम्पलेट ओवरराइड करती हैं) के विपरीत, ऐडऑन इवेंट हुक, कस्टम HTTP रूट, क्रॉन जॉब, एडमिन मेनू एंट्री और डेटाबेस-आधारित कार्यक्षमता के माध्यम से प्लेटफ़ॉर्म का विस्तार करते हैं।
+
+## ऐडऑन प्लगइन कैसे काम करते हैं {#how-addon-plugins-work}
+
+`PluginLoader::loadActive()` `modules/addons/` को स्कैन करता है, प्रत्येक `manifest.json` को सत्यापित करता है, सभी PHP फ़ाइलों को टोकन-स्कैन करता है, और दो-चरण वाले लाइफ़साइकल को कॉल करता है:
+
+1. **`register(EventManager $events, Container $container)`** - बूट चरण के दौरान कॉल किया जाता है। सभी हुक और फ़िल्टर रजिस्ट्रेशन प्लगइन स्लग से जोड़े जाते हैं।
+2. **`boot(Container $container)`** - सभी प्लगइन के रजिस्टर होने के बाद कॉल किया जाता है। कंटेनर सेवाओं को कैप्चर करने के लिए इस चरण का उपयोग करें।
+
+## डायरेक्टरी संरचना {#directory-structure}
+
+```text
+modules/addons/my-addon/
++-- manifest.json           # Required. Plugin metadata.
++-- Plugin.php              # Required. Entrypoint class implementing PluginInterface.
++-- Service/                # Optional. Additional autoloaded classes.
++-- Cron/                   # Optional. Cron job classes.
++-- migrations/             # Optional. SQL files run on activation.
++-- assets/                 # Optional. CSS/JS for admin pages.
+```
+
+## manifest.json फ़ाइल {#the-manifest-json-file}
+
+```json
+{
+    "name": "Example Kit",
+    "slug": "example-kit",
+    "version": "1.0.0",
+    "description": "Reference addon exercising multi-file classes, routes, cron, admin menu, and hooks.",
+    "author": "OwnPay Core",
+    "type": "addon",
+    "entrypoint": "Plugin.php",
+    "namespace": "OwnPay\\Modules\\Addons\\ExampleKit",
+    "capabilities": ["addon", "hooks", "cron"],
+    "requires": { "core": ">=0.1.0" },
+    "routes": [
+        ["GET", "/plugins/example-kit/ping", "ping"],
+        ["GET", "/admin/example-kit", "adminHome", "admin"]
+    ],
+    "cron": [
+        {
+            "name": "heartbeat",
+            "schedule": "every_5min",
+            "class": "OwnPay\\Modules\\Addons\\ExampleKit\\Cron\\HeartbeatJob"
+        }
+    ],
+    "admin_menu": [
+        { "label": "Example Kit", "url": "/admin/example-kit" }
+    ]
+}
+```
+
+## एंट्रीपॉइंट क्लास {#the-entrypoint-class}
+
+एंट्रीपॉइंट को `OwnPay\Plugin\PluginInterface` लागू करना होगा:
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace OwnPay\Modules\Addons\MyAddon;
+
+use OwnPay\Container;
+use OwnPay\Event\EventManager;
+use OwnPay\Plugin\Capability;
+use OwnPay\Plugin\PluginInterface;
+
+final class Plugin implements PluginInterface
+{
+    private ?Container $container = null;
+
+    public static function metadata(): array
+    {
+        return [
+            'name'        => 'My Addon',
+            'slug'        => 'my-addon',
+            'version'     => '1.0.0',
+            'description' => 'Describes what this addon does.',
+            'author'      => 'Your Name',
+            'type'        => 'addon',
+        ];
+    }
+
+    public function capabilities(): array
+    {
+        return [Capability::ADDON, Capability::HOOKS];
+    }
+
+    public function register(EventManager $events, Container $container): void
+    {
+        $events->addAction('payment.transaction.completed', [$this, 'onPaymentCompleted'], priority: 10);
+    }
+
+    public function boot(Container $container): void
+    {
+        $this->container = $container;
+    }
+
+    public function deactivate(Container $container): void {}
+
+    public function uninstall(Container $container): void {}
+
+    public function fields(): array
+    {
+        return [
+            [
+                'name'    => 'api_url',
+                'label'   => 'API Endpoint',
+                'type'    => 'text',
+                'default' => 'https://api.example.com',
+            ],
+            [
+                'name'    => 'api_key',
+                'label'   => 'API Key',
+                'type'    => 'password',
+                'default' => '',
+            ],
+        ];
+    }
+
+    public function onPaymentCompleted(array $txn): void
+    {
+        // Handle the payment event
+    }
+}
+```
+
+## कोर सेवाओं तक पहुँचना {#accessing-core-services}
+
+प्लगइन स्वचालित रूप से DI कंटेनर से नहीं जुड़ते। `$container` आर्ग्युमेंट से सेवाओं को मैन्युअल रूप से रिज़ॉल्व करें:
+
+```php
+public function boot(Container $container): void
+{
+    $this->container = $container;
+}
+
+private function getSettings(): \OwnPay\Repository\SettingsRepository
+{
+    return $this->container->get(\OwnPay\Repository\SettingsRepository::class);
+}
+```
+
+## रूट {#routes}
+
+`manifest.json` में `routes` ऐरे के अंतर्गत घोषित रूट कोर राउटर में रजिस्टर किए जाते हैं:
+
+```json
+["METHOD", "/path", "handlerMethod", "middlewareGroup"]
+```
+
+| स्थान | मान | टिप्पणियाँ |
+| --- | --- | --- |
+| 0 | HTTP मेथड | `GET`, `POST`, `PUT`, `DELETE`, `PATCH` |
+| 1 | URL पाथ | `/` से शुरू होना चाहिए |
+| 2 | हैंडलर मेथड | आपकी एंट्रीपॉइंट क्लास पर एक पब्लिक मेथड का नाम |
+| 3 | मिडलवेयर समूह | वैकल्पिक। `"admin"` के लिए ऑथेंटिकेशन आवश्यक है |
+
+## क्रॉन जॉब {#cron-jobs}
+
+`manifest.json` में `cron` ऐरे के अंतर्गत शेड्यूल्ड जॉब घोषित करें:
+
+```json
+"cron": [
+    {
+        "name": "sync",
+        "schedule": "every_5min",
+        "class": "OwnPay\\Modules\\Addons\\MyAddon\\Cron\\SyncJob"
+    }
+]
+```
+
+समर्थित शेड्यूल: `every_minute`, `every_5min`, `every_15min`, `every_30min`, `hourly`, `every_6hours`, `daily`, `weekly`।
+
+## एडमिन मेनू एंट्री {#admin-menu-entries}
+
+```json
+"admin_menu": [
+    { "label": "My Addon", "url": "/admin/my-addon" }
+]
+```
+
+## डेटाबेस माइग्रेशन {#database-migrations}
+
+`.sql` फ़ाइलों के साथ एक `migrations/` डायरेक्टरी बनाएँ। प्लगइन टेबल के नाम `op_plugin_` उपसर्ग से शुरू होने चाहिए।
+
+## सुरक्षा आवश्यकताएँ {#security-requirements}
+
+- कोई `eval()` या OS कमांड नहीं
+- `op_*` टेबल तक कोई सीधी पहुँच नहीं
+- सभी आउटपुट को एस्केप करें
+- पैरामीटराइज़्ड क्वेरी का उपयोग करें
+- टेनेंट आइसोलेशन का सम्मान करें
+
+## चेकलिस्ट {#checklist}
+
+- `manifest.json` पूर्ण है; `slug` डायरेक्टरी के नाम से मेल खाता है
+- एंट्रीपॉइंट सभी छह मेथड के साथ `PluginInterface` लागू करता है
+- सभी हुक `register()` के अंदर रजिस्टर किए गए हैं
+- `uninstall()` सभी `op_plugin_` टेबल को ड्रॉप करता है
+- प्लगइन टेबल का नाम `op_plugin_{slug}_*` है
+- एडमिन रूट `"admin"` मिडलवेयर समूह का उपयोग करते हैं
+- क्रॉन जॉब `CronJobInterface` लागू करते हैं
+- कोई `eval()`, `exec()`, `shell_exec()` नहीं
+
+## संबंधित पेज {#related-pages}
+
+- [गेटवे प्लगइन डेवलपमेंट](/hi/developer/plugin-types/gateway)
+- [थीम प्लगइन डेवलपमेंट](/hi/developer/plugin-types/theme)
+- [इंटीग्रेशन प्लगइन डेवलपमेंट](/hi/developer/plugin-types/integration)
+- [हुक संदर्भ](/hi/developer/plugins/hooks)
+- [मैनिफ़ेस्ट संदर्भ](/hi/developer/plugins/manifest)

@@ -1,0 +1,128 @@
+---
+title: "常见问题"
+description: "关于 OwnPay 的常见问题解答，涵盖常规、技术、安全、付款和开发等主题。"
+keywords: "常见问题, FAQ, OwnPay 帮助, 自托管支付, 开源支付网关"
+sidebarTitle: "常见问题"
+icon: "heart-handshake"
+---
+
+按主题整理的 OwnPay 常见问题。
+
+---
+
+## 常规 {#general}
+
+<AccordionGroup>
+  <Accordion title="什么是 OwnPay？">
+    OwnPay 是一个自托管的开源支付编排平台。它让单个平台所有者能够通过一次安装运营多个白标支付品牌（商店），提供 123\+ 个支付网关、复式记账账本，并在品牌之间实现完全的数据隔离。
+  </Accordion>
+
+  <Accordion title="OwnPay 真的免费吗？">
+    是的。OwnPay 以 AGPL-3.0 许可证发布。你可以下载、安装和使用它，无需支付任何许可费用。你只需支付所选支付网关（Stripe、bKash 等）收取的交易费用，而不是支付给 OwnPay。
+  </Accordion>
+
+  <Accordion title="OwnPay 使用什么许可证？">
+    AGPL-3.0（GNU Affero 通用公共许可证）。这意味着你可以自由使用、修改和分发 OwnPay，但你通过网络提供服务的任何修改也必须以相同的许可证公开。有关贡献许可的详细信息，请参阅[贡献指南](/zh/resources/contributing)。
+  </Accordion>
+
+  <Accordion title="OwnPay 支持多少个网关？">
+    OwnPay 内置 123 个网关适配器，涵盖全球银行卡处理商（Stripe、Adyen、Square）、数字钱包（PayPal、Apple Pay、Google Pay）、移动金融服务（bKash、Nagad、M-Pesa、GCash）、先买后付（Klarna）、加密货币（Coinbase Commerce）以及区域平台（Razorpay、Flutterwave、Paystack、Xendit 等等）。
+  </Accordion>
+
+  <Accordion title="OwnPay 是 SaaS 平台吗？">
+    不是。OwnPay 是你在自己的服务器上部署并拥有的基础设施。任何第三方都无法访问你的交易、客户数据或配置。
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## 技术 {#technical}
+
+<AccordionGroup>
+  <Accordion title="我需要什么 PHP 版本？">
+    PHP 8.3 或更高版本。OwnPay 全面使用 `declare(strict_types=1)`，并依赖 PHP 8.3 的特性，例如只读属性和类型化类常量。
+  </Accordion>
+
+  <Accordion title="OwnPay 使用什么数据库？">
+    MySQL 8.0 或 MariaDB 10.4\+。OwnPay 的所有表均使用 InnoDB，并依赖存储生成列（Stored Generated Columns）为 JSON 字段建立索引。
+  </Accordion>
+
+  <Accordion title="是否必须使用 Redis？">
+    不是必须的，但强烈推荐。OwnPay 默认使用基于文件的缓存和会话，但 Redis 能为速率限制、会话和任务队列提供显著更好的性能。当你预计每天付款量超过 1,000 笔时，请切换到 Redis。
+  </Accordion>
+
+  <Accordion title="我可以用 Docker 运行 OwnPay 吗？">
+    可以。虽然目前还没有官方 Docker 镜像，但社区维护着 Docker Compose 配置。OwnPay 的单一入口架构（`public/index.php`）使其可以轻松地基于任何 PHP 8.3 基础镜像进行容器化。
+  </Accordion>
+
+  <Accordion title="OwnPay 能在共享主机上运行吗？">
+    可以。OwnPay 包含一个基于 Web 的安装程序，无需 CLI 访问权限。发布包中已捆绑 `vendor/` 目录，因此服务器上无需安装 Composer。你需要 PHP 8.3 支持和一个 MySQL 数据库。
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## 安全 {#security}
+
+<AccordionGroup>
+  <Accordion title="OwnPay 符合 PCI DSS 吗？">
+    OwnPay 采用网关委托模型——信用卡数据由上游网关（Stripe、Adyen 等）直接收集和处理，永远不会经过你的服务器。这通常使 OwnPay 属于 SAQ-A，即最简单的 PCI 自评估级别。针对你的具体部署，请咨询 QSA。
+  </Accordion>
+
+  <Accordion title="我的数据是如何加密的？">
+    客户个人身份信息（姓名、电子邮件、电话号码）和网关 API 凭据使用 AES-256-GCM 和每个安装实例独有的密钥进行静态加密。Webhook 载荷使用 HMAC-SHA256 签名。所有流量均使用 HTTPS 并强制启用 HSTS。
+  </Accordion>
+
+  <Accordion title="OwnPay 符合 GDPR 吗？">
+    OwnPay 提供了实现 GDPR 合规的技术工具：数据最小化、加密存储、基于哈希的查找、数据导出（CSV）以及带账本匿名化的数据删除。作为自托管平台，你是数据控制者，需要自行负责 GDPR 相关流程和政策。
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## 付款 {#payments}
+
+<AccordionGroup>
+  <Accordion title="支持哪些支付网关？">
+    完整列表请参阅[功能](/zh/resources/features)页面的“支付网关系统”部分。该列表包括 123 个适配器，涵盖银行卡、钱包、MFS、加密货币和区域平台。
+  </Accordion>
+
+  <Accordion title="我可以接受手动付款（银行转账、现金）吗？">
+    可以。OwnPay 支持手动网关，你可以配置自定义字段（银行账号、参考号），并手动验证付款，或通过配套应用的短信自动验证系统进行验证。
+  </Accordion>
+
+  <Accordion title="短信验证是如何工作的？">
+    OwnPay Android 配套应用会将支付服务商发来的短信转发到你的服务器。服务器使用正则表达式和启发式模式解析短信，提取交易金额和 ID，并自动将其与待处理的支付意图匹配。详情请参阅[功能](/zh/resources/features)页面。
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## 开发 {#development}
+
+<AccordionGroup>
+  <Accordion title="插件系统是如何工作的？">
+    插件是位于 `modules/` 下的独立包，带有一个 `manifest.json`，用于声明元数据、功能和钩子注册。插件分为三种类型：网关、主题和附加组件。所有插件在加载前都会经过静态代码沙箱扫描。请参阅[插件开发概览](/zh/developer/plugins/overview)。
+  </Accordion>
+
+  <Accordion title="API 速率限制是多少？">
+    商户 API：每个 API 密钥每分钟 60 次请求。登录尝试：每个 IP 每 5 分钟 10 次。全局：每个 IP 每分钟 120 次请求。完整参考请参阅[速率限制](/zh/resources/rate-limiting)页面。
+  </Accordion>
+
+  <Accordion title="Webhook 是如何工作的？">
+    你可以在管理面板中为每个品牌注册一个 Webhook URL。发生付款事件时，OwnPay 会发送已签名的 HTTP POST 请求（HMAC-SHA256）。失败的投递会以指数退避方式重试。验证代码请参阅[代码示例](/zh/resources/code-examples)页面。
+  </Accordion>
+
+  <Accordion title="有官方 SDK 吗？">
+    有。OwnPay 为 PHP、Laravel 和 Node.js 提供官方 SDK。Python、Go 和 Java 有社区维护的 SDK。链接和安装说明请参阅[生态系统](/zh/resources/ecosystem)页面。
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## 相关页面 {#related-pages}
+
+- [常见错误](/zh/resources/common-errors) - 排查具体问题
+- [调试模式](/zh/resources/debug-mode) - 启用详细的错误输出以进行诊断
+- [贡献指南](/zh/resources/contributing) - 如何为 OwnPay 做贡献
+- [代码示例](/zh/resources/code-examples) - 多种语言的集成代码

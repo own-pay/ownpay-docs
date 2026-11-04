@@ -1,0 +1,83 @@
+---
+title: 短信模板
+description: 创建和管理基于正则表达式的短信模板，用于匹配来自移动货币钱包和银行的付款确认短信，从而自动完成付款。
+keywords: "短信模板, 正则模式, 付款确认, 短信匹配, 字段映射, 短信日志"
+sidebarTitle: 短信模板
+icon: file-code
+---
+
+短信模板定义了 OwnPay 如何将来自[配套应用](/zh/mobile/companion-app)的**付款确认短信**与待处理交易进行匹配。每个模板将一个**网关**与一个**正则模式**绑定，该模式会从短信文本中提取付款金额和交易 ID。
+
+<Note>
+  配套应用的设备端隐私过滤器确保只转发收到的付款收据短信（例如 bKash/Nagad/Rocket 确认短信）。OTP 消息、个人短信以及所有其他非付款短信都不会发送到服务器，因此模板只会处理付款确认消息。
+</Note>
+
+<Info>
+  有关完整的端到端自动验证流程，请参阅[短信验证](/zh/gateways/sms-verification)。
+</Info>
+
+## 模板结构 {#template-structure}
+
+每个短信模板包含以下字段：
+
+| 字段 | 说明 |
+| --- | --- |
+| **Gateway Slug** | 此模板适用的支付网关（例如 `bkash`、`nagad`、`citybank`） |
+| **Regex Pattern** | 一个兼容 PCRE 的正则表达式，用于从确认短信中捕获付款金额和/或交易 ID |
+| **Code Field Mapping** | 哪个捕获组包含提取的值（默认：第 1 组） |
+| **Label** | 模板的易读名称 |
+| **Status** | Active 或 Disabled |
+
+## 创建模板 {#creating-a-template}
+
+<Steps>
+  <Step>
+    前往 **Mobile \> SMS Templates**，然后点击 **Add Template**。
+  </Step>
+  <Step>
+    从下拉菜单中选择 **Gateway**。这可确保模板只匹配该网关上交易的短信。
+  </Step>
+  <Step>
+    输入用于捕获付款详情的 **Regex Pattern**。例如，一条 bKash 付款确认短信可能如下所示：
+
+    ```text
+    Tk 500.00 received from 017XXXX1234. TrxID: CN4A7B9D2E. Balance: Tk 1,230.50
+    ```
+
+    您可以使用类似 `Tk ([\d,.]+) received.*TrxID: (\w+)` 的模式来捕获金额和交易 ID。
+  </Step>
+  <Step>
+    将 **Code Field Mapping** 设置为包含提取值的捕获组索引（通常为 `1`）。
+  </Step>
+  <Step>
+    点击 **Save** 以启用该模板。
+  </Step>
+</Steps>
+
+## 测试正则模式 {#testing-regex-patterns}
+
+使用模板表单底部内置的 **Regex Tester**。将示例短信粘贴到测试输入框中，测试器会实时高亮显示匹配的捕获组。
+
+<Tip>
+  上线前，请务必使用多条真实短信样本测试您的正则表达式。银行偶尔会更改其消息格式，这可能会导致现有模板失效。
+</Tip>
+
+## 短信日志 {#sms-logs}
+
+短信模板页面的下半部分显示配套应用转发的最近收到的**付款**短信日志。您可以用它来：
+
+- 按电话号码或交易 ID **搜索**
+- 按网关或匹配状态（matched、unmatched、ignored）**筛选**
+- 点击任意日志行**查看原始短信**的完整内容
+
+未匹配的短信会显示红色标记。请定期查看这些短信，以发现需要更新模板的新消息格式。
+
+## 编辑和禁用模板 {#editing-and-disabling-templates}
+
+点击模板所在行即可进行编辑。如果某个网关更改了其短信格式，请更新正则模式并使用测试器确认其仍然有效。您可以在不删除模板的情况下将其**禁用**——这在需要临时暂停特定网关的验证时非常有用。
+
+## 相关页面 {#related-pages}
+
+- [短信验证](/zh/gateways/sms-verification) - 完整的自动验证流程文档
+- [配套应用](/zh/mobile/companion-app) - 仅转发收到的付款短信的 Android 应用
+- [短信中心](/zh/notifications/sms-center) - 集中式短信监控和队列状态

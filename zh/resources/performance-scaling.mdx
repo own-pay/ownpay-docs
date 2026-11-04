@@ -1,0 +1,166 @@
+---
+title: 性能与扩展
+description: "通过 Redis 缓存、数据库调优、PHP-FPM 配置、Nginx 优化、队列 worker 和扩展策略来优化 OwnPay 性能。"
+keywords: "性能, 扩展, Redis, PHP-FPM, Nginx, 数据库优化, 队列 worker, CDN"
+sidebarTitle: 性能
+icon: gauge
+---
+
+OwnPay 在普通硬件上也能良好运行，但随着交易量的增长，您可以在技术栈的每一层进行有针对性的优化。本指南介绍最有效的调整。
+
+---
+
+## 使用 Redis 存储会话和缓存 {#redis-for-sessions-and-cache}
+
+对大多数部署而言，最大的性能提升来自于将基于文件的缓存和会话切换为 Redis。Redis 消除了会话读取、缓存查找和速率限制跟踪的磁盘 I/O。
+
+<Steps>
+</Steps>
+
+<Tip>
+  如果您希望在清空缓存时不丢失排队中的任务，请为缓存（DB 0）和队列（DB 1）使用不同的 Redis 数据库。
+</Tip>
+
+---
+
+## 数据库优化 {#database-optimization}
+
+OwnPay 的数据库结构使用 MySQL 存储生成列（Stored Generated Columns），以避免过滤查询时的 JSON 提取开销。现有的复合索引（`idx_merchant_status`、`idx_merchant_created`）可满足大多数常见查询模式。
+
+### 关键配置 {#key-configuration}
+
+```ini
+[mysqld]
+innodb_buffer_pool_size    = 256M    # Increase to 1G+ for high volume
+innodb_flush_log_at_trx_commit = 1
+innodb_flush_method        = O_DIRECT
+max_connections            = 100
+wait_timeout               = 600
+slow_query_log             = 1
+long_query_time            = 2
+```
+
+<Note>
+  将 `innodb_buffer_pool_size` 设置为专用于 MySQL 的可用内存的约 70%。在一台拥有 4 GB 内存并运行 Redis 的服务器上，1 GB 是合理的起点。
+</Note>
+
+您可以在管理面板的 **Settings \> Database** 中优化数据表。这会对所有 `op_` 表运行 `OPTIMIZE TABLE`，以回收碎片空间。
+
+---
+
+## PHP-FPM 调优 {#php-fpm-tuning}
+
+PHP-FPM 的 worker 配置直接影响 OwnPay 能处理的并发请求数量。
+
+```ini
+[ownpay]
+pm                   = dynamic
+pm.max_children      = 20
+pm.start_servers     = 4
+pm.min_spare_servers = 2
+pm.max_spare_servers = 8
+pm.max_requests      = 500
+slowlog              = storage/logs/php-fpm-slow.log
+request_slowlog_timeout = 10s
+```
+
+同时在 `php.ini` 中启用带 JIT 编译的 OPcache：
+
+```ini
+opcache.enable                  = 1
+opcache.memory_consumption      = 128
+opcache.interned_strings_buffer = 16
+opcache.max_accelerated_files   = 10000
+opcache.revalidate_freq         = 0
+opcache.validate_timestamps     = 0
+opcache.jit                     = tracing
+opcache.jit_buffer_size         = 64M
+```
+
+<Warning>
+  在生产环境中设置 `opcache.validate_timestamps = 0` 以获得最佳性能。禁用后，更新 OwnPay 文件时必须重启 PHP-FPM。
+</Warning>
+
+---
+
+## Nginx 配置 {#nginx-configuration}
+
+在 Nginx 的 server 块中启用 gzip 压缩和静态资源缓存：
+
+```nginx
+gzip on;
+gzip_types text/plain text/css application/json application/javascript text/xml;
+gzip_min_length 256;
+
+location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff2)$ {
+    expires 30d;
+    add_header Cache-Control "public, immutable";
+}
+```
+
+对于 SSL，请使用现代加密套件并启用 OCSP stapling。大多数发行版上 Nginx 的默认 SSL 设置已经较为合理，但您可以使用 [SSL Labs](https://www.ssllabs.com/ssltest/) 测试您的配置。
+
+---
+
+## 为静态资源使用 CDN {#cdn-for-static-assets}
+
+如果您的品牌在不同地理区域使用自定义域名，请在结账域名前部署 CDN（Cloudflare、Fastly）。CDN 会缓存静态资源（CSS、JS、图片、字体），并从离客户更近的边缘节点提供服务。
+
+<Info>
+  支付表单提交和 Webhook 回调始终直接访问您的源服务器。CDN 只缓存静态文件。
+</Info>
+
+---
+
+## 用于异步任务的队列 worker {#queue-workers-for-async-jobs}
+
+后台任务（Webhook 投递、邮件发送、短信处理、导出生成）通过队列系统运行。使用 Redis 作为队列驱动时，可通过 cron 端点处理任务：
+
+```bash
+# Add to crontab
+* * * * * php /var/www/ownpay/public/index.php cron/run >> /dev/null 2>&1
+```
+
+对于高流量环境，请将队列 worker 作为专用的长时间运行进程来运行，而不是依赖基于 cron 的 worker：
+
+```bash
+php /var/www/ownpay/public/index.php queue:work --daemon
+```
+
+---
+
+## 扩展注意事项 {#scaling-considerations}
+
+| 交易量 | 架构 | 关键调整 |
+| :-- | :-- | :-- |
+| 每天最多 1,000 笔支付 | 单台服务器，文件缓存 | 默认安装即可满足 |
+| 每天 1,000 - 8,000 笔支付 | 单台服务器，Redis | 将缓存、会话和队列切换到 Redis |
+| 每天 8,000 - 50,000 笔支付 | 单台服务器，经过调优 | 增加 PHP-FPM worker 和 InnoDB 缓冲池，启用 OPcache JIT |
+| 每天 50,000\+ 笔支付 | 应用 \+ 数据库服务器分离 | 将 MySQL 迁移到拥有 5 GB\+ 缓冲池的专用主机 |
+| 每天 100,000\+ 笔支付 | 水平扩展 | 在负载均衡器后部署多台应用服务器，使用 Redis Cluster 和只读副本 |
+
+<Note>
+  使用 Redis 存储会话时，OwnPay 的 PHP 应用是无状态的。这使水平扩展变得简单 - 只需在负载均衡器后添加更多应用服务器，无需修改代码。
+</Note>
+
+---
+
+## 监控 {#monitoring}
+
+监控以下关键指标，以便了解何时需要扩展：
+
+| 指标 | 健康范围 | 查看位置 |
+| :-- | :-- | :-- |
+| PHP-FPM 活跃 worker 数 | 低于 `pm.max_children` 的 80% | `/fpm-status` 端点 |
+| OPcache 命中率 | 高于 95% | PHP info 页面中的 `opcache_get_status()` |
+| 慢查询 | 每分钟为零 | MySQL 慢查询日志 |
+| InnoDB 缓冲池命中率 | 高于 95% | `SHOW STATUS LIKE 'Innodb_buffer_pool_read_requests'` |
+| Redis 被驱逐的键 | 每分钟为零 | `redis-cli info stats` |
+
+---
+
+## 相关页面 {#related-pages}
+
+- [安装](/zh/installation) - 初始服务器设置和要求
+- [备份与导出](/zh/resources/backup-export) - 进行扩展调整前的备份步骤
+- [速率限制](/zh/resources/rate-limiting) - 为高流量部署配置速率限制

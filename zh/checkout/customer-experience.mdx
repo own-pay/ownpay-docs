@@ -1,0 +1,88 @@
+---
+title: 客户体验
+description: "了解客户在结账过程中看到的内容——URL 结构、支付方式选择、成功与失败页面、品牌展示以及移动端响应式设计。"
+keywords: "结账, 客户体验, 支付页面, 成功页面, 失败页面, 白标, 移动端结账"
+sidebarTitle: 客户体验
+icon: shopping-bag
+---
+
+结账体验是客户付款时与之交互的界面。它完全支持白标——应用的是你品牌的徽标、颜色和主题，OwnPay 的名称永远不会出现在终端客户面前。
+
+<Info>
+  关于幕后的技术流程，请参阅 [支付流程](/zh/fundamentals/payment-flow)。
+</Info>
+
+## 结账 URL 结构 {#checkout-url-structure}
+
+当你创建支付链接或发票时，OwnPay 会在你品牌的自定义域名上生成一个 URL：
+
+```text
+https://pay.yourbrand.com/checkout/{transaction_id}
+```
+
+`{transaction_id}` 是一个唯一的非顺序标识符。客户可以将此 URL 加入书签，以便稍后返回支付页面。
+
+## 客户看到的内容 {#what-the-customer-sees}
+
+结账页面分为三个阶段：
+
+<Columns>
+  <Column>
+### 支付方式选择 {#payment-method-selection}
+
+    客户会看到基于该品牌所配置的货币和网关而提供的可用支付方式列表。支付方式以带有网关徽标的卡片或按钮形式显示。
+  </Column>
+  <Column>
+### 支付表单 {#payment-form}
+
+    选择支付方式后，客户输入所需的详细信息。对于银行跳转类支付，客户会被转到银行页面。对于手动支付方式，客户会看到操作说明（例如银行账号、手机号码）。
+  </Column>
+  <Column>
+### 结果页面 {#result-page}
+
+    支付完成后，客户会进入**成功**或**失败**页面，页面上显示清晰的状态信息、交易参考号以及后续步骤。
+  </Column>
+</Columns>
+
+## 成功与失败页面 {#success-and-failure-pages}
+
+<Badge color="green">成功页面</Badge> - 显示交易 ID、已付金额和确认消息。你可以为每个品牌自定义成功消息。"Return to merchant" 按钮会将客户重定向到你在创建支付时指定的 URL。
+
+<Badge color="red">失败页面</Badge> - 显示一条通用错误消息（可配置）以及一个 "Try again" 按钮，点击后客户会返回支付方式选择页面。敏感的错误细节永远不会暴露给客户。
+
+## 重定向行为 {#redirect-behavior}
+
+支付完成或失败后，OwnPay 可以自动将客户重定向回你的网站。请在创建支付时设置 `return_url` 和 `cancel_url` 参数。重定向使用 `POST` 请求，请求体中包含交易详情。
+
+<Tip>
+  请始终通过 [API](/zh/api/overview) 或 [webhooks](/zh/notifications/webhooks) 在服务端验证支付状态，而不要仅依赖重定向参数。
+</Tip>
+
+## 结账页面的品牌展示 {#branding-on-checkout}
+
+结账页面会继承你的品牌配置：
+
+- **徽标** - 显示在页面顶部（请参阅 [品牌](/zh/appearance/branding)）
+- **颜色** - 主色和强调色会应用于按钮和高亮元素
+- **主题** - 当前启用的主题决定布局、字体和间距（请参阅 [主题](/zh/appearance/themes)）
+- **网站图标** - 浏览器标签页中显示你品牌的网站图标
+
+## 移动端响应式 {#mobile-responsiveness}
+
+结账页面采用完全响应式设计。在移动设备上：
+
+- 支付方式卡片垂直排列，便于用拇指点击
+- 支付表单使用大尺寸、便于触控的输入框
+- 按钮为全宽，防止误触
+- 在任何屏幕宽度下都不会出现水平滚动
+
+## 白标体验 {#white-label-experience}
+
+OwnPay 的设计目标是对你的客户完全不可见。结账页面上不会出现任何 OwnPay 品牌、徽标或链接。HTML 标题、网站图标及所有视觉元素都由你的品牌配置控制。
+
+## 相关页面 {#related-pages}
+
+- [品牌](/zh/appearance/branding) - 配置徽标、颜色和网站图标
+- [主题](/zh/appearance/themes) - 自定义布局和视觉设计
+- [支付流程](/zh/fundamentals/payment-flow) - 结账背后的技术流程
+- [支付链接](/zh/payments/payment-links) - 创建可分享的结账 URL

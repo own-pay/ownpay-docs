@@ -1,0 +1,143 @@
+---
+title: "API प्रमाणीकरण"
+description: "Bearer टोकन, API कुंजी स्कोप और सुपर एडमिन ओवरराइड हेडर का उपयोग करके OwnPay API प्रमाणीकरण के लिए आधिकारिक संदर्भ।"
+keywords: "API प्रमाणीकरण, Bearer token, API key, key scopes, super admin, REST API auth, op_live"
+sidebarTitle: "प्रमाणीकरण"
+icon: "lock"
+---
+
+OwnPay हर API अनुरोध को `Authorization` हेडर में दिए गए Bearer टोकन के माध्यम से प्रमाणित करता है। आप API कुंजियाँ एडमिन पैनल से जनरेट करते हैं - कुंजी प्रबंधन की पूरी गाइड के लिए [API कुंजियाँ](/hi/security/api-keys) देखें।
+
+## API कुंजी कैसे प्राप्त करें {#how-to-get-an-api-key}
+
+1. अपने OwnPay एडमिन पैनल में लॉग इन करें
+2. **Developers → API Keys** पर जाएँ
+3. **Generate API Key** पर क्लिक करें
+4. एक्सेस स्कोप चुनें (read, write, या admin)
+5. कुंजी को तुरंत कॉपी करें - यह केवल एक बार दिखाई जाती है
+
+<Warning>
+  API कुंजियों को एनवायरनमेंट वेरिएबल में संग्रहीत करें। उन्हें कभी भी वर्ज़न कंट्रोल में कमिट न करें।
+</Warning>
+
+## हेडर फ़ॉर्मेट {#header-format}
+
+हर API अनुरोध में कुंजी को Bearer टोकन के रूप में शामिल करना आवश्यक है:
+
+```http
+Authorization: Bearer op_live_abc123.def456
+```
+
+कुंजी का प्रीफ़िक्स `op_live_` एक लाइव कुंजी की पहचान करता है। टेस्ट-मोड कुंजियाँ `op_test_` प्रीफ़िक्स का उपयोग करती हैं।
+
+## कुंजी स्कोप {#key-scopes}
+
+API कुंजियों में तीन में से एक स्कोप होता है, जो तय करता है कि कुंजी किन एंडपॉइंट्स तक पहुँच सकती है:
+
+| स्कोप | पढ़ सकती है | लिख सकती है | प्रबंधित कर सकती है | सामान्य उपयोग |
+| --- | --- | --- | --- | --- |
+| `read` | हाँ | नहीं | नहीं | डैशबोर्ड, रिपोर्टिंग बॉट |
+| `write` | हाँ | हाँ | नहीं | पेमेंट बनाना, चेकआउट फ़्लो |
+| `admin` | हाँ | हाँ | हाँ | पूर्ण प्लेटफ़ॉर्म प्रबंधन |
+
+<Info>
+  स्कोप कुंजी जनरेट करते समय सेट किया जाता है और बाद में बदला नहीं जा सकता। अलग-अलग एप्लिकेशन के लिए अलग-अलग कुंजियाँ बनाएँ।
+</Info>
+
+## सुपर एडमिन ऑपरेशन {#super-admin-operations}
+
+प्लेटफ़ॉर्म-स्तर के कुछ ऑपरेशन (ब्रांड बनाना, सिस्टम उपयोगकर्ताओं को प्रबंधित करना) के लिए `admin`-स्कोप वाली कुंजी के अलावा एक अतिरिक्त हेडर आवश्यक है:
+
+```http
+Authorization: Bearer op_live_abc123.def456
+X-Super-Admin-Email: admin@your-domain.com
+```
+
+केवल इंस्टॉलेशन के दौरान पंजीकृत सुपर एडमिन ईमेल ही इस हेडर का उपयोग कर सकता है। इसके बिना, admin-स्कोप वाले एंडपॉइंट 403 लौटाते हैं।
+
+## प्रमाणीकरण त्रुटि रिस्पॉन्स {#authentication-error-response}
+
+यदि कुंजी मौजूद नहीं है, अमान्य है, समाप्त हो चुकी है, या उसमें आवश्यक स्कोप नहीं है, तो API यह लौटाता है:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid or has been revoked."
+  }
+}
+```
+
+सामान्य प्रमाणीकरण त्रुटि कोड:
+
+| कोड | HTTP स्टेटस | अर्थ |
+| --- | --- | --- |
+| `invalid_api_key` | 401 | कुंजी नहीं मिली या गलत फ़ॉर्मेट में है |
+| `expired_api_key` | 401 | कुंजी की समाप्ति तिथि बीत चुकी है |
+| `revoked_api_key` | 401 | कुंजी को मैन्युअल रूप से रद्द किया गया था |
+| `insufficient_permissions` | 403 | इस एंडपॉइंट के लिए कुंजी का स्कोप पर्याप्त नहीं है |
+
+## कोड उदाहरण {#code-examples}
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://your-domain.com/api/v1/payments/pay_abc123 \
+  -H "Authorization: Bearer op_live_abc123.def456"
+```
+
+```php PHP
+$ch = curl_init('https://your-domain.com/api/v1/payments/pay_abc123');
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        'Authorization: Bearer ' . $_ENV['OWNPAY_API_KEY'],
+        'Content-Type: application/json',
+    ],
+]);
+
+$response = json_decode(curl_exec($ch), true);
+curl_close($ch);
+```
+
+```javascript Node.js
+const response = await fetch('https://your-domain.com/api/v1/payments/pay_abc123', {
+  headers: {
+    'Authorization': `Bearer ${process.env.OWNPAY_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+});
+
+const data = await response.json();
+```
+
+```python Python
+import os
+import requests
+
+resp = requests.get(
+    'https://your-domain.com/api/v1/payments/pay_abc123',
+    headers={
+        'Authorization': f'Bearer {os.environ["OWNPAY_API_KEY"]}',
+        'Content-Type': 'application/json',
+    },
+)
+data = resp.json()
+```
+
+</CodeGroup>
+
+## सर्वोत्तम प्रथाएँ {#best-practices}
+
+- हर 90 दिनों में कुंजियाँ रोटेट करें
+- हर एनवायरनमेंट (dev, staging, prod) के लिए एक कुंजी का उपयोग करें
+- हर एप्लिकेशन के लिए एक कुंजी का उपयोग करें
+- असामान्य गतिविधि के लिए **Developers → API Keys** में उपयोग की निगरानी करें
+- अप्रयुक्त कुंजियों को तुरंत रद्द करें
+
+## संबंधित पेज {#related-pages}
+
+- [API कुंजियाँ](/hi/security/api-keys)
+- [API अवलोकन](/hi/api/overview)
+- [त्रुटि कोड](/hi/api/errors)

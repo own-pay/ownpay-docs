@@ -1,0 +1,137 @@
+---
+title: "测试支付"
+description: "如何使用测试卡号、沙盒网关和模拟 webhook，在不使用真实资金的情况下测试支付。"
+keywords: "测试支付, 测试卡, 沙盒模式, Stripe 测试卡, bKash 测试, Nagad 测试, webhook 模拟, 调试模式"
+sidebarTitle: "测试"
+icon: "flask"
+---
+
+你可以在不处理真实交易的情况下测试整个支付流程。OwnPay 支持测试卡号、沙盒网关和 webhook 模拟。
+
+## 测试卡号 {#test-card-numbers}
+
+在测试模式下配置的任何基于 Stripe 的网关中使用以下卡：
+
+| 卡号 | 品牌 | 结果 |
+| --- | --- | --- |
+| `4242 4242 4242 4242` | Visa | 成功 |
+| `4000 0025 0000 3155` | Visa | 需要 3D Secure |
+| `4000 0000 0000 0002` | Visa | 拒绝 |
+| `4000 0000 0000 9995` | Visa | 余额不足 |
+| `5555 5555 5555 4444` | Mastercard | 成功 |
+| `2223 0000 0000 0009` | Mastercard | 成功（2 系列） |
+| `3782 822463 10005` | Amex | 成功 |
+
+<Info>
+  使用这些测试卡时，可填写任意未来的到期日期、任意 CVC 和任意邮政编码。
+</Info>
+
+## bKash 沙盒凭据 {#bkash-sandbox-credentials}
+
+bKash 请使用以下沙盒凭据：
+
+| 字段 | 值 |
+| --- | --- |
+| Username | `sandboxTokenizedUser02` |
+| Password | `sandboxTokenizedUser02@12345` |
+| App Key | `4f6o0cjiki2rfm34kfdadl1eqq` |
+| App Secret | `2is7hdktrekvrbljjh44ll3d9l1dtjo4pasmjvs5vl5qr3fug4b` |
+
+<Info>
+  注意：这些仅为公开的沙盒凭据。切勿在线上/生产环境中使用。如需正式凭据，必须通过官方 bKash Merchant Portal 申请
+</Info>
+
+## bKash 沙盒测试钱包号码 {#bkash-sandbox-test-wallet-numbers}
+
+bKash 提供了特定的测试钱包号码，可用于在沙盒环境中模拟支付。
+
+| 钱包号码 | OTP | PIN | 失败原因 |
+| --- | --- | --- | --- |
+| `01770618575` | `123456` | `12121` |  |
+| `01929918378` | `123456` | `12121` |  |
+| `01770618576` | `123456` | `12121` |  |
+| `01877722345` | `123456` | `12121` |  |
+| `01619777282` | `123456` | `12121` |  |
+| `01619777283` | `123456` | `12121` |  |
+| `01823074817` | `123456` | `12121` | 余额不足 |
+| `01823074818` | `123456` | `12121` | 借记受限 |
+
+## 网关沙盒配置 {#gateway-sandbox-configuration}
+
+每个网关都有可在管理面板中启用的沙盒或测试模式。下表列出了获取测试凭据的位置：
+
+| 网关 | 沙盒启用方式 | 测试凭据获取位置 |
+| --- | --- | --- |
+| Stripe | 在网关设置中切换 **Test Mode** | [Stripe Dashboard → Developers → Test mode](https://dashboard.stripe.com/test/apikeys) |
+| PayPal | 使用沙盒端点 URL | [PayPal Developer → Sandbox → Apps](https://developer.paypal.com/developer/applications/sandbox) |
+| bKash | 使用沙盒 URL 和 token | [https://tokenized.sandbox.bka.sh/v1.2.0-beta](https://tokenized.sandbox.bka.sh/v1.2.0-beta) |
+| Nagad | 使用沙盒 URL 和商户 ID | 联系 Nagad 获取沙盒凭据 |
+| SSLCommerz | 在网关设置中切换 **Sandbox** | [SSLCommerz Sandbox](https://sandbox.sslcommerz.com/) |
+
+## 通过 API 创建测试支付 {#creating-a-test-payment-via-api}
+
+```bash
+curl -X POST https://your-domain.com/api/v1/payments \
+  -H "Authorization: Bearer $OWNPAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "10.00",
+    "currency": "USD",
+    "customer_email": "test@example.com",
+    "description": "Test payment",
+    "metadata": { "test": true }
+  }'
+```
+
+使用返回的 `checkout_url`，用测试卡完整走一遍结账流程。
+
+## 模拟 webhook {#simulating-webhooks}
+
+### 通过 Developer Hub {#from-the-developer-hub}
+
+1. 前往 **Developers → Webhooks**
+2. 点击端点旁边的 **Send Test Event**
+3. 选择事件类型（例如 `payment.completed`）
+4. OwnPay 会发送一个带有效签名的真实负载
+
+### 通过 cURL {#via-curl}
+
+你也可以手动触发测试事件：
+
+```bash
+curl -X POST https://your-domain.com/api/v1/webhooks/test \
+  -H "Authorization: Bearer $OWNPAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "endpoint_id": "we_abc123",
+    "event": "payment.completed"
+  }'
+```
+
+## 测试退款 {#testing-refunds}
+
+先创建一笔已完成的测试支付，然后发起退款：
+
+```bash
+curl -X POST https://your-domain.com/api/v1/payments/pay_abc123/refunds \
+  -H "Authorization: Bearer $OWNPAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "10.00",
+    "reason": "Customer request"
+  }'
+```
+
+<Note>
+  测试模式下的退款会立即完成，且不会转移真实资金。
+</Note>
+
+如需更深入的调试（包括日志检查和请求追踪），请参阅[调试模式](/zh/resources/debug-mode)。
+
+## 相关页面 {#related-pages}
+
+- [API 概览](/zh/api/overview)
+- [Webhooks](/zh/api/webhooks)
+- [Webhook 集成教程](/zh/developer/webhook-integration)
+- [调试模式](/zh/resources/debug-mode)
+- [常见错误](/zh/resources/common-errors)

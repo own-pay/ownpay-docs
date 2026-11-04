@@ -1,0 +1,70 @@
+---
+title: 双因素认证
+description: 使用 Google Authenticator 或 Authy 启用基于 TOTP 的双因素认证，为您的管理员账户增加第二层安全保护。
+keywords: "2FA, 双因素, TOTP, Google Authenticator, Authy, 备用码, MFA"
+sidebarTitle: 双因素认证
+icon: shield
+---
+
+双因素认证（2FA）为登录流程增加了第二个验证步骤。输入电子邮件和密码后，您必须提供身份验证器应用生成的基于时间的一次性密码（TOTP）。
+
+## 兼容的应用 {#compatible-apps}
+
+- **Google Authenticator**（iOS、Android）
+- **Authy**（iOS、Android、桌面端）
+- **1Password**（内置 TOTP）
+- **Bitwarden**（内置 TOTP）
+
+<Info>
+  OwnPay 使用标准 TOTP（RFC 6238）。任何支持该标准的身份验证器应用均可使用。
+</Info>
+
+## 启用 2FA {#enable-2fa}
+
+<Steps>
+  <Step>
+    前往 **My Account**（点击右上角的头像）。
+  </Step>
+  <Step>
+    在 Security 部分点击 **Enable 2FA**。
+  </Step>
+  <Step>
+    此时会出现一个二维码。使用您的身份验证器应用扫描它。
+  </Step>
+  <Step>
+    应用会显示一个 6 位数代码。将其输入到 **Verification Code** 字段中。
+  </Step>
+  <Step>
+    **保存您的备用码**。OwnPay 会生成一组一次性恢复码。请将其存放在安全的地方。
+  </Step>
+  <Step>
+    点击 **Confirm**。2FA 现已在您的账户上启用。
+  </Step>
+</Steps>
+
+<Warning>
+  备用码只显示一次。如果您丢失了身份验证器设备且没有备用码，则需要超级管理员手动为您的账户禁用 2FA。
+</Warning>
+
+## 登录时使用 2FA {#using-2fa-at-login}
+
+输入电子邮件和密码后，会出现第二个页面，要求您输入 **6 位验证码**。打开身份验证器应用并输入当前代码。代码每 30 秒轮换一次。
+
+## 设备丢失后的恢复 {#lost-device-recovery}
+
+如果您无法访问身份验证器应用：
+
+1. 在 2FA 登录页面上，点击 **Use backup code**
+2. 输入您保存的一个备用码
+3. 每个备用码只能使用一次
+4. 登录后，禁用 2FA，然后使用新的身份验证器重新启用
+
+## 按角色强制启用 2FA {#2fa-enforcement-per-role}
+
+超级管理员可以为特定角色强制启用 2FA。强制启用后，这些角色的员工无法禁用 2FA，并且必须在访问仪表板之前完成设置。请在 **Settings \> Security \> Enforce 2FA for roles** 中进行配置。
+
+## 相关页面 {#related-pages}
+
+- [登录](/zh/security/login) - 包含 2FA 的登录流程
+- [我的账户](/zh/security/my-account) - 管理 2FA 和个人安全设置
+- [密码重置](/zh/security/password-reset) - 账户恢复流程
