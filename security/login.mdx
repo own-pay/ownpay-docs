@@ -30,14 +30,28 @@ https://your-domain.com/login
 
 ## Rate limiting
 
-OwnPay enforces a login rate limit of **10 failed attempts per 5 minutes** per IP address. After exceeding this threshold:
+OwnPay locks an account after repeated failed sign-in attempts. It tracks failures in two ways:
 
-- Further login attempts from that IP are blocked for 5 minutes
-- A warning message displays the remaining cooldown time
-- The attempt is logged in the [audit log](/reports/audit-log)
+- **Per email and IP address**: the account locks for that IP after **5** failed attempts.
+- **Per email across all IP addresses**: the account locks everywhere after **15** failed attempts (three times the per-IP threshold).
+
+The first lockout lasts **5 minutes**. Each further batch of failures doubles the window (5, 10, 20 minutes) up to a cap of **30 minutes**. Attempts made while the account is locked also count as failures, so continued attempts restart and extend the lockout instead of letting it expire. The error message shows the remaining wait time, for example `Try again in about 10 minute(s)`.
+
+Every attempt, including those rejected during a lockout, appears in the **Login Security Log** under **System** in the admin sidebar. From that log, you can click **Unlock Email** or **Unlock IP** to clear the failed attempts and lift a lockout early.
+
+### Configure the lockout thresholds
+
+Set these environment variables in your `.env` file to change the defaults:
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `MAX_LOGIN_ATTEMPTS` | `5` | Failed attempts per email and IP before lockout. The per-email threshold is three times this value |
+| `LOCKOUT_DURATION` | `300` | Base lockout window in seconds. Escalated windows never exceed 30 minutes |
+
+OwnPay reads both values through its runtime settings, so a runtime system setting with the same key overrides the `.env` value. Missing, zero, negative, or non-numeric values fall back to the defaults.
 
 <Warning>
-  Repeated lockouts from the same IP may indicate a brute-force attack. Review the audit log and consider blocking the IP at your server level.
+  Repeated lockouts from the same IP may indicate a brute-force attack. Review the Login Security Log and consider blocking the IP at your server level.
 </Warning>
 
 ## Session management
@@ -59,7 +73,7 @@ By default, staff can be logged in from multiple browsers and devices simultaneo
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | `Invalid credentials` | Wrong email or password | Verify your credentials. Passwords are case-sensitive |
-| `Account temporarily locked` | Too many failed attempts | Wait 5 minutes for the lockout to expire |
+| `Account temporarily locked` | Too many failed attempts | Stop retrying and wait for the time shown in the message, or ask an administrator to unlock your account from the Login Security Log |
 | `404 Not Found` on `/login` | Custom login slug configured | Use the correct slug from your branding settings |
 | Session expires immediately | Server clock mismatch | Verify your server's NTP synchronization |
 
