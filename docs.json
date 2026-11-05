@@ -91,10 +91,6 @@
       {
         "label": "ownpay.org",
         "href": "https://ownpay.org"
-      },
-      {
-        "href": "/quickstart",
-        "label": "Get Started"
       }
     ],
     "primary": {
