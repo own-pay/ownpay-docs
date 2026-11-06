@@ -3,6 +3,10 @@ title: "Audit Log"
 description: "Review a chronological log of all staff actions for compliance, accountability, and security investigation."
 keywords: "audit log, compliance, action log, staff activity, security audit, export audit"
 sidebarTitle: "Audit Log"
+icon:
+  name: "logic-xor"
+  style: "regular"
+  library: "tabler"
 ---
 
 The Audit Log records every significant action performed by staff members in the admin panel. It is your primary tool for compliance reporting, security investigations, and accountability tracking.
@@ -11,7 +15,7 @@ The Audit Log records every significant action performed by staff members in the
 
 OwnPay logs the following action categories:
 
-- **Authentication** - Logins, logouts, failed attempts, 2FA events
+- **Authentication** - Logins, logout's, failed attempts, 2FA events
 - **Financial** - Payment creations, manual refunds, ledger adjustments
 - **Configuration** - Settings changes, gateway modifications, brand updates
 - **Data** - Customer creation, invoice generation, export actions
@@ -32,7 +36,7 @@ Each audit log entry contains:
 
 ## Search and filter
 
-Use the search bar to find entries by **user name**, **action type**, or **entity ID**. Combine with the date range picker and action category dropdown to narrow results.
+Use the search bar to find entries by **user name**, **action type**, or **entity ID**. Combine with the date range picker and action category drop-down to narrow results.
 
 <Info>
   Audit log queries use a full-text index on the changes field, so searching for specific values within change diffs is fast even with millions of entries.
