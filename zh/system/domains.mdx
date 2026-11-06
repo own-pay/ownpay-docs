@@ -10,41 +10,57 @@ OwnPay 中的每个品牌都可以拥有一个或多个自定义域名。客户�
 
 ## 添加域名 {#add-a-domain}
 
+OwnPay 会将每个新域名映射到当前活动的品牌，因此请在开始之前切换到目标品牌。
+
 <Steps>
   <Step>
-    导航到 **System \> Domains** 并点击 **Add Domain**。
+    导航到 **System \> Domains** 并点击 **+ Add Domain**。
   </Step>
   <Step>
-    选择该域名所属的 **Brand**。
+    输入域名（例如 `pay.yourmerchant.com`），不要包含 `https://`。
   </Step>
   <Step>
-    输入域名（例如 `pay.yourmerchant.com`）。
+    选择 **Domain Type**：**Checkout domain** 或 **API domain**。您还可以选择为直接访问该域名的访客设置 **Redirect URL**。
   </Step>
   <Step>
-    点击 **Save**。OwnPay 会显示您需要配置的 DNS 记录。
+    点击 **Next**。OwnPay 会显示您需要配置的 DNS 记录。
   </Step>
 </Steps>
 
 ## 配置 DNS {#configure-dns}
 
-OwnPay 会显示您需要在域名注册商处添加的确切 DNS 记录：
+添加域名向导和该域名的 **DNS Setup** 选项卡会显示适用于您安装环境的确切值。您需要在 DNS 提供商处添加两条记录。
+
+### TXT 记录（所有权） {#txt-record-ownership}
+
+| 类型 | 名称 | 值 |
+| --- | --- | --- |
+| TXT | `_ownpay-verify.pay.yourmerchant.com` | `ownpay-verify=<token>` |
+
+从向导或 **DNS Setup** 选项卡中复制该令牌。
+
+### A 或 CNAME 记录（路由） {#a-or-cname-record-routing}
+
+添加以下记录之一：
 
 <Columns>
   <Column>
-### CNAME 方式（推荐） {#cname-method-recommended}
+#### CNAME 方式（推荐） {#cname-method-recommended}
 
     | 类型 | 名称 | 值 |
     | --- | --- | --- |
     | CNAME | `pay` | `your-ownpay-instance.com` |
+
+    OwnPay 会将您的 `APP_DOMAIN`（或 `APP_URL`）的主机显示为 CNAME 目标。
   </Column>
   <Column>
-### A 记录方式 {#a-record-method}
+#### A 记录方式 {#a-record-method}
 
     | 类型 | 名称 | 值 |
     | --- | --- | --- |
     | A | `pay` | `203.0.113.10` |
 
-    请将该 IP 替换为您服务器的实际地址。
+    使用 OwnPay 显示的 **A record IP**。OwnPay 会检测您服务器的公网 IPv4 地址；如果您设置了 `APP_SERVER_IP`，则使用该值。
   </Column>
 </Columns>
 
@@ -52,9 +68,28 @@ OwnPay 会显示您需要在域名注册商处添加的确切 DNS 记录：
   推荐使用 CNAME 方式，因为在您迁移服务器时，它会自动跟随 IP 变化。
 </Tip>
 
+### 位于 Cloudflare 或 NAT 之后的服务器 {#servers-behind-cloudflare-or-nat}
+
+验证会将品牌域名的 A 记录与 OwnPay 显示的服务器 IP 进行比较。该 IP 必须是您的源服务器地址，而不是代理地址。
+
+如果显示的 IP 是 Cloudflare 边缘地址，Domains 页面会显示警告。在修复之前，验证无法通过：
+
+1. 在 `.env` 中设置源服务器的公网 IPv4 地址：
+
+   ```bash
+   APP_SERVER_IP=203.0.113.10
+   ```
+
+2. 重新加载 Domains 页面，确认 A record IP 与您的源服务器一致。
+3. 将品牌域名的 A 记录指向该 IP，并在 Cloudflare 中将其设置为 **DNS only**。启用代理的品牌域名会解析到 Cloudflare 边缘地址，导致验证失败。
+
+当您的服务器位于 NAT 之后且无法检测自身公网 IP 时，也请设置 `APP_SERVER_IP`。
+
 ## 验证域名 {#verify-a-domain}
 
-设置好 DNS 记录后，在列表中点击该域名旁的 **Verify**。OwnPay 会执行 DNS 查询以确认记录是否正确。
+设置好 DNS 记录后，在向导中或该域名的 **DNS Setup** 选项卡上点击 **Verify DNS**。OwnPay 会先检查 TXT 记录，然后检查 A 记录是否指向服务器 IP。
+
+OwnPay 还会每小时重新检查一次未验证的域名。如果某个域名连续 7 天未通过验证，OwnPay 会将其删除。
 
 <Info>
   DNS 传播最长可能需要 48 小时，不过大多数注册商会在几分钟内完成传播。如果验证立即失败，请稍候再试。
@@ -77,6 +112,8 @@ OwnPay 会显示您需要在域名注册商处添加的确切 DNS 记录：
 | 症状 | 原因 | 解决方法 |
 | --- | --- | --- |
 | 验证失败 | DNS 尚未传播 | 稍候再试，或使用 `dig` 或 `nslookup` 检查 |
+| `TXT record not found` | TXT 记录缺失或令牌复制有误 | 对照 **DNS Setup** 选项卡检查 TXT 名称和值，然后重新验证 |
+| `A record ... does not point to ...` | A 记录指向代理边缘 IP，或 DNS 尚未传播 | 将 `APP_SERVER_IP` 设置为源服务器 IP，并为品牌域名关闭 Cloudflare 代理，或稍候再试 |
 | SSL 配置失败 | 端口 80 被阻止 | 开放端口 80，或配置反向代理以转发 ACME 质询 |
 | 域名显示 "mixed content" | 硬编码的 HTTP 链接 | 确保 Settings 中的 Application URL 使用 `https://` |
 
