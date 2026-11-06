@@ -18,7 +18,7 @@ Webhooks let your external systems receive real-time notifications when events h
     Click **Add Endpoint**. Enter your HTTPS URL - for example, `https://your-app.com/api/ownpay/webhook`.
   </Step>
   <Step>
-    Select the events you want to receive from the checkbox list. You can choose all events or pick specific ones.
+    Select the events you want to receive from the checkbox list. You can select all events or pick specific ones.
   </Step>
   <Step>
     Click **Save**. OwnPay generates a unique **signing secret**. Copy this secret immediately - it will not be shown again.
@@ -73,7 +73,7 @@ If all retries are exhausted, the event enters the **dead letter queue**. You ca
 
 Click the **Test Webhook** button next to any endpoint to send a sample `payment.completed` payload. This is useful during development to verify your signature verification logic and endpoint routing before going live.
 
-## Related Pages
+## Related pages
 
 - [Developer Hub](/security/developer-hub) - Overview of the developer tools section
 - [API Keys](/security/api-keys) - Manage credentials for API access

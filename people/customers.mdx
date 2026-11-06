@@ -10,7 +10,7 @@ Customers are the people who pay you through OwnPay. You rarely need to create c
 
 ## How customer profiles are created
 
-When a customer completes a payment for the first time, OwnPay registers their email address (and phone number if provided) as a customer profile under the brand that received the payment. The same email address used across different brands creates separate customer records per brand.
+When a customer completes their first payment, OwnPay registers their email address as a customer profile. OwnPay also stores their phone number if provided. The profile belongs to the brand that received the payment. The same email address used across different brands creates separate customer records per brand.
 
 ## Customer fields
 
@@ -57,7 +57,7 @@ You can also manage customers programmatically through the Merchant API. Custome
   Do not delete customer profiles that have active invoices or pending transactions. The system preserves transaction records for financial compliance even after you delete the profile.
 </Warning>
 
-## Related Pages
+## Related pages
 
 - [Transactions](/payments/transactions) - view payments made by customers
 - [Invoices](/payments/invoices) - create invoices for customers
