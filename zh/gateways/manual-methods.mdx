@@ -48,16 +48,53 @@ icon: "cash"
 
 客户选择此手动方式后，这些字段会显示在结账页面上。
 
+## 在品牌结账页提供手动网关 {#offer-manual-gateways-on-a-brand-checkout}
+
+手动网关需要按品牌单独启用。品牌的结账页面只显示该品牌已使用自己的账户信息配置并激活的手动网关。在 **All Brands** 下定义的网关仅作为模板，不会自动出现在任何品牌的结账页面上。
+
+在特定品牌下查看 **Payment Gateways** 时，每个手动网关都会显示一个徽章：
+
+- **Not configured** 并带有 **Template** 徽章：该品牌尚未设置自己的账户，因此客户无法使用该网关付款。
+- **Your account**：品牌自己的账户，客户将款项付入此账户。
+
 ## 手动付款的工作方式 {#how-manual-payments-work}
 
 1. 客户在结账时选择手动方式。
 2. 客户看到您的**付款说明**（银行账户、电话号码等）。
 3. 客户自行完成付款。
 4. 客户填写**自定义字段**（例如输入交易 ID）。
-5. 交易进入**等待验证**状态。
-6. 您审核凭证后点击 **Mark Completed** 或 **Mark Failed**。
+5. OwnPay 将提交的交易 ID 与该品牌已收到的付款短信进行比对。如果找到匹配项，交易会立即完成（请参阅[提交时即时验证](#instant-verification-on-submission)）。
+6. 否则，交易进入**等待验证**状态。
+7. 您审核凭证后点击 **Mark Completed** 或 **Mark Failed**。
 
 如需通过短信自动验证，请参阅[短信验证](/zh/gateways/sms-verification)。
+
+## 提交时即时验证 {#instant-verification-on-submission}
+
+客户提交手动付款时，OwnPay 会在您的[配套应用](/zh/mobile/companion-app)已为该品牌转发的付款短信中查找提交的交易 ID。只有在满足以下所有条件时，OwnPay 才会立即完成交易：
+
+- 恰好有一条未匹配的短信包含该交易 ID。
+- 短信金额与交易金额在两位小数精度上一致。
+- OwnPay 收到该短信的时间介于交易创建前 5 分钟到创建后 30 分钟之间。
+- 交易仍处于等待验证状态。
+
+如果任一检查未通过，交易将保持等待验证状态，供您审核。每条短信只能结算一笔交易。
+
+<Note>
+  即时验证只搜索为该交易所属品牌存储的短信。由配对到 **All Brands** 的设备捕获的短信不会在提交时匹配，因此这些付款需要等待您手动审核。
+</Note>
+
+## 客户提交后看到的内容 {#what-the-customer-sees-after-submitting}
+
+手动付款提交后且尚未验证时，结账页面会显示 **Under Review** 状态页面。该页面每 5 秒刷新一次。您批准交易后，下一次刷新会将客户转到成功页面。
+
+如果希望将客户送回您的网站，而不是停留在审核页面，请启用 **Auto-redirect after manual payment submission**：
+
+1. 选择品牌，然后前往 **Brand Settings** → **Checkout Settings**。
+2. 在 **Checkout Timer** 卡片中，开启 **Auto-redirect after manual payment submission**。
+3. 保存设置。
+
+开启后，5 秒倒计时结束时会将客户重定向到您的返回 URL，并附带 `status=pending`。在 OwnPay 中的交易完成之前，请在您的网站上将订单保持为待处理状态。该开关默认关闭，且不影响 API 网关。
 
 ## 常见错误 {#common-mistakes}
 
