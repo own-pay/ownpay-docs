@@ -15,13 +15,24 @@ on:
       - 'docs/LOCAL_SETUP.md'
       - 'docs/TRANSLATIONS.md'
 
+permissions: {}
+
+concurrency:
+  group: docs-sync
+  cancel-in-progress: false
+
 jobs:
   notify:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Trigger docs sync
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3
         with:
+          # DOCS_SYNC_TOKEN should be limited to own-pay/ownpay-docs with
+          # permission to dispatch repository events.
           token: ${{ secrets.DOCS_SYNC_TOKEN }}
           repository: own-pay/ownpay-docs
           event-type: sync-docs
+          client-payload: >-
+            {"source_repository":"${{ github.repository }}","source_ref":"${{ github.ref }}","source_sha":"${{ github.sha }}"}
