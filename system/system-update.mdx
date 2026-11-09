@@ -44,7 +44,7 @@ The package must meet these requirements:
 
 - It's a `.zip` file no larger than 50 MB.
 - It contains a `version.json` file at the root with a `version` field.
-- All other files sit under the approved directories: `src`, `config`, `templates`, `public`, `database` and `modules`.
+- Every file besides `version.json` must live under one of the approved directories: `src`, `config`, `templates`, `public`, `database` and `modules`.
 - It contains no symbolic links and no paths that point outside the installation.
 
 <Steps>
@@ -55,7 +55,13 @@ The package must meet these requirements:
     Select the `.zip` file and click **Validate & Preview Update**. OwnPay checks the package and rejects it with an error message if any requirement fails.
   </Step>
   <Step>
-    Review the preview. It shows the target version, your current version, whether the package is an upgrade, the same version or a downgrade, the file name, the package size and the signature status.
+    Review the preview. It shows:
+    - the target version
+    - your current version
+    - whether the package is an upgrade, the same version or a downgrade
+    - the file name
+    - the package size
+    - the signature status
   </Step>
   <Step>
     Click **Apply Update Now** and confirm. Stay on the page until the update finishes. OwnPay reloads the page when the update succeeds.
