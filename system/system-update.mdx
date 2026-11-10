@@ -1,7 +1,7 @@
 ---
 title: "System Update"
 description: "Keep your OwnPay instance up to date with one-click updates, automatic backups, and a rollback procedure if anything goes wrong."
-keywords: "system update, upgrade, rollback, backup, auto-update, one-click update, CLI update"
+keywords: "system update, upgrade, rollback, backup, auto-update, one-click update, CLI update, manual ZIP update"
 sidebarTitle: "System Update"
 icon: "refresh"
 ---
@@ -35,6 +35,47 @@ Navigate to **System \> System Update**. The page shows your current version and
     You are redirected to the login page once the update completes.
   </Step>
 </Steps>
+
+## Update from a ZIP package
+
+If your server can't reach the update server, or you want to apply a specific release, you can upload an update package from your computer instead. Only superadmins see the **Manual Update via ZIP Upload** card and can use it.
+
+The package must meet these requirements:
+
+- It's a `.zip` file no larger than 50 MB.
+- It contains a `version.json` file at the root with a `version` field.
+- Every file besides `version.json` must live under one of the approved directories: `src`, `config`, `templates`, `public`, `database` and `modules`.
+- It contains no symbolic links and no paths that point outside the installation.
+
+<Steps>
+  <Step>
+    Navigate to **System \> System Update** and scroll to **Manual Update via ZIP Upload**.
+  </Step>
+  <Step>
+    Select the `.zip` file and click **Validate & Preview Update**. OwnPay checks the package and rejects it with an error message if any requirement fails.
+  </Step>
+  <Step>
+    Review the preview. It shows:
+    - the target version
+    - your current version
+    - whether the package is an upgrade, the same version or a downgrade
+    - the file name
+    - the package size
+    - the signature status
+  </Step>
+  <Step>
+    Click **Apply Update Now** and confirm. Stay on the page until the update finishes. OwnPay reloads the page when the update succeeds.
+  </Step>
+  <Step>
+    OwnPay creates a full backup, enters maintenance mode, extracts the package, runs database migrations, clears caches and runs health checks. It then exits maintenance mode.
+  </Step>
+</Steps>
+
+If any step fails after the backup exists, OwnPay restores the backup automatically and exits maintenance mode. The update history records each manual update with the uploading admin and the file name.
+
+<Warning>
+  An unsigned package shows **None (unsigned upload)** as its signature status and can still be applied. Only upload packages you built yourself or downloaded from [OwnPay GitHub releases](https://github.com/own-pay/OwnPay/releases). A package that includes a `signature.sig` file is applied only when the signature verifies.
+</Warning>
 
 ## Post-update steps
 
