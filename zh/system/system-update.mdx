@@ -1,7 +1,7 @@
 ---
 title: "系统更新"
 description: "通过一键更新、自动备份以及出现问题时的回滚步骤，让您的 OwnPay 实例保持最新。"
-keywords: "系统更新, 升级, 回滚, 备份, 自动更新, 一键更新, CLI 更新, system update"
+keywords: "系统更新, 升级, 回滚, 备份, 自动更新, 一键更新, CLI 更新, 手动 ZIP 更新, system update, manual ZIP update"
 sidebarTitle: "系统更新"
 icon: "refresh"
 ---
@@ -35,6 +35,47 @@ OwnPay 提供一键更新系统，让您的实例始终具备最新功能、安�
     更新完成后，您将被重定向到登录页面。
   </Step>
 </Steps>
+
+## 通过 ZIP 包更新 {#update-from-a-zip-package}
+
+如果您的服务器无法访问更新服务器，或者您想应用某个特定版本，可以改为从您的计算机上传更新包。只有超级管理员能看到并使用 **Manual Update via ZIP Upload** 卡片。
+
+更新包必须满足以下要求：
+
+- 它是不超过 50 MB 的 `.zip` 文件。
+- 它的根目录包含一个带有 `version` 字段的 `version.json` 文件。
+- 除 `version.json` 外，所有文件都必须位于以下允许的目录之一：`src`、`config`、`templates`、`public`、`database` 和 `modules`。
+- 它不包含符号链接，也不包含指向安装目录之外的路径。
+
+<Steps>
+  <Step>
+    导航到 **System \> System Update**，然后滚动到 **Manual Update via ZIP Upload**。
+  </Step>
+  <Step>
+    选择 `.zip` 文件并点击 **Validate & Preview Update**。OwnPay 会检查该更新包，如果任何要求未满足，会显示错误消息并拒绝该包。
+  </Step>
+  <Step>
+    查看预览。预览会显示：
+    - 目标版本
+    - 您的当前版本
+    - 该更新包是升级、相同版本还是降级
+    - 文件名
+    - 更新包大小
+    - 签名状态
+  </Step>
+  <Step>
+    点击 **Apply Update Now** 并确认。在更新完成之前请停留在该页面。更新成功后，OwnPay 会重新加载页面。
+  </Step>
+  <Step>
+    OwnPay 会创建完整备份、进入维护模式、解压更新包、运行数据库迁移、清除缓存并运行健康检查。随后它会退出维护模式。
+  </Step>
+</Steps>
+
+如果在备份创建之后任何步骤失败，OwnPay 会自动恢复备份并退出维护模式。更新历史会记录每次手动更新，包括上传的管理员和文件名。
+
+<Warning>
+  未签名的更新包会将签名状态显示为 **None (unsigned upload)**，并且仍然可以应用。请只上传您自己构建的更新包，或从 [OwnPay GitHub 发布](https://github.com/own-pay/OwnPay/releases)下载的更新包。包含 `signature.sig` 文件的更新包只有在签名验证通过时才会被应用。
+</Warning>
 
 ## 更新后步骤 {#post-update-steps}
 
